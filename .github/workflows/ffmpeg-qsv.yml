@@ -30,7 +30,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: ./
-          file: ./Dockerfile
+          file: ./qsv.Dockerfile
           tags: |
             akashisn/ffmpeg:qsv
           platforms: linux/amd64

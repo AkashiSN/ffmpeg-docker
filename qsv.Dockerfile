@@ -1,10 +1,10 @@
-FROM buildpack-deps:buster AS ffmpeg-build
+FROM debian:buster AS ffmpeg-build
 
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Install build tools
 RUN apt-get update && \
-    apt-get install -y yasm nasm cmake pkg-config
+    apt-get install -y make build-essential yasm nasm cmake pkg-config
 
 ENV FFMPEG_CONFIGURE_OPTIONS="" \
     FFMPEG_EXTRA_LIBS=""
@@ -45,14 +45,14 @@ ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libx265" \
 #
 # HWAccel
 #
+
 # Install MediaSDK
 ENV INTEL_MEDIA_SDK_VERSION=21.1.3
 ADD https://github.com/Intel-Media-SDK/MediaSDK/releases/download/intel-mediasdk-${INTEL_MEDIA_SDK_VERSION}/MediaStack.tar.gz /tmp/
-RUN apt-get install -y lsb-release libdrm2 libx11-6 libxext6 libxfixes3 && \
-    cd /tmp && \
+RUN apt-get install -y libdrm2
+RUN cd /tmp && \
     tar xf MediaStack.tar.gz && \
     cd /tmp/MediaStack/opt/intel/mediasdk && \
-    cp --archive --no-dereference bin /usr/local/ && \
     cp --archive --no-dereference include /usr/local/ && \
     cp --archive --no-dereference lib64/. /usr/local/lib/ && \
     ldconfig
@@ -78,23 +78,25 @@ RUN cd /tmp && \
 
 # Copy artifacts
 RUN mkdir /build && \
-    cp --archive --parents --no-dereference /usr/local/bin/ /build && \
-    cp --archive --parents --no-dereference /usr/local/lib/ /build && \
-    cp --archive --parents --no-dereference /usr/local/include/ /build && \
-    rm -r /build/usr/local/lib/python*
+    cp --archive --parents --no-dereference /usr/local/bin/ff* /build && \
+    cp --archive --parents --no-dereference /usr/local/lib/*.so* /build
 
 
 # final image
-FROM debian:buster
+FROM debian:buster-slim
 
 # Install runtime dependency
 RUN apt-get update && \
-    apt-get install -y libdrm2 libx11-6 libxext6 libxfixes3 libxcb-shm0 && \
+    apt-get install -y libdrm2 && \
     apt-get clean; rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
 
 COPY --from=ffmpeg-build /build /
 
+ENV LIBVA_DRIVERS_PATH=/usr/local/lib \
+    LIBVA_DRIVER_NAME=iHD
+
 RUN ldconfig
 
+WORKDIR /workdir
 ENTRYPOINT [ "ffmpeg" ]
 CMD [ "--help" ]
