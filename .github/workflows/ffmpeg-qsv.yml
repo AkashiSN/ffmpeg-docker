@@ -2,8 +2,8 @@ name: ffmpeg-qsv
 
 on:
   push:
-    paths:
-      - 'qsv.dockerfile'
+    paths-ignore:
+    - '*.md'
 
 jobs:
   buildx:
