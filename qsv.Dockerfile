@@ -9,6 +9,10 @@ RUN apt-get update && \
 ENV FFMPEG_CONFIGURE_OPTIONS="" \
     FFMPEG_EXTRA_LIBS=""
 
+#
+# Video
+#
+
 # Build libvpx
 ADD https://github.com/webmproject/libvpx/archive/master.tar.gz /tmp/libvpx-master.tar.gz
 RUN cd /tmp && \
@@ -41,6 +45,41 @@ RUN cd /tmp && \
     make install
 ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libx265" \
     FFMPEG_EXTRA_LIBS="${FFMPEG_EXTRA_LIBS} -lpthread"
+
+
+#
+# Audio
+#
+
+# Build opus
+ADD https://github.com/xiph/opus/archive/master.tar.gz /tmp/opus-master.tar.gz
+RUN cd /tmp && \
+    tar xf opus-master.tar.gz && \
+    mkdir /tmp/opus_build && cd /tmp/opus_build && \
+    cmake -DBUILD_SHARED_LIBS=OFF ../opus-master && \
+    make -j $(nproc) && \
+    make install
+ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libopus"
+
+# Build libogg, for vorbis
+ADD https://github.com/xiph/ogg/archive/master.tar.gz /tmp/ogg-master.tar.gz
+RUN cd /tmp && \
+    tar xf ogg-master.tar.gz && \
+    mkdir /tmp/ogg_build && cd /tmp/ogg_build && \
+    cmake -DBUILD_SHARED_LIBS=OFF ../ogg-master && \
+    make -j $(nproc) && \
+    make install
+
+# Build vorbis
+ADD https://github.com/xiph/vorbis/archive/master.tar.gz /tmp/vorbis-master.tar.gz
+RUN cd /tmp && \
+    tar xf vorbis-master.tar.gz && \
+    mkdir /tmp/vorbis_build && cd /tmp/vorbis_build && \
+    cmake -DBUILD_SHARED_LIBS=OFF ../vorbis-master && \
+    make -j $(nproc) && \
+    make install
+ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libvorbis"
+
 
 #
 # HWAccel
@@ -78,7 +117,9 @@ RUN cd /tmp && \
 
 # Copy artifacts
 RUN mkdir /build && \
+    cp /tmp/MediaStack/opt/intel/mediasdk/bin/vainfo /usr/local/bin/ && \
     cp --archive --parents --no-dereference /usr/local/bin/ff* /build && \
+    cp --archive --parents --no-dereference /usr/local/bin/vainfo /build && \
     cp --archive --parents --no-dereference /usr/local/lib/*.so* /build
 
 
@@ -87,7 +128,7 @@ FROM debian:buster-slim
 
 # Install runtime dependency
 RUN apt-get update && \
-    apt-get install -y libdrm2 && \
+    apt-get install -y libdrm2 libx11-6 libxext6 libxfixes3 && \
     apt-get clean; rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
 
 COPY --from=ffmpeg-build /build /
