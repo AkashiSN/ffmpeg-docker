@@ -8,6 +8,8 @@
 
 ## Intel QSV (Intel Quick Sync Video)
 
+[![ffmpeg-qsv](https://github.com/AkashiSN/ffmpeg-docker/actions/workflows/ffmpeg-qsv.yml/badge.svg)](https://github.com/AkashiSN/ffmpeg-docker/actions/workflows/ffmpeg-qsv.yml)
+
 https://trac.ffmpeg.org/wiki/Hardware/QuickSync
 
 You can use the following command to find out which codecs are supported by your CPU.
