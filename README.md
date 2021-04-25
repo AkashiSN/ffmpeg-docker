@@ -175,7 +175,6 @@ $ docker run --rm -it --device=/dev/dri -v `pwd`:/workdir \
     -fflags +discardcorrupt \
     -analyzeduration 30M -probesize 100MB \
     -i AB1.m2ts \
-    -t 20 \
     -vf hwupload=extra_hw_frames=64,deinterlace_vaapi,scale_vaapi=1920:1080,sharpness_vaapi,fps=30000/1001 \
     -c:v vp8_vaapi \
     -crf 5 \

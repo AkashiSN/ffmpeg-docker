@@ -1,6 +1,10 @@
 name: ffmpeg-qsv
 
-on: [ workflow_dispatch ]
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'qsv.dockerfile'
 
 jobs:
   buildx:

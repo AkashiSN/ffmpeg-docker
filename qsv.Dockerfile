@@ -129,7 +129,9 @@ FROM debian:buster-slim
 # Install runtime dependency
 RUN apt-get update && \
     apt-get install -y libdrm2 libx11-6 libxext6 libxfixes3 && \
-    apt-get clean; rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
+    apt-get autoremove -y && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
 
 COPY --from=ffmpeg-build /build /
 
