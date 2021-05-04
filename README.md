@@ -1,5 +1,7 @@
 # ffmpeg-docker
 
+[![ffmpeg](https://github.com/AkashiSN/ffmpeg-docker/actions/workflows/ffmpeg.yml/badge.svg)](https://github.com/AkashiSN/ffmpeg-docker/actions/workflows/ffmpeg.yml)
+
 ![](https://dockeri.co/image/akashisn/ffmpeg)
 
 ## Available tags
@@ -9,7 +11,6 @@
 
 ## Plain ffmpeg
 
-[![ffmpeg](https://github.com/AkashiSN/ffmpeg-docker/actions/workflows/ffmpeg.yml/badge.svg)](https://github.com/AkashiSN/ffmpeg-docker/actions/workflows/ffmpeg.yml)
 
 ### Supported Codecs
 
@@ -18,10 +19,50 @@
 - `VP8/VP9/webm`: VP8 / VP9 Video Codec for the WebM video file format
 - `vorbis`: Lossy audio compression format
 - `opus`: Lossy audio coding format
+- `freetype`: Library to render fonts
+- `fribidi`:  Implementation of the Unicode Bidirectional Algorithm
+- `fontconfig`: Library for configuring and customizing font access
+- `libass`: Portable subtitle renderer for the ASS/SSA
+- `aribb24`: A library for ARIB STD-B24, decoding JIS 8 bit characters and parsing MPEG-TS stream
+
+```bash
+$ docker run --rm -it akashisn/ffmpeg -buildconf
+ffmpeg version 4.4 Copyright (c) 2000-2021 the FFmpeg developers
+  built with gcc 8 (Debian 8.3.0-6)
+  configuration: --enable-libvpx --enable-libx264 --enable-libx265 --enable-libopus --enable-libvorbis --enable-libfreetype --enable-libfribidi --enable-libfontconfig --enable-libass --enable-libaribb24 --disable-debug --enable-small --enable-gpl --enable-version3 --extra-libs=-lpthread --pkg-config-flags=--static
+  libavutil      56. 70.100 / 56. 70.100
+  libavcodec     58.134.100 / 58.134.100
+  libavformat    58. 76.100 / 58. 76.100
+  libavdevice    58. 13.100 / 58. 13.100
+  libavfilter     7.110.100 /  7.110.100
+  libswscale      5.  9.100 /  5.  9.100
+  libswresample   3.  9.100 /  3.  9.100
+  libpostproc    55.  9.100 / 55.  9.100
+
+  configuration:
+    --enable-libvpx
+    --enable-libx264
+    --enable-libx265
+    --enable-libopus
+    --enable-libvorbis
+    --enable-libfreetype
+    --enable-libfribidi
+    --enable-libfontconfig
+    --enable-libass
+    --enable-libaribb24
+    --disable-debug
+    --enable-small
+    --enable-gpl
+    --enable-version3
+    --extra-libs=-lpthread
+    --pkg-config-flags=--static
+```
 
 ## Intel QSV (Intel Quick Sync Video)
 
-[![ffmpeg-qsv](https://github.com/AkashiSN/ffmpeg-docker/actions/workflows/ffmpeg-qsv.yml/badge.svg)](https://github.com/AkashiSN/ffmpeg-docker/actions/workflows/ffmpeg-qsv.yml)
+The following has been added to the plain version
+
+- `mfx`: Intel QSV (Intel Quick Sync Video)
 
 https://trac.ffmpeg.org/wiki/Hardware/QuickSync
 
