@@ -1,85 +1,20 @@
-FROM debian:buster AS ffmpeg-build
+# ffmpeg-build-base-image
+FROM akashisn/ffmpeg-build-base AS ffmpeg-build-base-image
 
-ENV DEBIAN_FRONTEND=noninteractive
+
+FROM debian:buster AS ffmpeg-build
 
 # Install build tools
 RUN apt-get update && \
-    apt-get install -y make build-essential yasm nasm cmake pkg-config
+    apt-get install -y \
+      build-essential \
+      cmake \
+      make \
+      nasm \
+      pkg-config \
+      yasm
 
-ENV FFMPEG_CONFIGURE_OPTIONS="" \
-    FFMPEG_EXTRA_LIBS=""
-
-#
-# Video
-#
-
-# Build libvpx
-ADD https://github.com/webmproject/libvpx/archive/master.tar.gz /tmp/libvpx-master.tar.gz
-RUN cd /tmp && \
-    tar xf libvpx-master.tar.gz && \
-    cd /tmp/libvpx-master && \
-    ./configure --disable-unit-tests --as=yasm && \
-    make -j $(nproc) && \
-    make install
-ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libvpx"
-
-# Build x264
-ADD https://code.videolan.org/videolan/x264/-/archive/master/x264-master.tar.bz2 /tmp/
-RUN cd /tmp && \
-    tar xf x264-master.tar.bz2 && \
-    cd /tmp/x264-master && \
-    ./configure && \
-    make -j $(nproc) && \
-    make install && \
-    make install-cli && \
-    make install-lib-static
-ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libx264"
-
-# Build x265
-ADD https://github.com/videolan/x265/archive/master.tar.gz /tmp/x265-master.tar.gz
-RUN cd /tmp && \
-    tar xf x265-master.tar.gz && \
-    mkdir /tmp/x265_build && cd /tmp/x265_build && \
-    cmake -DENABLE_SHARED=off -DBUILD_SHARED_LIBS=OFF ../x265-master/source && \
-    make -j $(nproc) && \
-    make install
-ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libx265" \
-    FFMPEG_EXTRA_LIBS="${FFMPEG_EXTRA_LIBS} -lpthread"
-
-
-#
-# Audio
-#
-
-# Build opus
-ADD https://github.com/xiph/opus/archive/master.tar.gz /tmp/opus-master.tar.gz
-RUN cd /tmp && \
-    tar xf opus-master.tar.gz && \
-    mkdir /tmp/opus_build && cd /tmp/opus_build && \
-    cmake -DBUILD_SHARED_LIBS=OFF ../opus-master && \
-    make -j $(nproc) && \
-    make install
-ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libopus"
-
-# Build libogg, for vorbis
-ADD https://github.com/xiph/ogg/archive/master.tar.gz /tmp/ogg-master.tar.gz
-RUN cd /tmp && \
-    tar xf ogg-master.tar.gz && \
-    mkdir /tmp/ogg_build && cd /tmp/ogg_build && \
-    cmake -DBUILD_SHARED_LIBS=OFF ../ogg-master && \
-    make -j $(nproc) && \
-    make install
-
-# Build vorbis
-ADD https://github.com/xiph/vorbis/archive/master.tar.gz /tmp/vorbis-master.tar.gz
-RUN cd /tmp && \
-    tar xf vorbis-master.tar.gz && \
-    mkdir /tmp/vorbis_build && cd /tmp/vorbis_build && \
-    cmake -DBUILD_SHARED_LIBS=OFF ../vorbis-master && \
-    make -j $(nproc) && \
-    make install
-ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libvorbis"
-
+COPY --from=ffmpeg-build-base-image /build /
 
 #
 # Build ffmpeg
@@ -89,13 +24,13 @@ ADD https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.xz /tmp/
 RUN cd /tmp && \
     tar xf /tmp/ffmpeg-${FFMPEG_VERSION}.tar.xz && \
     cd /tmp/ffmpeg-${FFMPEG_VERSION} && \
-    ./configure ${FFMPEG_CONFIGURE_OPTIONS} \
+    ./configure `cat /usr/local/ffmpeg_configure_options` \
                 --disable-debug \
                 --enable-small \
                 --enable-gpl \
                 --enable-version3 \
-                --extra-libs="${FFMPEG_EXTRA_LIBS}" \
-                --pkg-config="pkg-config --static" && \
+                --extra-libs="`cat /usr/local/ffmpeg_extra_libs`" \
+                --pkg-config-flags="--static" && \
     make -j $(nproc) && \
     make install
 

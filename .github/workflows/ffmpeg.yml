@@ -30,6 +30,18 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Build ffmpeg build base
+        uses: docker/build-push-action@v2
+        with:
+          context: ./
+          file: ./base.Dockerfile
+          tags: |
+            akashisn/ffmpeg-build-base
+          platforms: linux/amd64
+          push: false
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+
       - name: Build and push - ffmpeg
         uses: docker/build-push-action@v2
         with:
@@ -37,6 +49,18 @@ jobs:
           file: ./Dockerfile
           tags: |
             akashisn/ffmpeg
+          platforms: linux/amd64
+          push: true
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+
+      - name: Build and push - ffmpeg-qsv
+        uses: docker/build-push-action@v2
+        with:
+          context: ./
+          file: ./qsv.Dockerfile
+          tags: |
+            akashisn/ffmpeg:qsv
           platforms: linux/amd64
           push: true
           cache-from: type=local,src=/tmp/.buildx-cache
