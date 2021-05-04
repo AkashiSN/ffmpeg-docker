@@ -4,6 +4,7 @@
 
 ## Available tags
 
+- [latest](https://github.com/AkashiSN/ffmpeg-docker/blob/main/Dockerfile): Plain ffmpeg (without HWAccel)
 - [qsv](https://github.com/AkashiSN/ffmpeg-docker/blob/main/qsv.Dockerfile): With Intel QSV
 
 ## Intel QSV (Intel Quick Sync Video)
