@@ -11,7 +11,6 @@
 
 ## Plain ffmpeg
 
-
 ### Supported Codecs
 
 - `x264`: H.264 Video Codec (MPEG-4 AVC)

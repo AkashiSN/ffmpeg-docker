@@ -196,3 +196,9 @@ RUN mkdir /build && \
     cp --archive --parents --no-dereference /usr/local/include /build && \
     echo $FFMPEG_CONFIGURE_OPTIONS > /build/usr/local/ffmpeg_configure_options && \
     echo $FFMPEG_EXTRA_LIBS > /build/usr/local/ffmpeg_extra_libs
+
+
+# final image
+FROM scratch
+
+COPY --from=ffmpeg-build /build /

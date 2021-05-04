@@ -14,7 +14,7 @@ RUN apt-get update && \
       pkg-config \
       yasm
 
-COPY --from=ffmpeg-build-base-image /build /
+COPY --from=ffmpeg-build-base-image / /
 
 #
 # Build ffmpeg
