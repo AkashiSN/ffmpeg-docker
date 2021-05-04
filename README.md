@@ -7,6 +7,18 @@
 - [latest](https://github.com/AkashiSN/ffmpeg-docker/blob/main/Dockerfile): Plain ffmpeg (without HWAccel)
 - [qsv](https://github.com/AkashiSN/ffmpeg-docker/blob/main/qsv.Dockerfile): With Intel QSV
 
+## Plain ffmpeg
+
+[![ffmpeg](https://github.com/AkashiSN/ffmpeg-docker/actions/workflows/ffmpeg.yml/badge.svg)](https://github.com/AkashiSN/ffmpeg-docker/actions/workflows/ffmpeg.yml)
+
+### Supported Codecs
+
+- `x264`: H.264 Video Codec (MPEG-4 AVC)
+- `x265`: H.265 Video Codec (HEVC)
+- `VP8/VP9/webm`: VP8 / VP9 Video Codec for the WebM video file format
+- `vorbis`: Lossy audio compression format
+- `opus`: Lossy audio coding format
+
 ## Intel QSV (Intel Quick Sync Video)
 
 [![ffmpeg-qsv](https://github.com/AkashiSN/ffmpeg-docker/actions/workflows/ffmpeg-qsv.yml/badge.svg)](https://github.com/AkashiSN/ffmpeg-docker/actions/workflows/ffmpeg-qsv.yml)
