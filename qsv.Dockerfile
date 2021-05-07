@@ -35,7 +35,7 @@ RUN echo -n "`cat /usr/local/ffmpeg_configure_options` --enable-libmfx" > /usr/l
 #
 # Build ffmpeg
 #
-ENV FFMPEG_VERSION=4.4
+ARG FFMPEG_VERSION=4.4
 ADD https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.xz /tmp/
 RUN cd /tmp && \
     tar xf /tmp/ffmpeg-${FFMPEG_VERSION}.tar.xz && \

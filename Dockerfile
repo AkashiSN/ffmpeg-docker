@@ -19,7 +19,7 @@ COPY --from=ffmpeg-build-base-image / /
 #
 # Build ffmpeg
 #
-ENV FFMPEG_VERSION=4.4
+ARG FFMPEG_VERSION=4.4
 ADD https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.xz /tmp/
 RUN cd /tmp && \
     tar xf /tmp/ffmpeg-${FFMPEG_VERSION}.tar.xz && \

@@ -3,16 +3,12 @@ name: ffmpeg
 on:
   push:
     paths:
-      - 'Dockerfile'
-      - 'qsv.Dockerfile'
+      - 'base.Dockerfile'
   workflow_dispatch:
 
 jobs:
   buildx:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        ffmpeg: [4.3.2, 4.4]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -34,29 +30,13 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push - ffmpeg
+      - name: Build ffmpeg build base
         uses: docker/build-push-action@v2
         with:
           context: ./
-          file: ./Dockerfile
+          file: ./base.Dockerfile
           tags: |
-            akashisn/ffmpeg:${{ matrix.ffmpeg }}
-          build-args: |
-            FFMPEG_VERSION=${{ matrix.ffmpeg }}
-          platforms: linux/amd64
-          push: true
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache
-
-      - name: Build and push - ffmpeg-qsv
-        uses: docker/build-push-action@v2
-        with:
-          context: ./
-          file: ./qsv.Dockerfile
-          tags: |
-            akashisn/ffmpeg:${{ matrix.ffmpeg }}-qsv
-          build-args: |
-            FFMPEG_VERSION=${{ matrix.ffmpeg }}
+            akashisn/ffmpeg-build-base
           platforms: linux/amd64
           push: true
           cache-from: type=local,src=/tmp/.buildx-cache
