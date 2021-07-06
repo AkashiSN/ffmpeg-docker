@@ -2,20 +2,25 @@
 
 [![ffmpeg](https://github.com/AkashiSN/ffmpeg-docker/actions/workflows/ffmpeg.yml/badge.svg)](https://github.com/AkashiSN/ffmpeg-docker/actions/workflows/ffmpeg.yml)
 
-![](https://dockeri.co/image/akashisn/ffmpeg)
+[![](https://dockeri.co/image/akashisn/ffmpeg)](https://hub.docker.com/r/akashisn/ffmpeg)
 
 ## Available tags
 
-- [latest](https://github.com/AkashiSN/ffmpeg-docker/blob/main/Dockerfile): Plain ffmpeg (without HWAccel)
-- [qsv](https://github.com/AkashiSN/ffmpeg-docker/blob/main/qsv.Dockerfile): With Intel QSV
+- [Plain ffmpeg (without HWAccel)](https://github.com/AkashiSN/ffmpeg-docker/blob/main/Dockerfile)
+  - `4.4`
+  - `4.3.2`
+- [With Intel QSV](https://github.com/AkashiSN/ffmpeg-docker/blob/main/qsv.Dockerfile)
+  - `4.4-qsv`
+  - `4.3.2-qsv`
 
 ## Plain ffmpeg
 
 ### Supported Codecs
 
+- `VP8/VP9/webm`: VP8 / VP9 Video Codec for the WebM video file format
 - `x264`: H.264 Video Codec (MPEG-4 AVC)
 - `x265`: H.265 Video Codec (HEVC)
-- `VP8/VP9/webm`: VP8 / VP9 Video Codec for the WebM video file format
+- `AV1`: AV1 Video Codec
 - `vorbis`: Lossy audio compression format
 - `opus`: Lossy audio coding format
 - `freetype`: Library to render fonts
@@ -25,10 +30,10 @@
 - `aribb24`: A library for ARIB STD-B24, decoding JIS 8 bit characters and parsing MPEG-TS stream
 
 ```bash
-$ docker run --rm -it akashisn/ffmpeg -buildconf
+$ docker run --rm -it akashisn/ffmpeg:4.4-qsv -buildconf
 ffmpeg version 4.4 Copyright (c) 2000-2021 the FFmpeg developers
   built with gcc 8 (Debian 8.3.0-6)
-  configuration: --enable-libvpx --enable-libx264 --enable-libx265 --enable-libopus --enable-libvorbis --enable-libfreetype --enable-libfribidi --enable-libfontconfig --enable-libass --enable-libaribb24 --disable-debug --enable-small --enable-gpl --enable-version3 --extra-libs=-lpthread --pkg-config-flags=--static
+  configuration: --enable-libvpx --enable-libx264 --enable-libx265 --enable-libaom --enable-libopus --enable-libvorbis --enable-libfreetype --enable-libfribidi --enable-libfontconfig --enable-libass --enable-libaribb24 --disable-debug --enable-small --enable-gpl --enable-version3 --extra-libs=-lpthread --pkg-config-flags=--static
   libavutil      56. 70.100 / 56. 70.100
   libavcodec     58.134.100 / 58.134.100
   libavformat    58. 76.100 / 58. 76.100
@@ -42,6 +47,7 @@ ffmpeg version 4.4 Copyright (c) 2000-2021 the FFmpeg developers
     --enable-libvpx
     --enable-libx264
     --enable-libx265
+    --enable-libaom
     --enable-libopus
     --enable-libvorbis
     --enable-libfreetype
@@ -68,7 +74,7 @@ https://trac.ffmpeg.org/wiki/Hardware/QuickSync
 You can use the following command to find out which codecs are supported by your CPU.
 
 ```bash
-$ docker run --rm -it --device=/dev/dri --entrypoint=vainfo akashisn/ffmpeg:qsv
+$ docker run --rm -it --device=/dev/dri --entrypoint=vainfo akashisn/ffmpeg:4.4-qsv
 error: cant connect to X server!
 libva info: VA-API version 1.11.0
 libva info: User environment variable requested driver 'iHD'
@@ -122,21 +128,21 @@ vainfo: Supported profile and entrypoints
 https://github.com/Intel-Media-SDK/MediaSDK
 
 ```bash
-$ docker run --rm -it akashisn/ffmpeg:qsv -h encoder=h264_qsv
+$ docker run --rm -it akashisn/ffmpeg:4.4-qsv -h encoder=h264_qsv
 ```
 
 ```bash
 $ docker run --rm -it --device=/dev/dri -v `pwd`:/workdir \
-  akashisn/ffmpeg:qsv -y \
+  akashisn/ffmpeg:4.4-qsv -y \
     -init_hw_device qsv=qsv:hw -hwaccel qsv -filter_hw_device qsv -hwaccel_output_format qsv \
     -fflags +discardcorrupt \
-    -analyzeduration 30M -probesize 100MB \
+    -analyzeduration 10M -probesize 32M \
     -i AB1.m2ts \
-    -vf hwupload=extra_hw_frames=64,vpp_qsv=deinterlace=2,vpp_qsv=w=1920:h=1080,fps=30000/1001 \
     -c:v h264_qsv \
-    -q:v 20 \
-    -c:a copy \
-    -bsf:a aac_adtstoasc \
+    -global_quality 20\
+    -vf hwupload=extra_hw_frames=64,vpp_qsv=deinterlace=2,scale_qsv=1920:-1,fps=30000/1001 \
+    -c:a aac -ar 48000 -ab 256k \
+    -f mp4 \
     AB1_h264_qsv.mp4
 ```
 
@@ -145,21 +151,21 @@ $ docker run --rm -it --device=/dev/dri -v `pwd`:/workdir \
 https://github.com/intel/media-driver
 
 ```bash
-$ docker run --rm -it akashisn/ffmpeg:qsv -h encoder=h264_vaapi
+$ docker run --rm -it akashisn/ffmpeg:4.4-qsv -h encoder=h264_vaapi
 ```
 
 ```bash
 $ docker run --rm -it --device=/dev/dri -v `pwd`:/workdir \
-  akashisn/ffmpeg:qsv -y \
+  akashisn/ffmpeg:4.4-qsv -y \
     -hwaccel vaapi -hwaccel_output_format vaapi \
     -fflags +discardcorrupt \
-    -analyzeduration 30M -probesize 100MB \
+    -analyzeduration 10M -probesize 32M \
     -i AB1.m2ts \
-    -vf hwupload=extra_hw_frames=64,deinterlace_vaapi,scale_vaapi=1920:1080,sharpness_vaapi,fps=30000/1001 \
+    -vf hwupload=extra_hw_frames=64,deinterlace_vaapi,scale_vaapi=1920:-1,sharpness_vaapi,fps=30000/1001 \
     -c:v h264_vaapi \
     -qp 20 \
-    -c:a copy \
-    -bsf:a aac_adtstoasc \
+    -c:a aac -ar 48000 -ab 256k \
+    -f mp4 \
     AB1_h264_vaapi.mp4
 ```
 
@@ -172,21 +178,21 @@ https://github.com/Intel-Media-SDK/MediaSDK
 
 
 ```bash
-$ docker run --rm -it akashisn/ffmpeg:qsv -h encoder=hevc_qsv
+$ docker run --rm -it akashisn/ffmpeg:4.4-qsv -h encoder=hevc_qsv
 ```
 
 ```bash
 $ docker run --rm -it --device=/dev/dri -v `pwd`:/workdir \
-  akashisn/ffmpeg:qsv -y \
+  akashisn/ffmpeg:4.4-qsv -y \
     -init_hw_device qsv=qsv:hw -hwaccel qsv -filter_hw_device qsv -hwaccel_output_format qsv \
     -fflags +discardcorrupt \
-    -analyzeduration 30M -probesize 100MB \
+    -analyzeduration 10M -probesize 32M \
     -i AB1.m2ts \
-    -vf hwupload=extra_hw_frames=64,vpp_qsv=deinterlace=2,vpp_qsv=w=1920:h=1080,fps=30000/1001 \
     -c:v hevc_qsv \
-    -q:v 20 \
-    -c:a copy \
-    -bsf:a aac_adtstoasc \
+    -global_quality 20\
+    -vf hwupload=extra_hw_frames=64,vpp_qsv=deinterlace=2,scale_qsv=1920:-1,fps=30000/1001 \
+    -c:a aac -ar 48000 -ab 256k \
+    -f mp4 \
     AB1_h265_qsv.mp4
 ```
 
@@ -195,21 +201,21 @@ $ docker run --rm -it --device=/dev/dri -v `pwd`:/workdir \
 https://github.com/intel/media-driver
 
 ```bash
-$ docker run --rm -it akashisn/ffmpeg:qsv -h encoder=hevc_vaapi
+$ docker run --rm -it akashisn/ffmpeg:4.4-qsv -h encoder=hevc_vaapi
 ```
 
 ```bash
 $ docker run --rm -it --device=/dev/dri -v `pwd`:/workdir \
-  akashisn/ffmpeg:qsv -y \
+  akashisn/ffmpeg:4.4-qsv -y \
     -hwaccel vaapi -hwaccel_output_format vaapi \
     -fflags +discardcorrupt \
-    -analyzeduration 30M -probesize 100MB \
+    -analyzeduration 10M -probesize 32M \
     -i AB1.m2ts \
-    -vf hwupload=extra_hw_frames=64,deinterlace_vaapi,scale_vaapi=1920:1080,sharpness_vaapi,fps=30000/1001 \
+    -vf hwupload=extra_hw_frames=64,deinterlace_vaapi,scale_vaapi=1920:-1,sharpness_vaapi,fps=30000/1001 \
     -c:v hevc_vaapi \
     -qp 20 \
-    -c:a copy \
-    -bsf:a aac_adtstoasc \
+    -c:a aac -ar 48000 -ab 256k \
+    -f mp4 \
     AB1_h265_vaapi.mp4
 ```
 
@@ -220,21 +226,21 @@ $ docker run --rm -it --device=/dev/dri -v `pwd`:/workdir \
 https://github.com/intel/media-driver
 
 ```bash
-$ docker run --rm -it akashisn/ffmpeg:qsv -h encoder=vp8_vaapi
+$ docker run --rm -it akashisn/ffmpeg:4.4-qsv -h encoder=vp8_vaapi
 ```
 
 ```bash
 $ docker run --rm -it --device=/dev/dri -v `pwd`:/workdir \
-  akashisn/ffmpeg:qsv -y \
+  akashisn/ffmpeg:4.4-qsv -y \
     -hwaccel vaapi -hwaccel_output_format vaapi \
     -fflags +discardcorrupt \
-    -analyzeduration 30M -probesize 100MB \
+    -analyzeduration 10M -probesize 32M \
     -i AB1.m2ts \
-    -vf hwupload=extra_hw_frames=64,deinterlace_vaapi,scale_vaapi=1920:1080,sharpness_vaapi,fps=30000/1001 \
+    -vf hwupload=extra_hw_frames=64,deinterlace_vaapi,scale_vaapi=1920:-1,sharpness_vaapi,fps=30000/1001 \
     -c:v vp8_vaapi \
     -crf 5 \
     -b:v 2000k -minrate 1500k -maxrate 2500k \
     -c:a libopus \
-    -b:a 192k \
+    -b:a 256k \
     AB1_vp8_vaapi.webm
 ```

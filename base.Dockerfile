@@ -61,6 +61,14 @@ RUN cd /tmp && \
 ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libx265" \
     FFMPEG_EXTRA_LIBS="${FFMPEG_EXTRA_LIBS} -lpthread"
 
+# Build libaom
+RUN git clone https://aomedia.googlesource.com/aom -b master --depth 1 /tmp/aom
+RUN mkdir /tmp/aom_build && cd /tmp/aom_build && \
+    cmake -DENABLE_SHARED=off -DBUILD_SHARED_LIBS=OFF -DENABLE_NASM=on ../aom && \
+    make -j $(nproc) && \
+    make install
+ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libaom"
+
 
 #
 # Audio
