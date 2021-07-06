@@ -137,7 +137,7 @@ RUN cd /tmp && \
     make install
 
 # fontconfig
-RUN git clone https://gitlab.freedesktop.org/fontconfig/fontconfig.git -b master --depth 1 /tmp/fontconfig
+RUN git clone https://gitlab.freedesktop.org/fontconfig/fontconfig.git -b main --depth 1 /tmp/fontconfig
 RUN cd /tmp/fontconfig && \
     ./autogen.sh && \
     ./configure --enable-static --disable-shared && \
