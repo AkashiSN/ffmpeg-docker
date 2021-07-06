@@ -5,6 +5,11 @@ on:
     paths:
       - 'Dockerfile'
       - 'qsv.Dockerfile'
+  workflow_run:
+    workflows: ["ffmpeg-build-base"]
+    branches: [main]
+    types:
+      - completed
   workflow_dispatch:
 
 jobs:
