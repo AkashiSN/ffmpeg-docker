@@ -146,10 +146,10 @@ RUN cd /tmp/fontconfig && \
 ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libfontconfig"
 
 # libharfbuzz
-ADD https://github.com/harfbuzz/harfbuzz/archive/master.tar.gz /tmp/harfbuzz-master.tar.gz
+ADD https://github.com/harfbuzz/harfbuzz/archive/main.tar.gz /tmp/harfbuzz-main.tar.gz
 RUN cd /tmp && \
-    tar xf harfbuzz-master.tar.gz && \
-    cd /tmp/harfbuzz-master && \
+    tar xf harfbuzz-main.tar.gz && \
+    cd /tmp/harfbuzz-main && \
     ./autogen.sh && \
     ./configure --enable-static --disable-shared && \
     make -j $(nproc) && \
