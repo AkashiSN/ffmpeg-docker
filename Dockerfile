@@ -25,9 +25,12 @@ RUN cd /tmp && \
     tar xf /tmp/ffmpeg-${FFMPEG_VERSION}.tar.xz && \
     cd /tmp/ffmpeg-${FFMPEG_VERSION} && \
     ./configure `cat /usr/local/ffmpeg_configure_options` \
+                --disable-autodetect \
                 --disable-debug \
-                --enable-small \
+                --disable-doc \
+                --disable-ffplay \
                 --enable-gpl \
+                --enable-small \
                 --enable-version3 \
                 --extra-libs="`cat /usr/local/ffmpeg_extra_libs`" \
                 --pkg-config-flags="--static" && \

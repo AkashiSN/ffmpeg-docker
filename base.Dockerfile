@@ -175,6 +175,7 @@ RUN cd /tmp && \
     ./configure --static && \
     make -j $(nproc) && \
     make install
+ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-zlib"
 
 # libpng
 ENV LIBPNG_VERSION=1.6.37
