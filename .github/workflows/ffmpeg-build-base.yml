@@ -28,7 +28,7 @@ jobs:
         uses: docker/login-action@v1
         with:
           registry: ghcr.io
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          username: akashisn
           password: ${{ secrets.CR_PAT }}
 
       - name: Build ffmpeg-build-base
@@ -37,7 +37,7 @@ jobs:
           context: ./
           file: ./base.Dockerfile
           tags: |
-            ghcr.io/${{ secrets.DOCKERHUB_USERNAME }}/ffmpeg-build-base
+            ghcr.io/akashisn/ffmpeg-build-base
           platforms: linux/amd64
           push: true
           cache-from: type=local,src=/tmp/.buildx-cache
