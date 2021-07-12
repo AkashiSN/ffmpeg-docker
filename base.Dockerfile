@@ -198,7 +198,9 @@ RUN cd /tmp && \
 ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libaribb24"
 
 
+#
 # Copy artifacts
+#
 RUN mkdir /build && \
     cp --archive --parents --no-dereference /usr/local/lib /build && \
     cp --archive --parents --no-dereference /usr/local/include /build && \

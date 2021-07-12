@@ -1,5 +1,5 @@
 # ffmpeg-build-base-image
-FROM akashisn/ffmpeg-build-base AS ffmpeg-build-base-image
+FROM ghcr.io/AkashiSN/ffmpeg-build-base AS ffmpeg-build-base-image
 
 
 FROM debian:buster AS ffmpeg-build
