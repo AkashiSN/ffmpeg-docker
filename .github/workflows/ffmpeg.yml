@@ -33,9 +33,9 @@ jobs:
           path: |
             /tmp/.buildx-cache
             /tmp/.buildx-cache-qsv
-          key: ${{ runner.os }}-${{ github.workflow }}-${{ github.sha }}
+          key: ${{ runner.os }}-${{ github.workflow }}-${{ matrix.ffmpeg }}-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-${{ github.workflow }}-
+            ${{ runner.os }}-${{ github.workflow }}-${{ matrix.ffmpeg }}-
 
       - name: Login to DockerHub
         uses: docker/login-action@v1
