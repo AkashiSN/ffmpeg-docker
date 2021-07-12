@@ -55,7 +55,7 @@ ADD https://github.com/videolan/x265/archive/master.tar.gz /tmp/x265-master.tar.
 RUN cd /tmp && \
     tar xf x265-master.tar.gz && \
     mkdir /tmp/x265_build && cd /tmp/x265_build && \
-    cmake -DENABLE_SHARED=off -DBUILD_SHARED_LIBS=OFF ../x265-master/source && \
+    cmake -DENABLE_SHARED=0 -DBUILD_SHARED_LIBS=0 ../x265-master/source && \
     make -j $(nproc) && \
     make install
 ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libx265" \
@@ -64,7 +64,8 @@ ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libx265" \
 # Build libaom
 RUN git clone https://aomedia.googlesource.com/aom -b master --depth 1 /tmp/aom
 RUN mkdir /tmp/aom_build && cd /tmp/aom_build && \
-    cmake -DENABLE_SHARED=off -DBUILD_SHARED_LIBS=OFF -DENABLE_NASM=on ../aom && \
+    cmake -DENABLE_SHARED=0 -DBUILD_SHARED_LIBS=0 -DENABLE_NASM=1 -DENABLE_DOCS=0 \
+          -DENABLE_TESTS=0 ../aom && \
     make -j $(nproc) && \
     make install
 ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libaom"
@@ -79,7 +80,7 @@ ADD https://github.com/xiph/opus/archive/master.tar.gz /tmp/opus-master.tar.gz
 RUN cd /tmp && \
     tar xf opus-master.tar.gz && \
     mkdir /tmp/opus_build && cd /tmp/opus_build && \
-    cmake -DBUILD_SHARED_LIBS=OFF ../opus-master && \
+    cmake -DBUILD_SHARED_LIBS=0 ../opus-master && \
     make -j $(nproc) && \
     make install
 ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libopus"
@@ -89,7 +90,7 @@ ADD https://github.com/xiph/ogg/archive/master.tar.gz /tmp/ogg-master.tar.gz
 RUN cd /tmp && \
     tar xf ogg-master.tar.gz && \
     mkdir /tmp/ogg_build && cd /tmp/ogg_build && \
-    cmake -DBUILD_SHARED_LIBS=OFF ../ogg-master && \
+    cmake -DBUILD_SHARED_LIBS=0 ../ogg-master && \
     make -j $(nproc) && \
     make install
 
@@ -98,7 +99,7 @@ ADD https://github.com/xiph/vorbis/archive/master.tar.gz /tmp/vorbis-master.tar.
 RUN cd /tmp && \
     tar xf vorbis-master.tar.gz && \
     mkdir /tmp/vorbis_build && cd /tmp/vorbis_build && \
-    cmake -DBUILD_SHARED_LIBS=OFF ../vorbis-master && \
+    cmake -DBUILD_SHARED_LIBS=0 ../vorbis-master && \
     make -j $(nproc) && \
     make install
 ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libvorbis"
