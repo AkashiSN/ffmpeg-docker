@@ -5,6 +5,7 @@ on:
     paths:
       - 'Dockerfile'
       - 'qsv.Dockerfile'
+      - '.github/workflows/ffmpeg.yml'
   workflow_run:
     workflows: ["ffmpeg-build-base"]
     branches: [main]
@@ -29,10 +30,12 @@ jobs:
       - name: Cache Docker layers
         uses: actions/cache@v2
         with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          path: |
+            /tmp/.buildx-cache
+            /tmp/.buildx-cache-qsv
+          key: ${{ runner.os }}-${{ github.workflow }}-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-buildx-
+            ${{ runner.os }}-${{ github.workflow }}-
 
       - name: Login to DockerHub
         uses: docker/login-action@v1
@@ -65,5 +68,5 @@ jobs:
             FFMPEG_VERSION=${{ matrix.ffmpeg }}
           platforms: linux/amd64
           push: true
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache
+          cache-from: type=local,src=/tmp/.buildx-cache-qsv
+          cache-to: type=local,dest=/tmp/.buildx-cache-qsv
