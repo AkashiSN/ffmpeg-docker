@@ -30,6 +30,7 @@ RUN cd /tmp && \
                 --disable-doc \
                 --disable-ffplay \
                 --enable-gpl \
+                --enable-nonfree \
                 --enable-small \
                 --enable-version3 \
                 --extra-libs="`cat /usr/local/ffmpeg_extra_libs`" \
