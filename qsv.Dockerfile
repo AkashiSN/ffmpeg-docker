@@ -59,7 +59,9 @@ RUN mkdir /build && \
     cp /tmp/MediaStack/opt/intel/mediasdk/bin/vainfo /usr/local/bin/ && \
     cp --archive --parents --no-dereference /usr/local/bin/ff* /build && \
     cp --archive --parents --no-dereference /usr/local/bin/vainfo /build && \
-    cp --archive --parents --no-dereference /usr/local/lib/*.so* /build
+    ldd /usr/local/bin/* | grep /usr/local/lib | xargs -I{} echo {} \
+        | cut -d ' ' -f 3 | sort | uniq | xargs -I{} cp --archive --parents {} /build && \
+    cp --archive --parents --no-dereference /usr/local/lib/iHD_drv_video.so /build
 
 
 # final image

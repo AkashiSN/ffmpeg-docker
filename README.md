@@ -139,7 +139,7 @@ $ docker run --rm -it --device=/dev/dri -v `pwd`:/workdir \
     -analyzeduration 10M -probesize 32M \
     -i AB1.m2ts \
     -c:v h264_qsv \
-    -global_quality 20\
+    -global_quality 20 \
     -vf hwupload=extra_hw_frames=64,vpp_qsv=deinterlace=2,scale_qsv=1920:-1,fps=30000/1001 \
     -c:a aac -ar 48000 -ab 256k \
     -f mp4 \
@@ -189,7 +189,7 @@ $ docker run --rm -it --device=/dev/dri -v `pwd`:/workdir \
     -analyzeduration 10M -probesize 32M \
     -i AB1.m2ts \
     -c:v hevc_qsv \
-    -global_quality 20\
+    -global_quality 20 \
     -vf hwupload=extra_hw_frames=64,vpp_qsv=deinterlace=2,scale_qsv=1920:-1,fps=30000/1001 \
     -c:a aac -ar 48000 -ab 256k \
     -f mp4 \
