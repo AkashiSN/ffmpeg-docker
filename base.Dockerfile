@@ -1,4 +1,4 @@
-FROM debian:buster AS ffmpeg-build
+FROM ubuntu:20.04 AS ffmpeg-build
 
 ENV DEBIAN_FRONTEND=noninteractive
 
