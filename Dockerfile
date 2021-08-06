@@ -2,7 +2,7 @@
 FROM ghcr.io/akashisn/ffmpeg-build-base AS ffmpeg-build-base-image
 
 
-FROM debian:buster AS ffmpeg-build
+FROM ubuntu:20.04 AS ffmpeg-build
 
 # Install build tools
 RUN apt-get update && \
@@ -43,7 +43,7 @@ RUN mkdir /build && \
     cp --archive --parents --no-dereference /usr/local/bin/ff* /build
 
 # final image
-FROM debian:buster-slim
+FROM ubuntu:20.04
 
 COPY --from=ffmpeg-build /build /
 
