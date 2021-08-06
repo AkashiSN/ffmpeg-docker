@@ -4,6 +4,8 @@ FROM ghcr.io/akashisn/ffmpeg-build-base AS ffmpeg-build-base-image
 
 FROM ubuntu:20.04 AS ffmpeg-build
 
+ENV DEBIAN_FRONTEND=noninteractive
+
 # Install build tools
 RUN apt-get update && \
     apt-get install -y \
