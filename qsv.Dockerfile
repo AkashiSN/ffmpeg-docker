@@ -23,7 +23,7 @@ COPY --from=ffmpeg-build-base-image / /
 #
 
 # Install MediaSDK
-ENV INTEL_MEDIA_SDK_VERSION=21.2.3
+ENV INTEL_MEDIA_SDK_VERSION=21.3.5
 ADD https://github.com/Intel-Media-SDK/MediaSDK/releases/download/intel-mediasdk-${INTEL_MEDIA_SDK_VERSION}/MediaStack.tar.gz /tmp/
 RUN apt-get install -y libdrm2
 RUN cd /tmp && \
