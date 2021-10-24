@@ -25,14 +25,14 @@ COPY --from=ffmpeg-build-base-image / /
 # Install MediaSDK
 ENV INTEL_MEDIA_SDK_VERSION=21.3.5
 ADD https://github.com/Intel-Media-SDK/MediaSDK/releases/download/intel-mediasdk-${INTEL_MEDIA_SDK_VERSION}/MediaStack.tar.gz /tmp/
-RUN apt-get install -y libdrm2
+RUN apt-get install -y libdrm2 libxext6 libxfixes3
 RUN cd /tmp && \
     tar xf MediaStack.tar.gz && \
     cd /tmp/MediaStack/opt/intel/mediasdk && \
     cp --archive --no-dereference include /usr/local/ && \
     cp --archive --no-dereference lib64/. /usr/local/lib/ && \
     ldconfig
-RUN echo -n "`cat /usr/local/ffmpeg_configure_options` --enable-libmfx" > /usr/local/ffmpeg_configure_options
+RUN echo -n "`cat /usr/local/ffmpeg_configure_options` --enable-libmfx --enable-vaapi" > /usr/local/ffmpeg_configure_options
 
 #
 # Build ffmpeg
@@ -61,10 +61,6 @@ RUN mkdir /build && \
     cp /tmp/MediaStack/opt/intel/mediasdk/bin/vainfo /usr/local/bin/ && \
     cp --archive --parents --no-dereference /usr/local/bin/ff* /build && \
     cp --archive --parents --no-dereference /usr/local/bin/vainfo /build && \
-    # ldd /usr/local/bin/* | grep /usr/local/lib | xargs -I{} echo {} \
-    #     | cut -d ' ' -f 3 | sort | uniq | sed 's/\.[^\.]*$//' \
-    #     | xargs -I{} sh -c "cp --archive --parents {}* /build" && \
-    # cp --archive --parents --no-dereference /usr/local/lib/iHD_drv_video.so /build
     cp --archive --parents --no-dereference /usr/local/lib/*.so* /build
 
 # final image
@@ -74,7 +70,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Install runtime dependency
 RUN apt-get update && \
-    apt-get install -y libdrm2 libx11-6 libxext6 libxfixes3 && \
+    apt-get install -y libdrm2 libxext6 libxfixes3 && \
     apt-get autoremove -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
