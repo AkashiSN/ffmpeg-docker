@@ -58,15 +58,13 @@ RUN cd /tmp && \
     rm -rf /usr/local/lib/engines-1.1
 ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-openssl"
 
-# Build Cmake
+# Download Cmake
 ENV CMAKE_VERSION=3.21.4
-ADD https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}.tar.gz /tmp/cmake-${CMAKE_VERSION}.tar.gz
+RUN curl -sL -o /tmp/cmake-${CMAKE_VERSION}-linux-$(uname -m).tar.gz https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-$(uname -m).tar.gz
 RUN cd /tmp && \
-    tar xf /tmp/cmake-${CMAKE_VERSION}.tar.gz && \
-    cd /tmp/cmake-${CMAKE_VERSION} && \
-    ./bootstrap --parallel=$(nproc) && \
-    make -j $(nproc) && \
-    make install
+    tar xf /tmp/cmake-${CMAKE_VERSION}-linux-$(uname -m).tar.gz && \
+    cd /tmp/cmake-${CMAKE_VERSION}-linux-$(uname -m) && \
+    mv * /usr/local/
 
 # Remove dynamic lib
 RUN rm /usr/local/lib/libcrypto.so* /usr/local/lib/libssl.so*
