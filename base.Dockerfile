@@ -64,7 +64,7 @@ RUN curl -sL -o /tmp/cmake-${CMAKE_VERSION}-linux-$(uname -m).tar.gz https://git
 RUN cd /tmp && \
     tar xf /tmp/cmake-${CMAKE_VERSION}-linux-$(uname -m).tar.gz && \
     cd /tmp/cmake-${CMAKE_VERSION}-linux-$(uname -m) && \
-    mv * /usr/local/
+    cp -r . /usr/local/
 
 # Remove dynamic lib
 RUN rm /usr/local/lib/libcrypto.so* /usr/local/lib/libssl.so*
