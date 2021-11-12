@@ -47,7 +47,7 @@ RUN cd /tmp && \
 ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-zlib"
 
 # Build OpenSSL
-ENV OPENSSL_VERSION=1.1.1k
+ENV OPENSSL_VERSION=1.1.1l
 ADD https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz /tmp/openssl-${OPENSSL_VERSION}.tar.gz
 RUN cd /tmp && \
     tar xf /tmp/openssl-${OPENSSL_VERSION}.tar.gz && \
@@ -59,7 +59,7 @@ RUN cd /tmp && \
 ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-openssl"
 
 # Build Cmake
-ENV CMAKE_VERSION=3.20.5
+ENV CMAKE_VERSION=3.21.4
 ADD https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}.tar.gz /tmp/cmake-${CMAKE_VERSION}.tar.gz
 RUN cd /tmp && \
     tar xf /tmp/cmake-${CMAKE_VERSION}.tar.gz && \
