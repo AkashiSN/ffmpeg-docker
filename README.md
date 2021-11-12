@@ -138,6 +138,7 @@ $ docker run --rm -it --device=/dev/dri -v `pwd`:/workdir \
     -fflags +discardcorrupt \
     -analyzeduration 10M -probesize 32M \
     -i AB1.m2ts \
+    -t 30 \
     -c:v h264_qsv \
     -global_quality 20 \
     -vf hwupload=extra_hw_frames=64,vpp_qsv=deinterlace=2,scale_qsv=1920:-1,fps=30000/1001 \
@@ -161,6 +162,7 @@ $ docker run --rm -it --device=/dev/dri -v `pwd`:/workdir \
     -fflags +discardcorrupt \
     -analyzeduration 10M -probesize 32M \
     -i AB1.m2ts \
+    -t 30 \
     -vf hwupload=extra_hw_frames=64,deinterlace_vaapi,scale_vaapi=1920:-1,sharpness_vaapi,fps=30000/1001 \
     -c:v h264_vaapi \
     -qp 20 \
@@ -188,6 +190,7 @@ $ docker run --rm -it --device=/dev/dri -v `pwd`:/workdir \
     -fflags +discardcorrupt \
     -analyzeduration 10M -probesize 32M \
     -i AB1.m2ts \
+    -t 30 \
     -c:v hevc_qsv \
     -global_quality 20 \
     -vf hwupload=extra_hw_frames=64,vpp_qsv=deinterlace=2,scale_qsv=1920:-1,fps=30000/1001 \
@@ -211,6 +214,7 @@ $ docker run --rm -it --device=/dev/dri -v `pwd`:/workdir \
     -fflags +discardcorrupt \
     -analyzeduration 10M -probesize 32M \
     -i AB1.m2ts \
+    -t 30 \
     -vf hwupload=extra_hw_frames=64,deinterlace_vaapi,scale_vaapi=1920:-1,sharpness_vaapi,fps=30000/1001 \
     -c:v hevc_vaapi \
     -qp 20 \
@@ -236,6 +240,7 @@ $ docker run --rm -it --device=/dev/dri -v `pwd`:/workdir \
     -fflags +discardcorrupt \
     -analyzeduration 10M -probesize 32M \
     -i AB1.m2ts \
+    -t 30 \
     -vf hwupload=extra_hw_frames=64,deinterlace_vaapi,scale_vaapi=1920:-1,sharpness_vaapi,fps=30000/1001 \
     -c:v vp8_vaapi \
     -crf 5 \

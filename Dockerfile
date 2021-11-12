@@ -1,7 +1,3 @@
-# ffmpeg-build-base-image
-FROM ghcr.io/akashisn/ffmpeg-build-base AS ffmpeg-build-base-image
-
-
 FROM ubuntu:20.04 AS ffmpeg-build
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -16,7 +12,8 @@ RUN apt-get update && \
       pkg-config \
       yasm
 
-COPY --from=ffmpeg-build-base-image / /
+# ffmpeg-build-base-image
+COPY --from=ghcr.io/akashisn/ffmpeg-build-base / /
 
 #
 # Build ffmpeg
@@ -44,11 +41,18 @@ RUN cd /tmp && \
 RUN mkdir /build && \
     cp --archive --parents --no-dereference /usr/local/bin/ff* /build
 
+
 # final image
-FROM ubuntu:20.04
+FROM ubuntu:20.04 AS releases
 
 COPY --from=ffmpeg-build /build /
 
 WORKDIR /workdir
 ENTRYPOINT [ "ffmpeg" ]
 CMD [ "--help" ]
+
+
+# export image
+FROM scratch AS export
+
+COPY --from=ffmpeg-build /build/usr/local/ /

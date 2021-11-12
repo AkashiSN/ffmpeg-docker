@@ -1,7 +1,3 @@
-# ffmpeg-build-base-image
-FROM ghcr.io/akashisn/ffmpeg-build-base AS ffmpeg-build-base-image
-
-
 FROM ubuntu:20.04 AS ffmpeg-build
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -16,7 +12,8 @@ RUN apt-get update && \
       pkg-config \
       yasm
 
-COPY --from=ffmpeg-build-base-image / /
+# ffmpeg-build-base-image
+COPY --from=ghcr.io/akashisn/ffmpeg-build-base / /
 
 #
 # HWAccel
@@ -61,19 +58,23 @@ RUN mkdir /build && \
     cp /tmp/MediaStack/opt/intel/mediasdk/bin/vainfo /usr/local/bin/ && \
     cp --archive --parents --no-dereference /usr/local/bin/ff* /build && \
     cp --archive --parents --no-dereference /usr/local/bin/vainfo /build && \
-    cp --archive --parents --no-dereference /usr/local/lib/*.so* /build
+    cp --archive --parents --no-dereference /usr/local/lib/*.so* /build && \
+    rm /build/usr/local/lib/libva-glx.so* && \
+    # libdrm2
+    cp --archive --no-dereference /usr/lib/x86_64-linux-gnu/libdrm.so.2* /build/usr/local/lib/ && \
+    # libxext6
+    cp --archive --no-dereference /usr/lib/x86_64-linux-gnu/libXext.so.6* /build/usr/local/lib/ && \
+    cp --archive --no-dereference /usr/lib/x86_64-linux-gnu/libX11.so.6* /build/usr/local/lib/ && \
+    cp --archive --no-dereference /usr/lib/x86_64-linux-gnu/libxcb.so.1* /build/usr/local/lib/ && \
+    cp --archive --no-dereference /usr/lib/x86_64-linux-gnu/libXau.so.6* /build/usr/local/lib/ && \
+    cp --archive --no-dereference /usr/lib/x86_64-linux-gnu/libXdmcp.so.6* /build/usr/local/lib/ && \
+    cp --archive --no-dereference /usr/lib/x86_64-linux-gnu/libbsd.so.0* /build/usr/local/lib/ && \
+    # libxfixes3
+    cp --archive --no-dereference /usr/lib/x86_64-linux-gnu/libXfixes.so.3* /build/usr/local/lib/
+
 
 # final image
-FROM ubuntu:20.04
-
-ENV DEBIAN_FRONTEND=noninteractive
-
-# Install runtime dependency
-RUN apt-get update && \
-    apt-get install -y libdrm2 libxext6 libxfixes3 && \
-    apt-get autoremove -y && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
+FROM ubuntu:20.04 AS releases
 
 COPY --from=ffmpeg-build /build /
 
@@ -85,3 +86,9 @@ RUN ldconfig
 WORKDIR /workdir
 ENTRYPOINT [ "ffmpeg" ]
 CMD [ "--help" ]
+
+
+# export image
+FROM scratch AS export
+
+COPY --from=ffmpeg-build /build/usr/local/ /

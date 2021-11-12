@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'Dockerfile'
+      - 'qsv.Dockerfile'
       - '.github/workflows/ffmpeg.yml'
   workflow_run:
     workflows: ["ffmpeg-build-base"]
@@ -12,15 +13,19 @@ on:
       - completed
 
 jobs:
-  buildx:
+  build:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') }}
+    if: github.event_name == 'push' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
     strategy:
       matrix:
         ffmpeg: [4.3.2, 4.4]
+        hwaccel: [none, qsv]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
@@ -47,17 +52,87 @@ jobs:
           username: akashisn
           password: ${{ github.token }}
 
+      - name: Set build target (none)
+        if: matrix.hwaccel == 'none'
+        run: |
+          echo "build_file=Dockerfile" >> $GITHUB_ENV
+          echo "build_tag=" >> $GITHUB_ENV
+          echo "build_platforms=linux/amd64,linux/arm64/v8" >> $GITHUB_ENV
+
+      - name: Set build target (qsv)
+        if: matrix.hwaccel == 'qsv'
+        run: |
+          echo "build_file=qsv.Dockerfile" >> $GITHUB_ENV
+          echo "build_tag=-qsv" >> $GITHUB_ENV
+          echo "build_platforms=linux/amd64" >> $GITHUB_ENV
+
       - name: Build and push - ffmpeg
         uses: docker/build-push-action@v2
         with:
           context: ./
-          file: ./Dockerfile
+          file: ./${{ env.build_file }}
           tags: |
-            akashisn/ffmpeg:${{ matrix.ffmpeg }}
-            ghcr.io/akashisn/ffmpeg:${{ matrix.ffmpeg }}
+            akashisn/ffmpeg:${{ matrix.ffmpeg }}${{ env.build_tag }}
+            ghcr.io/akashisn/ffmpeg:${{ matrix.ffmpeg }}${{ env.build_tag }}
           build-args: |
             FFMPEG_VERSION=${{ matrix.ffmpeg }}
-          platforms: linux/amd64
+          platforms: ${{ env.build_platforms }}
+          target: releases
           push: true
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
+
+      - name: Export - ffmpeg
+        uses: docker/build-push-action@v2
+        with:
+          context: ./
+          file: ./${{ env.build_file }}
+          tags: |
+            ffmpeg${{ env.build_tag }}
+          build-args: |
+            FFMPEG_VERSION=${{ matrix.ffmpeg }}
+          platforms: ${{ env.build_platforms }}
+          target: export
+          output: type=local,dest=build
+          push: false
+
+      - name: Archive artifact (multi arch)
+        if: env.build_platforms == 'linux/amd64,linux/arm64/v8'
+        run: |
+          tar cvf ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64.tar.gz -C ./build/linux_amd64 bin
+          tar cvf ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-arm64.tar.gz -C ./build/linux_arm64 bin
+
+      - name: Archive artifact (amd64)
+        if: env.build_platforms == 'linux/amd64'
+        run: tar cvf ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64.tar.gz -C ./build bin
+
+      - name: Upload artifact (multi arch)
+        if: env.build_platforms == 'linux/amd64,linux/arm64/v8'
+        uses: actions/upload-artifact@v2
+        with:
+          name: ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}
+          path: |
+            ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64.tar.gz
+            ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-arm64.tar.gz
+
+      - name: Upload artifact (amd64)
+        if: env.build_platforms == 'linux/amd64'
+        uses: actions/upload-artifact@v2
+        with:
+          name: ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}
+          path: ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64.tar.gz
+
+  release:
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: [build]
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          path: artifact
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: artifact/**/*.tar.gz
