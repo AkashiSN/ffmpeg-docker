@@ -93,18 +93,18 @@ jobs:
             FFMPEG_VERSION=${{ matrix.ffmpeg }}
           platforms: ${{ env.build_platforms }}
           target: export
-          output: type=local,dest=build
+          output: type=local,dest=/tmp/build
           push: false
 
       - name: Archive artifact (multi arch)
         if: env.build_platforms == 'linux/amd64,linux/arm64/v8'
         run: |
-          tar cvf ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64.tar.gz -C ./build/linux_amd64 bin
-          tar cvf ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-arm64.tar.gz -C ./build/linux_arm64 bin
+          tar cvf /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64.tar.gz -C /tmp/build/linux_amd64 bin
+          tar cvf /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-arm64.tar.gz -C /tmp/build/linux_arm64 bin
 
       - name: Archive artifact (amd64)
         if: env.build_platforms == 'linux/amd64'
-        run: tar cvf ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64.tar.gz -C ./build bin
+        run: tar cvf /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64.tar.gz -C /tmp/build bin
 
       - name: Upload artifact (multi arch)
         if: env.build_platforms == 'linux/amd64,linux/arm64/v8'
@@ -112,15 +112,15 @@ jobs:
         with:
           name: ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}
           path: |
-            ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64.tar.gz
-            ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-arm64.tar.gz
+            /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64.tar.gz
+            /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-arm64.tar.gz
 
       - name: Upload artifact (amd64)
         if: env.build_platforms == 'linux/amd64'
         uses: actions/upload-artifact@v2
         with:
           name: ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}
-          path: ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64.tar.gz
+          path: /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64.tar.gz
 
   release:
     runs-on: ubuntu-latest
@@ -130,9 +130,9 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v2
         with:
-          path: artifact
+          path: /tmp/artifact
 
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-          files: artifact/**/*.tar.gz
+          files: /tmp/artifact/**/*.tar.gz
