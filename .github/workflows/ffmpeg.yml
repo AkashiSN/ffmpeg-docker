@@ -85,7 +85,7 @@ jobs:
       - name: Export - ffmpeg
         run: |
            docker buildx build --platform ${{ env.build_platforms }} --target export --output type=local,dest=/tmp/build \
-           -t ffmpeg${{ env.build_tag }} --build-arg FFMPEG_VERSION=${{ matrix.ffmpeg }} -f .\${{ env.build_file }} .
+           -t ffmpeg${{ env.build_tag }} --build-arg FFMPEG_VERSION=${{ matrix.ffmpeg }} -f ./${{ env.build_file }} .
 
       - name: Archive artifact (multi arch)
         if: env.build_platforms == 'linux/amd64,linux/arm64/v8'
