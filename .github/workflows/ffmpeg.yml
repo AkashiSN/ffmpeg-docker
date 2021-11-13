@@ -83,17 +83,9 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache
 
       - name: Export - ffmpeg
-        uses: docker/build-push-action@v2
-        with:
-          context: ./
-          file: ./${{ env.build_file }}
-          tags: |
-            ffmpeg${{ env.build_tag }}
-          build-args: |
-            FFMPEG_VERSION=${{ matrix.ffmpeg }}
-          platforms: ${{ env.build_platforms }}
-          target: export
-          output: type=local,dest=/tmp/build
+        run: |
+           docker buildx build --platform ${{ env.build_platforms }} --target export --output type=local,dest=/tmp/build \
+           -t ffmpeg${{ env.build_tag }} --build-arg FFMPEG_VERSION=${{ matrix.ffmpeg }} -f .\${{ env.build_file }} .
 
       - name: Archive artifact (multi arch)
         if: env.build_platforms == 'linux/amd64,linux/arm64/v8'
