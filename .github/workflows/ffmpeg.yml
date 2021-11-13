@@ -82,12 +82,16 @@ jobs:
       - name: Archive artifact (multi arch)
         if: env.build_platforms == 'linux/amd64,linux/arm64/v8'
         run: |
-          tar cvf /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64.tar.gz -C /tmp/build/linux_amd64 bin
-          tar cvf /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-arm64.tar.gz -C /tmp/build/linux_arm64 bin
+          cd /tmp/build/linux_amd64
+          tar cvf /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64.tar.gz *
+          cd /tmp/build/linux_arm64
+          tar cvf /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-arm64.tar.gz *
 
       - name: Archive artifact (amd64)
         if: env.build_platforms == 'linux/amd64'
-        run: tar cvf /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64.tar.gz -C /tmp/build bin
+        run: |
+          cd /tmp/build
+          tar cvf /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64.tar.gz *
 
       - name: Upload artifact (multi arch)
         if: env.build_platforms == 'linux/amd64,linux/arm64/v8'
