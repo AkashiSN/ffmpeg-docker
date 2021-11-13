@@ -45,13 +45,6 @@ jobs:
           username: akashisn
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Login to GHCR
-        uses: docker/login-action@v1
-        with:
-          registry: ghcr.io
-          username: akashisn
-          password: ${{ github.token }}
-
       - name: Set build target (none)
         if: matrix.hwaccel == 'none'
         run: |
@@ -73,7 +66,6 @@ jobs:
           file: ./${{ env.build_file }}
           tags: |
             akashisn/ffmpeg:${{ matrix.ffmpeg }}${{ env.build_tag }}
-            ghcr.io/akashisn/ffmpeg:${{ matrix.ffmpeg }}${{ env.build_tag }}
           build-args: |
             FFMPEG_VERSION=${{ matrix.ffmpeg }}
           platforms: ${{ env.build_platforms }}
