@@ -7,6 +7,7 @@ RUN apt-get update && \
     apt-get install -y \
       build-essential \
       cmake \
+      curl \
       make \
       nasm \
       pkg-config \
@@ -21,7 +22,7 @@ COPY --from=ghcr.io/akashisn/ffmpeg-build-base / /
 
 # Install MediaSDK
 ENV INTEL_MEDIA_SDK_VERSION=21.3.5
-ADD https://github.com/Intel-Media-SDK/MediaSDK/releases/download/intel-mediasdk-${INTEL_MEDIA_SDK_VERSION}/MediaStack.tar.gz /tmp/
+RUN curl -sL -o /tmp/MediaStack.tar.gz https://github.com/Intel-Media-SDK/MediaSDK/releases/download/intel-mediasdk-${INTEL_MEDIA_SDK_VERSION}/MediaStack.tar.gz
 RUN apt-get install -y libdrm2 libxext6 libxfixes3
 RUN cd /tmp && \
     tar xf MediaStack.tar.gz && \
@@ -35,7 +36,7 @@ RUN echo -n "`cat /usr/local/ffmpeg_configure_options` --enable-libmfx --enable-
 # Build ffmpeg
 #
 ARG FFMPEG_VERSION=4.4
-ADD https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.xz /tmp/
+RUN curl -sL -o /tmp/ffmpeg-${FFMPEG_VERSION}.tar.xz  https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.xz
 RUN cd /tmp && \
     tar xf /tmp/ffmpeg-${FFMPEG_VERSION}.tar.xz && \
     cd /tmp/ffmpeg-${FFMPEG_VERSION} && \
@@ -45,36 +46,32 @@ RUN cd /tmp && \
                 --disable-doc \
                 --disable-ffplay \
                 --enable-gpl \
-                --enable-nonfree \
                 --enable-small \
                 --enable-version3 \
                 --extra-libs="`cat /usr/local/ffmpeg_extra_libs`" \
-                --pkg-config-flags="--static" && \
+                --pkg-config-flags="--static" > /usr/local/configure_options  && \
     make -j $(nproc) && \
     make install
 
 # Copy artifacts
 RUN mkdir /build && \
-    cp /tmp/MediaStack/opt/intel/mediasdk/bin/vainfo /usr/local/bin/ && \
     cp --archive --parents --no-dereference /usr/local/bin/ff* /build && \
-    cp --archive --parents --no-dereference /usr/local/bin/vainfo /build && \
+    cp --archive --parents --no-dereference /usr/local/configure_options /build && \
     cp --archive --parents --no-dereference /usr/local/lib/*.so* /build && \
-    rm /build/usr/local/lib/libva-glx.so* && \
-    # libdrm2
-    cp --archive --no-dereference /usr/lib/x86_64-linux-gnu/libdrm.so.2* /build/usr/local/lib/ && \
-    # libxext6
-    cp --archive --no-dereference /usr/lib/x86_64-linux-gnu/libXext.so.6* /build/usr/local/lib/ && \
-    cp --archive --no-dereference /usr/lib/x86_64-linux-gnu/libX11.so.6* /build/usr/local/lib/ && \
-    cp --archive --no-dereference /usr/lib/x86_64-linux-gnu/libxcb.so.1* /build/usr/local/lib/ && \
-    cp --archive --no-dereference /usr/lib/x86_64-linux-gnu/libXau.so.6* /build/usr/local/lib/ && \
-    cp --archive --no-dereference /usr/lib/x86_64-linux-gnu/libXdmcp.so.6* /build/usr/local/lib/ && \
-    cp --archive --no-dereference /usr/lib/x86_64-linux-gnu/libbsd.so.0* /build/usr/local/lib/ && \
-    # libxfixes3
-    cp --archive --no-dereference /usr/lib/x86_64-linux-gnu/libXfixes.so.3* /build/usr/local/lib/
+    rm /build/usr/local/lib/libva-glx.so*
 
 
-# final image
-FROM ubuntu:20.04 AS releases
+# final ffmpeg image
+FROM ubuntu:20.04 AS ffmpeg
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install runtime dependency
+RUN apt-get update && \
+    apt-get install -y libdrm2 && \
+    apt-get autoremove -y && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
 
 COPY --from=ffmpeg-build /build /
 

@@ -74,7 +74,7 @@ https://trac.ffmpeg.org/wiki/Hardware/QuickSync
 You can use the following command to find out which codecs are supported by your CPU.
 
 ```bash
-$ docker run --rm -it --device=/dev/dri --entrypoint=vainfo akashisn/ffmpeg:4.4-qsv
+$ docker run --rm -it --device=/dev/dri akashisn/vainfo
 error: cant connect to X server!
 libva info: VA-API version 1.11.0
 libva info: User environment variable requested driver 'iHD'

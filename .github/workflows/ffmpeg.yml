@@ -35,9 +35,9 @@ jobs:
         with:
           path: |
             /tmp/.buildx-cache
-          key: ${{ runner.os }}-${{ github.workflow }}-${{ matrix.ffmpeg }}-${{ github.sha }}
+          key: ${{ runner.os }}-${{ github.workflow }}-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-${{ github.workflow }}-${{ matrix.ffmpeg }}-
+            ${{ runner.os }}-${{ github.workflow }}-
 
       - name: Login to DockerHub
         uses: docker/login-action@v1
@@ -69,15 +69,20 @@ jobs:
           build-args: |
             FFMPEG_VERSION=${{ matrix.ffmpeg }}
           platforms: ${{ env.build_platforms }}
-          target: releases
+          target: ffmpeg
           push: true
           cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+
+      - name: Move cache # https://github.com/docker/build-push-action/issues/252
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
       - name: Export - ffmpeg
         run: |
            docker buildx build --platform ${{ env.build_platforms }} --target export --output type=local,dest=/tmp/build \
-           -t ffmpeg${{ env.build_tag }} --build-arg FFMPEG_VERSION=${{ matrix.ffmpeg }} -f ./${{ env.build_file }} .
+                  -t ffmpeg${{ env.build_tag }} --build-arg FFMPEG_VERSION=${{ matrix.ffmpeg }} -f ./${{ env.build_file }} .
 
       - name: Archive artifact (multi arch)
         if: env.build_platforms == 'linux/amd64,linux/arm64/v8'

@@ -7,6 +7,7 @@ RUN apt-get update && \
     apt-get install -y \
       build-essential \
       cmake \
+      curl \
       make \
       nasm \
       pkg-config \
@@ -19,7 +20,7 @@ COPY --from=ghcr.io/akashisn/ffmpeg-build-base / /
 # Build ffmpeg
 #
 ARG FFMPEG_VERSION=4.4
-ADD https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.xz /tmp/
+RUN curl -sL -o /tmp/ffmpeg-${FFMPEG_VERSION}.tar.xz  https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.xz
 RUN cd /tmp && \
     tar xf /tmp/ffmpeg-${FFMPEG_VERSION}.tar.xz && \
     cd /tmp/ffmpeg-${FFMPEG_VERSION} && \
@@ -29,21 +30,21 @@ RUN cd /tmp && \
                 --disable-doc \
                 --disable-ffplay \
                 --enable-gpl \
-                --enable-nonfree \
                 --enable-small \
                 --enable-version3 \
                 --extra-libs="`cat /usr/local/ffmpeg_extra_libs`" \
-                --pkg-config-flags="--static" && \
+                --pkg-config-flags="--static" > /usr/local/configure_options && \
     make -j $(nproc) && \
     make install
 
 # Copy artifacts
 RUN mkdir /build && \
-    cp --archive --parents --no-dereference /usr/local/bin/ff* /build
+    cp --archive --parents --no-dereference /usr/local/bin/ff* /build && \
+    cp --archive --parents --no-dereference /usr/local/configure_options /build
 
 
-# final image
-FROM ubuntu:20.04 AS releases
+# final ffmpeg image
+FROM ubuntu:20.04 AS ffmpeg
 
 COPY --from=ffmpeg-build /build /
 
