@@ -14,6 +14,7 @@ RUN apt-get update && \
       git \
       gperf \
       libtool \
+      lzip \
       make \
       nasm \
       ninja-build \
@@ -46,17 +47,56 @@ RUN cd /tmp && \
     make install
 ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-zlib"
 
-# Build OpenSSL
-ENV OPENSSL_VERSION=1.1.1l
-ADD https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz /tmp/openssl-${OPENSSL_VERSION}.tar.gz
+# Build Nettle
+ENV NETTLE_VERSION=3.7.3
+RUN curl -sL -o /tmp/nettle-${NETTLE_VERSION}.tar.gz https://ftp.gnu.org/gnu/nettle/nettle-${NETTLE_VERSION}.tar.gz
 RUN cd /tmp && \
-    tar xf /tmp/openssl-${OPENSSL_VERSION}.tar.gz && \
-    cd /tmp/openssl-${OPENSSL_VERSION} && \
-    ./config --openssldir="/usr/local/" zlib && \
+    tar xf /tmp/nettle-${NETTLE_VERSION}.tar.gz && \
+    cd /tmp/nettle-${NETTLE_VERSION} && \
+    ./configure --libdir=/usr/local/lib --enable-static --disable-shared --enable-mini-gmp && \
     make -j $(nproc) && \
-    make install_sw && \
-    rm -rf /usr/local/lib/engines-1.1
-ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-openssl"
+    make install
+
+# Build GMP
+ENV GMP_VERSION=6.2.1
+RUN curl -sL -o /tmp/gmp-${GMP_VERSION}.tar.lz https://gmplib.org/download/gmp/gmp-${GMP_VERSION}.tar.lz
+RUN cd /tmp && \
+    tar xf /tmp/gmp-${GMP_VERSION}.tar.lz && \
+    cd /tmp/gmp-${GMP_VERSION} && \
+    ./configure --enable-static --disable-shared && \
+    make -j $(nproc) && \
+    make install
+
+# Build Libtasn1
+ENV LIBTASN1_VERSION=4.18.0
+RUN curl -sL -o /tmp/libtasn1-${LIBTASN1_VERSION}.tar.gz https://ftp.gnu.org/gnu/libtasn1/libtasn1-${LIBTASN1_VERSION}.tar.gz
+RUN cd /tmp && \
+    tar xf /tmp/libtasn1-${LIBTASN1_VERSION}.tar.gz && \
+    cd /tmp/libtasn1-${LIBTASN1_VERSION} && \
+    ./configure --enable-static --disable-shared && \
+    make -j $(nproc) && \
+    make install
+
+# Build libunistring
+ENV LIBUNISTRING_VERSION=0.9.10
+RUN curl -sL -o /tmp/libunistring-${LIBUNISTRING_VERSION}.tar.xz https://ftp.gnu.org/gnu/libunistring/libunistring-${LIBUNISTRING_VERSION}.tar.xz
+RUN cd /tmp && \
+    tar xf /tmp/libunistring-${LIBUNISTRING_VERSION}.tar.xz && \
+    cd /tmp/libunistring-${LIBUNISTRING_VERSION} && \
+    ./configure --enable-static --disable-shared && \
+    make -j $(nproc) && \
+    make install
+
+# Build GnuTLS
+ENV GNUTLS_VERSION=3.6.16
+RUN curl -sL -o /tmp/gnutls-${GNUTLS_VERSION}.tar.xz https://www.gnupg.org/ftp/gcrypt/gnutls/v3.6/gnutls-${GNUTLS_VERSION}.tar.xz
+RUN cd /tmp && \
+    tar xf /tmp/gnutls-${GNUTLS_VERSION}.tar.xz && \
+    cd /tmp/gnutls-${GNUTLS_VERSION} && \
+    ./configure --enable-static --disable-shared --disable-tests --without-p11-kit && \
+    make -j $(nproc) && \
+    make install
+ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-gnutls"
 
 # Download Cmake
 ENV CMAKE_VERSION=3.21.4
@@ -65,20 +105,15 @@ RUN cd /tmp && \
     tar xf /tmp/cmake-${CMAKE_VERSION}-linux-$(uname -m).tar.gz && \
     cd /tmp/cmake-${CMAKE_VERSION}-linux-$(uname -m) && \
     mv bin/* /usr/local/bin/ && \
-    mv doc /usr/local/ && \
-    mv man/man1/* /usr/local/man/man1/ && \
-    mv man/man7 /usr/local/man/ && \
     mv share/* /usr/local/share/
 
-# Remove dynamic lib
-RUN rm /usr/local/lib/libcrypto.so* /usr/local/lib/libssl.so*
 
 #
 # Video
 #
 
 # Build libvpx
-ADD https://github.com/webmproject/libvpx/archive/master.tar.gz /tmp/libvpx-master.tar.gz
+RUN curl -sL -o /tmp/libvpx-master.tar.gz https://github.com/webmproject/libvpx/archive/master.tar.gz
 RUN cd /tmp && \
     tar xf libvpx-master.tar.gz && \
     mkdir /tmp/libvpx_build && cd /tmp/libvpx_build && \
@@ -88,7 +123,7 @@ RUN cd /tmp && \
 ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libvpx"
 
 # Build x264
-ADD https://code.videolan.org/videolan/x264/-/archive/master/x264-master.tar.bz2 /tmp/
+RUN curl -sL -o /tmp/x264-master.tar.bz2 https://code.videolan.org/videolan/x264/-/archive/master/x264-master.tar.bz2
 RUN cd /tmp && \
     tar xf x264-master.tar.bz2 && \
     mkdir /tmp/x264_build && cd /tmp/x264_build && \
@@ -98,7 +133,7 @@ RUN cd /tmp && \
 ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libx264"
 
 # Build x265
-ADD https://github.com/videolan/x265/archive/master.tar.gz /tmp/x265-master.tar.gz
+RUN curl -sL -o /tmp/x265-master.tar.gz https://github.com/videolan/x265/archive/master.tar.gz
 RUN cd /tmp && \
     tar xf x265-master.tar.gz && \
     mkdir /tmp/x265_build && cd /tmp/x265_build && \
@@ -124,7 +159,7 @@ ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libaom"
 #
 
 # Build opus
-ADD https://github.com/xiph/opus/archive/master.tar.gz /tmp/opus-master.tar.gz
+RUN curl -sL -o /tmp/opus-master.tar.gz https://github.com/xiph/opus/archive/master.tar.gz
 RUN cd /tmp && \
     tar xf opus-master.tar.gz && \
     mkdir /tmp/opus_build && cd /tmp/opus_build && \
@@ -135,7 +170,7 @@ RUN cd /tmp && \
 ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libopus"
 
 # Build libogg, for vorbis
-ADD https://github.com/xiph/ogg/archive/master.tar.gz /tmp/ogg-master.tar.gz
+RUN curl -sL -o /tmp/ogg-master.tar.gz https://github.com/xiph/ogg/archive/master.tar.gz
 RUN cd /tmp && \
     tar xf ogg-master.tar.gz && \
     mkdir /tmp/ogg_build && cd /tmp/ogg_build && \
@@ -145,7 +180,7 @@ RUN cd /tmp && \
     make install
 
 # Build vorbis
-ADD https://github.com/xiph/vorbis/archive/master.tar.gz /tmp/vorbis-master.tar.gz
+RUN curl -sL -o /tmp/vorbis-master.tar.gz https://github.com/xiph/vorbis/archive/master.tar.gz
 RUN cd /tmp && \
     tar xf vorbis-master.tar.gz && \
     mkdir /tmp/vorbis_build && cd /tmp/vorbis_build && \
@@ -160,6 +195,72 @@ ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libvorbis"
 # Caption
 #
 
+# Build freetype
+RUN curl -sL -o /tmp/freetype-master.tar.bz2  https://gitlab.freedesktop.org/freetype/freetype/-/archive/master/freetype-master.tar.bz2
+RUN cd /tmp && \
+    tar xf freetype-master.tar.bz2 && \
+    mkdir /tmp/freetype_build && cd /tmp/freetype_build && \
+    cmake -DBUILD_SHARED_LIBS=0 ../freetype-master && \
+    make -j $(nproc) && \
+    make install  && \
+    rm -rf /usr/local/lib/cmake
+ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libfreetype"
+
+# Build fribidi
+RUN curl -sL -o /tmp/fribidi-master.tar.gz https://github.com/fribidi/fribidi/archive/master.tar.gz
+RUN cd /tmp && \
+    tar xf fribidi-master.tar.gz && \
+    cd /tmp/fribidi-master && \
+    meson setup -Ddocs=false -Dtests=false -Dbin=false -Ddefault_library=static -Dlibdir=/usr/local/lib/ ./build && \
+    ninja -v -C ./build && \
+    cd build && \
+    meson install
+ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libfribidi"
+
+# Build libexpat
+RUN curl -sL -o /tmp/libexpat-master.tar.gz https://github.com/libexpat/libexpat/archive/master.tar.gz /tmp/libexpat-master.tar.gz
+RUN cd /tmp && \
+    tar xf /tmp/libexpat-master.tar.gz && \
+    mkdir /tmp/libexpat_build && cd /tmp/libexpat_build && \
+    cmake -DEXPAT_BUILD_TOOLS=0 -DEXPAT_BUILD_EXAMPLES=0 -DEXPAT_BUILD_TESTS=0 -DEXPAT_SHARED_LIBS=0 \
+          -DEXPAT_BUILD_DOCS=0 ../libexpat-master/expat/ && \
+    make -j $(nproc) && \
+    make install && \
+    rm -rf /usr/local/lib/cmake
+
+# Build fontconfig
+RUN curl -sL -o /tmp/fontconfig-main.tar.bz2  https://gitlab.freedesktop.org/fontconfig/fontconfig/-/archive/main/fontconfig-main.tar.bz2
+RUN cd /tmp && \
+    tar xf fontconfig-main.tar.bz2 && \
+    cd /tmp/fontconfig-main && \
+    meson setup -Ddoc=disabled -Dtests=disabled -Dtools=disabled -Ddefault_library=static -Dlibdir=/usr/local/lib/ ./build && \
+    ninja -v -C ./build && \
+    cd build && \
+    meson install
+ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libfontconfig"
+
+# Build libharfbuzz
+RUN curl -sL -o /tmp/harfbuzz-main.tar.gz https://github.com/harfbuzz/harfbuzz/archive/main.tar.gz
+RUN cd /tmp && \
+    tar xf harfbuzz-main.tar.gz && \
+    cd /tmp/harfbuzz-main && \
+    meson setup -Ddocs=disabled -Dtests=disabled -Ddefault_library=static -Dlibdir=/usr/local/lib/ ./build && \
+    ninja -v -C ./build && \
+    cd build && \
+    meson install && \
+    rm -rf /usr/local/lib/cmake
+
+# Build libass
+RUN curl -sL -o /tmp/libass-master.tar.gz https://github.com/libass/libass/archive/master.tar.gz
+RUN cd /tmp && \
+    tar xf libass-master.tar.gz && \
+    cd /tmp/libass-master && \
+    ./autogen.sh && \
+    ./configure --enable-static --disable-shared && \
+    make -j $(nproc) && \
+    make install
+ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libass"
+
 # Build libpng
 ENV LIBPNG_VERSION=1.6.37
 RUN curl -sL -o /tmp/libpng-${LIBPNG_VERSION}.tar.xz https://download.sourceforge.net/libpng/libpng-${LIBPNG_VERSION}.tar.xz
@@ -171,68 +272,8 @@ RUN cd /tmp && \
     make install && \
     rm -rf /usr/local/lib/libpng
 
-# Build freetype
-RUN git clone https://gitlab.freedesktop.org/freetype/freetype.git -b master --depth 1 /tmp/freetype
-RUN mkdir /tmp/freetype_build && cd /tmp/freetype_build && \
-    cmake -DBUILD_SHARED_LIBS=0 ../freetype && \
-    make -j $(nproc) && \
-    make install  && \
-    rm -rf /usr/local/lib/cmake
-ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libfreetype"
-
-# Build fribidi
-RUN git clone https://github.com/fribidi/fribidi.git -b master --depth 1 /tmp/fribidi
-RUN cd /tmp/fribidi && \
-    meson setup -Ddocs=false -Dtests=false -Dbin=false -Ddefault_library=static -Dlibdir=/usr/local/lib/ ./build && \
-    ninja -v -C ./build && \
-    cd build && \
-    meson install
-ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libfribidi"
-
-# Build libexpat
-ADD https://github.com/libexpat/libexpat/archive/master.tar.gz /tmp/libexpat-master.tar.gz
-RUN cd /tmp && \
-    tar xf /tmp/libexpat-master.tar.gz && \
-    mkdir /tmp/libexpat_build && cd /tmp/libexpat_build && \
-    cmake -DEXPAT_BUILD_TOOLS=0 -DEXPAT_BUILD_EXAMPLES=0 -DEXPAT_BUILD_TESTS=0 -DEXPAT_SHARED_LIBS=0 \
-          -DEXPAT_BUILD_DOCS=0 ../libexpat-master/expat/ && \
-    make -j $(nproc) && \
-    make install && \
-    rm -rf /usr/local/lib/cmake
-
-# Build fontconfig
-RUN git clone https://gitlab.freedesktop.org/fontconfig/fontconfig.git -b main --depth 1 /tmp/fontconfig
-RUN cd /tmp/fontconfig && \
-    meson setup -Ddoc=disabled -Dtests=disabled -Dtools=disabled -Ddefault_library=static -Dlibdir=/usr/local/lib/ ./build && \
-    ninja -v -C ./build && \
-    cd build && \
-    meson install
-ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libfontconfig"
-
-# Build libharfbuzz
-ADD https://github.com/harfbuzz/harfbuzz/archive/main.tar.gz /tmp/harfbuzz-main.tar.gz
-RUN cd /tmp && \
-    tar xf harfbuzz-main.tar.gz && \
-    cd /tmp/harfbuzz-main && \
-    meson setup -Ddocs=disabled -Dtests=disabled -Ddefault_library=static -Dlibdir=/usr/local/lib/ ./build && \
-    ninja -v -C ./build && \
-    cd build && \
-    meson install && \
-    rm -rf /usr/local/lib/cmake
-
-# Build libass
-ADD https://github.com/libass/libass/archive/master.tar.gz /tmp/libass-master.tar.gz
-RUN cd /tmp && \
-    tar xf libass-master.tar.gz && \
-    cd /tmp/libass-master && \
-    ./autogen.sh && \
-    ./configure --enable-static --disable-shared && \
-    make -j $(nproc) && \
-    make install
-ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libass"
-
 # Build libaribb24
-ADD https://salsa.debian.org/multimedia-team/aribb24/-/archive/master/aribb24-master.tar.bz2 /tmp/
+RUN curl -sL -o /tmp/aribb24-master.tar.bz2 https://salsa.debian.org/multimedia-team/aribb24/-/archive/master/aribb24-master.tar.bz2
 RUN cd /tmp && \
     tar xf aribb24-master.tar.bz2 && \
     cd /tmp/aribb24-master && \
