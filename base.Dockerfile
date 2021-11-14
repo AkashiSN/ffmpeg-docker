@@ -218,7 +218,7 @@ RUN cd /tmp && \
 ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libfribidi"
 
 # Build libexpat
-RUN curl -sL -o /tmp/libexpat-master.tar.gz https://github.com/libexpat/libexpat/archive/master.tar.gz /tmp/libexpat-master.tar.gz
+RUN curl -sL -o /tmp/libexpat-master.tar.gz https://github.com/libexpat/libexpat/archive/master.tar.gz
 RUN cd /tmp && \
     tar xf /tmp/libexpat-master.tar.gz && \
     mkdir /tmp/libexpat_build && cd /tmp/libexpat_build && \
