@@ -29,7 +29,9 @@ RUN apt-get update && \
 
 
 ENV FFMPEG_CONFIGURE_OPTIONS="" \
-    FFMPEG_EXTRA_LIBS=""
+    FFMPEG_EXTRA_LIBS="" \
+    \
+    CFLAGS="-fPIC"
 
 
 #
@@ -49,7 +51,7 @@ ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-zlib"
 
 # Build Nettle
 ENV NETTLE_VERSION=3.7.3
-RUN curl -sL -o /tmp/nettle-${NETTLE_VERSION}.tar.gz https://ftp.gnu.org/gnu/nettle/nettle-${NETTLE_VERSION}.tar.gz
+RUN curl -sL -o /tmp/nettle-${NETTLE_VERSION}.tar.gz https://ftp.jaist.ac.jp/pub/GNU/nettle/nettle-${NETTLE_VERSION}.tar.gz
 RUN cd /tmp && \
     tar xf /tmp/nettle-${NETTLE_VERSION}.tar.gz && \
     cd /tmp/nettle-${NETTLE_VERSION} && \
@@ -59,7 +61,7 @@ RUN cd /tmp && \
 
 # Build GMP
 ENV GMP_VERSION=6.2.1
-RUN curl -sL -o /tmp/gmp-${GMP_VERSION}.tar.lz https://gmplib.org/download/gmp/gmp-${GMP_VERSION}.tar.lz
+RUN curl -sL -o /tmp/gmp-${GMP_VERSION}.tar.lz https://ftp.jaist.ac.jp/pub/GNU/gmp/gmp-${GMP_VERSION}.tar.lz
 RUN cd /tmp && \
     tar xf /tmp/gmp-${GMP_VERSION}.tar.lz && \
     cd /tmp/gmp-${GMP_VERSION} && \
@@ -69,7 +71,7 @@ RUN cd /tmp && \
 
 # Build Libtasn1
 ENV LIBTASN1_VERSION=4.18.0
-RUN curl -sL -o /tmp/libtasn1-${LIBTASN1_VERSION}.tar.gz https://ftp.gnu.org/gnu/libtasn1/libtasn1-${LIBTASN1_VERSION}.tar.gz
+RUN curl -sL -o /tmp/libtasn1-${LIBTASN1_VERSION}.tar.gz https://ftp.jaist.ac.jp/pub/GNU/libtasn1/libtasn1-${LIBTASN1_VERSION}.tar.gz
 RUN cd /tmp && \
     tar xf /tmp/libtasn1-${LIBTASN1_VERSION}.tar.gz && \
     cd /tmp/libtasn1-${LIBTASN1_VERSION} && \
@@ -79,7 +81,7 @@ RUN cd /tmp && \
 
 # Build libunistring
 ENV LIBUNISTRING_VERSION=0.9.10
-RUN curl -sL -o /tmp/libunistring-${LIBUNISTRING_VERSION}.tar.xz https://ftp.gnu.org/gnu/libunistring/libunistring-${LIBUNISTRING_VERSION}.tar.xz
+RUN curl -sL -o /tmp/libunistring-${LIBUNISTRING_VERSION}.tar.xz https://ftp.jaist.ac.jp/pub/GNU/libunistring/libunistring-${LIBUNISTRING_VERSION}.tar.xz
 RUN cd /tmp && \
     tar xf /tmp/libunistring-${LIBUNISTRING_VERSION}.tar.xz && \
     cd /tmp/libunistring-${LIBUNISTRING_VERSION} && \
@@ -89,7 +91,7 @@ RUN cd /tmp && \
 
 # Build GnuTLS
 ENV GNUTLS_VERSION=3.6.16
-RUN curl -sL -o /tmp/gnutls-${GNUTLS_VERSION}.tar.xz https://www.gnupg.org/ftp/gcrypt/gnutls/v3.6/gnutls-${GNUTLS_VERSION}.tar.xz
+RUN curl -L -o /tmp/gnutls-${GNUTLS_VERSION}.tar.xz https://mirrors.dotsrc.org/gcrypt/gnutls/v3.6/gnutls-${GNUTLS_VERSION}.tar.xz
 RUN cd /tmp && \
     tar xf /tmp/gnutls-${GNUTLS_VERSION}.tar.xz && \
     cd /tmp/gnutls-${GNUTLS_VERSION} && \
