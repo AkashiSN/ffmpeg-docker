@@ -55,7 +55,7 @@ RUN curl -sL -o /tmp/nettle-${NETTLE_VERSION}.tar.gz https://ftp.jaist.ac.jp/pub
 RUN cd /tmp && \
     tar xf /tmp/nettle-${NETTLE_VERSION}.tar.gz && \
     cd /tmp/nettle-${NETTLE_VERSION} && \
-    ./configure --libdir=/usr/local/lib --enable-static --disable-shared --enable-mini-gmp && \
+    CCPIC=-fPIC ./configure --libdir=/usr/local/lib --enable-static --disable-shared --enable-mini-gmp && \
     make -j $(nproc) && \
     make install
 
