@@ -58,8 +58,18 @@ RUN mkdir /build && \
     cp --archive --parents --no-dereference /usr/local/bin/ff* /build && \
     cp --archive --parents --no-dereference /usr/local/configure_options /build && \
     cp --archive --parents --no-dereference /usr/local/lib/*.so* /build && \
-    rm /build/usr/local/lib/libva-glx.so*
-
+    rm /build/usr/local/lib/libva-glx.so* && \
+    rm /build/usr/local/lib/libva-x11.so* && \
+    cd /build/usr/local/ && \
+    echo '#!/bin/sh' > run.sh && \
+    echo '' >> run.sh && \
+    echo 'export PATH=$(pwd)/bin:$PATH' >> run.sh && \
+    echo 'export LD_LIBRARY_PATH=$(pwd)/lib:$LD_LIBRARY_PATH' >> run.sh && \
+    echo 'LIBVA_DRIVERS_PATH=$(pwd)/lib' >> run.sh && \
+    echo 'LIBVA_DRIVER_NAME=iHD' >> run.sh && \
+    echo '' >> run.sh && \
+    echo 'exec $@' >> run.sh && \
+    chmod +x run.sh
 
 # final ffmpeg image
 FROM ubuntu:20.04 AS ffmpeg
