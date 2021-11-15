@@ -1,4 +1,3 @@
-# vainfo build image
 FROM ubuntu:20.04 AS vainfo-build
 
 # Install MediaSDK
