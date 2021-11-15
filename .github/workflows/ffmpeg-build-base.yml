@@ -5,6 +5,8 @@ on:
     paths:
       - 'base.Dockerfile'
       - '.github/workflows/ffmpeg-build-base.yml'
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
