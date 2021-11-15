@@ -76,7 +76,7 @@ jobs:
 
   release:
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
+    if: startsWith(github.ref, 'refs/tags/v*')
     needs: [export]
     steps:
       - name: Download artifact

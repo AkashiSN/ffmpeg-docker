@@ -5,12 +5,11 @@ on:
     paths:
       - 'vainfo.Dockerfile'
       - '.github/workflows/vainfo.yml'
-    tags:
-      - '!v*'
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    if: ! startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Checkout
         uses: actions/checkout@v2
