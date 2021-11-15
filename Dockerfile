@@ -58,15 +58,3 @@ COPY --from=ffmpeg-build /build /
 WORKDIR /workdir
 ENTRYPOINT [ "ffmpeg" ]
 CMD [ "--help" ]
-
-
-# export image
-FROM scratch AS export
-
-ARG FFMPEG_VERSION=4.4
-
-FROM akashisn/ffmpeg:${FFMPEG_VERSION} as ffmpeg-image
-
-COPY --from=ffmpeg-image /usr/local/bin /
-COPY --from=ffmpeg-image /usr/local/configure_options /
-COPY --from=ffmpeg-image /usr/local/run.sh /
