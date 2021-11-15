@@ -98,6 +98,8 @@ CMD [ "--help" ]
 # export image
 FROM scratch AS export
 
+ARG FFMPEG_VERSION=4.4
+
 COPY --from=akashisn/ffmpeg:${FFMPEG_VERSION}-qsv /usr/local/bin /
 COPY --from=akashisn/ffmpeg:${FFMPEG_VERSION}-qsv /usr/local/lib /
 COPY --from=akashisn/ffmpeg:${FFMPEG_VERSION}-qsv /usr/local/configure_options /
