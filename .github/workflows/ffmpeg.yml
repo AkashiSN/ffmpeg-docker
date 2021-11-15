@@ -2,14 +2,8 @@ name: ffmpeg
 
 on:
   push:
-    paths:
-      - 'Dockerfile'
-      - 'qsv.Dockerfile'
-      - '.github/workflows/ffmpeg.yml'
     branches:
       - main
-    tags:
-      - v*
   workflow_run:
     workflows: ["ffmpeg-build-base"]
     branches: [main]
