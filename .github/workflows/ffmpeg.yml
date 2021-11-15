@@ -7,7 +7,7 @@ on:
       - 'qsv.Dockerfile'
       - '.github/workflows/ffmpeg.yml'
     tags-ignore:
-      - *
+      - 'v*'
   workflow_run:
     workflows: ["ffmpeg-build-base"]
     branches: [main]

@@ -6,7 +6,7 @@ on:
       - 'vainfo.Dockerfile'
       - '.github/workflows/vainfo.yml'
     tags-ignore:
-      - *
+      - 'v*'
 
 jobs:
   build:
