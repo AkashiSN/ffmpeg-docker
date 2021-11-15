@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1.3
+
 # export image
 FROM scratch AS export
 
