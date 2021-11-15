@@ -5,6 +5,8 @@ on:
     paths:
       - 'base.Dockerfile'
       - '.github/workflows/ffmpeg-build-base.yml'
+    tags-ignore:
+      - *
 
 jobs:
   build:
