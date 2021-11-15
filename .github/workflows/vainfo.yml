@@ -5,8 +5,8 @@ on:
     paths:
       - 'vainfo.Dockerfile'
       - '.github/workflows/vainfo.yml'
-    tags-ignore:
-      - 'v*'
+    tags:
+      - '!v*'
 
 jobs:
   build:
