@@ -43,19 +43,19 @@ jobs:
         if: env.build_platforms == 'linux/amd64,linux/arm64/v8'
         run: |
           mkdir /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64
-          mv /tmp/build/linux_amd64/* /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64/
-          tar cvzf /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64.tar.gz -C /tmp ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64
+          cp -r /tmp/build/linux_amd64/* /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64/
+          tar acvf /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64.tar.xz -C /tmp ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64
 
           mkdir /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-arm64
-          mv /tmp/build/linux_arm64/* /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-arm64/
-          tar cvzf /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-arm64.tar.gz -C /tmp ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-arm64
+          cp -r /tmp/build/linux_arm64/* /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-arm64/
+          tar acvf /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-arm64.tar.xz -C /tmp ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-arm64
 
       - name: Archive artifact (amd64)
         if: env.build_platforms == 'linux/amd64'
         run: |
           mkdir /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64
-          mv /tmp/build/* /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64/
-          tar cvzf /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64.tar.gz -C /tmp ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64
+          cp -r /tmp/build/* /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64/
+          tar acvf /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64.tar.xz -C /tmp ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64
 
       - name: Upload artifact (multi arch)
         if: env.build_platforms == 'linux/amd64,linux/arm64/v8'
@@ -63,19 +63,19 @@ jobs:
         with:
           name: ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}
           path: |
-            /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64.tar.gz
-            /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-arm64.tar.gz
+            /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64.tar.xz
+            /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-arm64.tar.xz
 
       - name: Upload artifact (amd64)
         if: env.build_platforms == 'linux/amd64'
         uses: actions/upload-artifact@v2
         with:
           name: ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}
-          path: /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64.tar.gz
+          path: /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64.tar.xz
 
   release:
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v*')
+    if: startsWith(github.ref, 'refs/tags/v')
     needs: [export]
     steps:
       - name: Download artifact
@@ -86,4 +86,4 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-          files: /tmp/artifact/**/*.tar.gz
+          files: /tmp/artifact/**/*.tar.xz
