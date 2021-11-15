@@ -63,4 +63,6 @@ CMD [ "--help" ]
 # export image
 FROM scratch AS export
 
-COPY --from=ffmpeg-build /build/usr/local/ /
+COPY --from=akashisn/ffmpeg:${FFMPEG_VERSION} /usr/local/bin /
+COPY --from=akashisn/ffmpeg:${FFMPEG_VERSION} /usr/local/configure_options /
+COPY --from=akashisn/ffmpeg:${FFMPEG_VERSION} /usr/local/run.sh /

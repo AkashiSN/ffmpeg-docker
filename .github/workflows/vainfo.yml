@@ -2,9 +2,9 @@ name: vainfo
 
 on:
   push:
-    branches:
-      - main
-  workflow_dispatch:
+    paths:
+      - 'vainfo.Dockerfile'
+      - '.github/workflows/vainfo.yml'
 
 jobs:
   build:

@@ -2,9 +2,9 @@ name: ffmpeg-build-base
 
 on:
   push:
-    branches:
-      - main
-  workflow_dispatch:
+    paths:
+      - 'base.Dockerfile'
+      - '.github/workflows/ffmpeg-build-base.yml'
 
 jobs:
   build:

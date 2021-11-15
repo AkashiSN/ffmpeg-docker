@@ -1,0 +1,92 @@
+name: ffmpeg-release
+
+on:
+  push:
+    tags:
+      - v*
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+    strategy:
+      matrix:
+        ffmpeg: [4.3.2, 4.4]
+        hwaccel: [none, qsv]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Set build target (none)
+        if: matrix.hwaccel == 'none'
+        run: |
+          echo "build_file=Dockerfile" >> $GITHUB_ENV
+          echo "build_tag=" >> $GITHUB_ENV
+          echo "build_platforms=linux/amd64,linux/arm64/v8" >> $GITHUB_ENV
+
+      - name: Set build target (qsv)
+        if: matrix.hwaccel == 'qsv'
+        run: |
+          echo "build_file=qsv.Dockerfile" >> $GITHUB_ENV
+          echo "build_tag=-qsv" >> $GITHUB_ENV
+          echo "build_platforms=linux/amd64" >> $GITHUB_ENV
+
+      - name: Export - ffmpeg
+        run: |
+           docker buildx build --platform ${{ env.build_platforms }} --target export --output type=local,dest=/tmp/build \
+                  -t ffmpeg${{ env.build_tag }} --build-arg FFMPEG_VERSION=${{ matrix.ffmpeg }} -f ./${{ env.build_file }} .
+
+      - name: Archive artifact (multi arch)
+        if: env.build_platforms == 'linux/amd64,linux/arm64/v8'
+        run: |
+          mkdir /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64
+          mv /tmp/build/linux_amd64/* /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64/
+          tar cvzf /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64.tar.gz -C /tmp ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64
+
+          mkdir /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-arm64
+          mv /tmp/build/linux_arm64/* /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-arm64/
+          tar cvzf /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-arm64.tar.gz -C /tmp ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-arm64
+
+      - name: Archive artifact (amd64)
+        if: env.build_platforms == 'linux/amd64'
+        run: |
+          mkdir /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64
+          mv /tmp/build/* /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64/
+          tar cvzf /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64.tar.gz -C /tmp ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64
+
+      - name: Upload artifact (multi arch)
+        if: env.build_platforms == 'linux/amd64,linux/arm64/v8'
+        uses: actions/upload-artifact@v2
+        with:
+          name: ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}
+          path: |
+            /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64.tar.gz
+            /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-arm64.tar.gz
+
+      - name: Upload artifact (amd64)
+        if: env.build_platforms == 'linux/amd64'
+        uses: actions/upload-artifact@v2
+        with:
+          name: ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}
+          path: /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64.tar.gz
+
+  release:
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: [build]
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          path: /tmp/artifact
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: /tmp/artifact/**/*.tar.gz
