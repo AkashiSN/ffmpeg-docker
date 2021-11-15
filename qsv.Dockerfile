@@ -63,10 +63,10 @@ RUN mkdir /build && \
     cd /build/usr/local/ && \
     echo '#!/bin/sh' > run.sh && \
     echo '' >> run.sh && \
-    echo 'export PATH=$(pwd)/bin:$PATH' >> run.sh && \
-    echo 'export LD_LIBRARY_PATH=$(pwd)/lib:$LD_LIBRARY_PATH' >> run.sh && \
-    echo 'LIBVA_DRIVERS_PATH=$(pwd)/lib' >> run.sh && \
-    echo 'LIBVA_DRIVER_NAME=iHD' >> run.sh && \
+    echo 'export PATH=$(dirname $0)/bin:$PATH' >> run.sh && \
+    echo 'export LD_LIBRARY_PATH=$(dirname $0)/lib:$LD_LIBRARY_PATH' >> run.sh && \
+    echo 'export LIBVA_DRIVERS_PATH=$(dirname $0)/lib' >> run.sh && \
+    echo 'export LIBVA_DRIVER_NAME=iHD' >> run.sh && \
     echo '' >> run.sh && \
     echo 'exec $@' >> run.sh && \
     chmod +x run.sh

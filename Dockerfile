@@ -44,7 +44,7 @@ RUN mkdir /build && \
     cd /build/usr/local/ && \
     echo '#!/bin/sh' > run.sh && \
     echo '' >> run.sh && \
-    echo 'export PATH=$(pwd)/bin:$PATH' >> run.sh && \
+    echo 'export PATH=$(dirname $0)/bin:$PATH' >> run.sh && \
     echo '' >> run.sh && \
     echo 'exec $@' >> run.sh && \
     chmod +x run.sh
