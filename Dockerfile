@@ -65,6 +65,8 @@ FROM scratch AS export
 
 ARG FFMPEG_VERSION=4.4
 
-COPY --from=akashisn/ffmpeg:${FFMPEG_VERSION} /usr/local/bin /
-COPY --from=akashisn/ffmpeg:${FFMPEG_VERSION} /usr/local/configure_options /
-COPY --from=akashisn/ffmpeg:${FFMPEG_VERSION} /usr/local/run.sh /
+FROM akashisn/ffmpeg:${FFMPEG_VERSION} as ffmpeg-image
+
+COPY --from=ffmpeg-image /usr/local/bin /
+COPY --from=ffmpeg-image /usr/local/configure_options /
+COPY --from=ffmpeg-image /usr/local/run.sh /
