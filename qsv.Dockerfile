@@ -46,7 +46,6 @@ RUN cd /tmp && \
                 --disable-doc \
                 --disable-ffplay \
                 --enable-gpl \
-                --enable-small \
                 --enable-version3 \
                 --extra-libs="`cat /usr/local/ffmpeg_extra_libs`" \
                 --pkg-config-flags="--static" > /usr/local/configure_options  && \
