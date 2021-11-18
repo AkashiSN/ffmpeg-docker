@@ -59,7 +59,7 @@ make install
 EOT
 
 # Copy run.sh
-COPY <<'EOT' /build/usr/local/run.sh
+COPY <<'EOT' /usr/local/run.sh
 #!/bin/sh
 export PATH=$(dirname $0)/bin:$PATH
 export LD_LIBRARY_PATH=$(dirname $0)/lib:$LD_LIBRARY_PATH
@@ -71,12 +71,13 @@ EOT
 # Copy artifacts
 RUN <<EOT
 mkdir /build
+chmod +x /usr/local/run.sh
+cp --archive --parents --no-dereference /usr/local/run.sh /build
 cp --archive --parents --no-dereference /usr/local/bin/ff* /build
 cp --archive --parents --no-dereference /usr/local/configure_options /build
 cp --archive --parents --no-dereference /usr/local/lib/*.so* /build
 rm /build/usr/local/lib/libva-glx.so*
 rm /build/usr/local/lib/libva-x11.so*
-chmod +x /build/usr/local/run.sh
 EOT
 
 

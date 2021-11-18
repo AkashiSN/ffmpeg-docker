@@ -42,7 +42,7 @@ make install
 EOT
 
 # Copy run.sh
-COPY <<'EOT' /build/usr/local/run.sh
+COPY <<'EOT' /usr/local/run.sh
 #!/bin/sh
 export PATH=$(dirname $0)/bin:$PATH
 exec $@
@@ -51,9 +51,10 @@ EOT
 # Copy artifacts
 RUN <<EOT
 mkdir /build
+chmod +x /usr/local/run.sh
+cp --archive --parents --no-dereference /usr/local/run.sh /build
 cp --archive --parents --no-dereference /usr/local/bin/ff* /build
 cp --archive --parents --no-dereference /usr/local/configure_options /build
-chmod +x /build/usr/local/run.sh
 EOT
 
 
