@@ -27,7 +27,7 @@ apt-get install -y \
     python3-pip \
     python3-setuptools \
     python3-wheel \
-    yasm \
+    yasm
 pip3 install meson
 EOT
 
