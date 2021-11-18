@@ -17,7 +17,6 @@
 
 - Plain ffmpeg (without HWAccel)
   - `linux/amd64`
-  - `linux/arm64`
 - With Intel QSV
   - `linux/amd64`
 
@@ -120,12 +119,10 @@ libigdgmm.so.11.3.0  libmfx-tracer.so.1     libmfxhw64.so    libva-drm.so.2.1300
 libigfxcmrt.so       libmfx-tracer.so.1.35  libmfxhw64.so.1  libva.so
 $ cat run.sh
 #!/bin/sh
-
 export PATH=$(dirname $0)/bin:$PATH
 export LD_LIBRARY_PATH=$(dirname $0)/lib:$LD_LIBRARY_PATH
 export LIBVA_DRIVERS_PATH=$(dirname $0)/lib
 export LIBVA_DRIVER_NAME=iHD
-
 exec $@
 ```
 

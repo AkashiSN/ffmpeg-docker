@@ -33,9 +33,7 @@ EOT
 
 
 ENV FFMPEG_CONFIGURE_OPTIONS="" \
-    FFMPEG_EXTRA_LIBS="" \
-    \
-    CFLAGS="-fPIC"
+    FFMPEG_EXTRA_LIBS=""
 
 
 #
