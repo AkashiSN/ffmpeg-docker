@@ -44,15 +44,15 @@ jobs:
 
       - name: Archive artifact
         run: |
-          mkdir /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-${{ env.target_os}
-          mv /tmp/build/* /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-${{ env.target_os}/
-          tar acvf /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-${{ env.target_os}.tar.xz -C /tmp ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-${{ env.target_os}
+          mkdir /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-${{ env.target_os }}
+          mv /tmp/build/* /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-${{ env.target_os }}/
+          tar acvf /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-${{ env.target_os }}.tar.xz -C /tmp ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-${{ env.target_os }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
           name: ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}
-          path: /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-${{ env.target_os}.tar.xz
+          path: /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-${{ env.target_os }}.tar.xz
 
   release:
     runs-on: ubuntu-latest
