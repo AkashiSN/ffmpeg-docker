@@ -83,7 +83,7 @@ EOT
 # final ffmpeg image
 FROM ubuntu:20.04 AS ffmpeg
 
-SHELL ["/bin/bash", "-eu"]
+SHELL ["/bin/sh", "-e", "-c"]
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Install runtime dependency
