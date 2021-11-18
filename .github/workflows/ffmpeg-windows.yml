@@ -1,4 +1,4 @@
-name: ffmpeg
+name: ffmpeg-windows
 
 on:
   push:
