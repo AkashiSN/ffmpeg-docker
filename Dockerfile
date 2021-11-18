@@ -8,7 +8,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Install build tools
 RUN <<EOT
 apt-get update
-apt-get install \
+apt-get install -y \
     build-essential \
     curl \
     make \
