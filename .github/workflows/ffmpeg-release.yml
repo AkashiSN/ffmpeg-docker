@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         ffmpeg: [4.3.3, 4.4.1]
-        flavor: [none, qsv, windows]
+        flavor: [linux, qsv-linux, windows]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -19,14 +19,14 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
-      - name: Set build target (none)
-        if: matrix.flavor == 'none'
+      - name: Set build target (linux)
+        if: matrix.flavor == 'linux'
         run: |
           echo "build_tag=" >> $GITHUB_ENV
           echo "target_os=linux-amd64" >> $GITHUB_ENV
 
-      - name: Set build target (qsv)
-        if: matrix.flavor == 'qsv'
+      - name: Set build target (qsv-linux)
+        if: matrix.flavor == 'qsv-linux'
         run: |
           echo "build_tag=-qsv" >> $GITHUB_ENV
           echo "target_os=linux-amd64" >> $GITHUB_ENV
@@ -35,7 +35,7 @@ jobs:
         if: matrix.flavor == 'windows'
         run: |
           echo "build_tag=-windows" >> $GITHUB_ENV
-          echo "target_os=windows-x86_64" >> $GITHUB_ENV
+          echo "target_os=x64" >> $GITHUB_ENV
 
       - name: Export - ffmpeg
         run: |
