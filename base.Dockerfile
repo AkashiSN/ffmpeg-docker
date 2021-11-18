@@ -251,7 +251,7 @@ EOT
 ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libfreetype"
 
 # Build fribidi
-ADD chttps://github.com/fribidi/fribidi/archive/master.tar.gz /tmp/fribidi-master.tar.gz
+ADD https://github.com/fribidi/fribidi/archive/master.tar.gz /tmp/fribidi-master.tar.gz
 RUN <<EOT
 tar xf /tmp/fribidi-master.tar.gz -C /tmp
 cd /tmp/fribidi-master
