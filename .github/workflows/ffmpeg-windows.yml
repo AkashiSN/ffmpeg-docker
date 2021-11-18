@@ -1,0 +1,57 @@
+name: ffmpeg
+
+on:
+  push:
+    paths:
+      - 'winodows.Dockerfile'
+      - '.github/workflows/ffmpeg-windows.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/') == false && github.event_name == 'push'
+    strategy:
+      matrix:
+        ffmpeg: [4.3.3, 4.4.1]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: |
+            /tmp/.buildx-cache
+          key: ${{ runner.os }}-${{ github.workflow }}-${{ matrix.ffmpeg }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-${{ github.workflow }}-${{ matrix.ffmpeg }}-
+
+      - name: Login to GHCR
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: akashisn
+          password: ${{ github.token }}
+
+      - name: Build and push - ffmpeg-windows
+        uses: docker/build-push-action@v2
+        with:
+          context: ./
+          file: ./windows.Dockerfile
+          tags: |
+            ghcr.io/akashisn/ffmpeg-windows:${{ matrix.ffmpeg }}
+          build-args: |
+            FFMPEG_VERSION=${{ matrix.ffmpeg }}
+          platforms: linux/amd64
+          target: ffmpeg
+          push: true
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+
+      - name: Move cache # https://github.com/docker/build-push-action/issues/252
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache

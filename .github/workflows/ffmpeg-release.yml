@@ -10,8 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ffmpeg: [4.3.2, 4.4]
-        hwaccel: [none, qsv]
+        ffmpeg: [4.3.3, 4.4.1]
+        flavor: [none, qsv, windows]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -20,31 +20,39 @@ jobs:
         uses: docker/setup-buildx-action@v1
 
       - name: Set build target (none)
-        if: matrix.hwaccel == 'none'
+        if: matrix.flavor == 'none'
         run: |
           echo "build_tag=" >> $GITHUB_ENV
+          echo "target_os=linux-amd64" >> $GITHUB_ENV
 
       - name: Set build target (qsv)
-        if: matrix.hwaccel == 'qsv'
+        if: matrix.flavor == 'qsv'
         run: |
           echo "build_tag=-qsv" >> $GITHUB_ENV
+          echo "target_os=linux-amd64" >> $GITHUB_ENV
+
+      - name: Set build target (windows)
+        if: matrix.flavor == 'windows'
+        run: |
+          echo "build_tag=-windows" >> $GITHUB_ENV
+          echo "target_os=windows-x86_64" >> $GITHUB_ENV
 
       - name: Export - ffmpeg
         run: |
            docker buildx build --platform linux/amd64 --target export${{ env.build_tag }} --output type=local,dest=/tmp/build \
                   -t ffmpeg${{ env.build_tag }} --build-arg FFMPEG_VERSION=${{ matrix.ffmpeg }} -f ./export.Dockerfile .
 
-      - name: Archive artifact (amd64)
+      - name: Archive artifact
         run: |
-          mkdir /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64
-          mv /tmp/build/* /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64/
-          tar acvf /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64.tar.xz -C /tmp ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64
+          mkdir /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-${{ env.target_os}
+          mv /tmp/build/* /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-${{ env.target_os}/
+          tar acvf /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-${{ env.target_os}.tar.xz -C /tmp ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-${{ env.target_os}
 
-      - name: Upload artifact (amd64)
+      - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
           name: ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}
-          path: /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-linux-amd64.tar.xz
+          path: /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-${{ env.target_os}.tar.xz
 
   release:
     runs-on: ubuntu-latest
