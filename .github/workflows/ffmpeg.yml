@@ -5,9 +5,10 @@ on:
     paths:
       - 'Dockerfile'
       - 'qsv.Dockerfile'
+      - 'winodows.Dockerfile'
       - '.github/workflows/ffmpeg.yml'
   workflow_run:
-    workflows: ["ffmpeg-build-base"]
+    workflows: ["ffmpeg-library-build"]
     branches: [main]
     types:
       - completed
@@ -19,7 +20,7 @@ jobs:
     strategy:
       matrix:
         ffmpeg: [4.3.3, 4.4.1]
-        hwaccel: [none, qsv]
+        flavor: [linux, qsv-linux, windows]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -42,17 +43,33 @@ jobs:
           username: akashisn
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Set build target (none)
-        if: matrix.hwaccel == 'none'
+      - name: Login to GHCR
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: akashisn
+          password: ${{ github.token }}
+
+      - name: Set build target (linux)
+        if: matrix.flavor == 'linux'
         run: |
           echo "build_file=Dockerfile" >> $GITHUB_ENV
-          echo "build_tag=" >> $GITHUB_ENV
+          echo "image_name=akashisn/ffmpeg" >> $GITHUB_ENV
+          echo "image_tag=${{ matrix.ffmpeg }}" >> $GITHUB_ENV
 
-      - name: Set build target (qsv)
-        if: matrix.hwaccel == 'qsv'
+      - name: Set build target (qsv-linux)
+        if: matrix.flavor == 'qsv-linux'
         run: |
           echo "build_file=qsv.Dockerfile" >> $GITHUB_ENV
-          echo "build_tag=-qsv" >> $GITHUB_ENV
+          echo "image_name=akashisn/ffmpeg" >> $GITHUB_ENV
+          echo "image_tag=${{ matrix.ffmpeg }}-qsv" >> $GITHUB_ENV
+
+      - name: Set build target (windows)
+        if: matrix.flavor == 'windows'
+        run: |
+          echo "build_file=windows.Dockerfile" >> $GITHUB_ENV
+          echo "image_name=ghcr.io/akashisn/ffmpeg-windows" >> $GITHUB_ENV
+          echo "image_tag=${{ matrix.ffmpeg }}" >> $GITHUB_ENV
 
       - name: Build and push - ffmpeg
         uses: docker/build-push-action@v2
@@ -60,7 +77,7 @@ jobs:
           context: ./
           file: ./${{ env.build_file }}
           tags: |
-            akashisn/ffmpeg:${{ matrix.ffmpeg }}${{ env.build_tag }}
+            ${{ env.image_name }}:${{ env.image_tag }}
           build-args: |
             FFMPEG_VERSION=${{ matrix.ffmpeg }}
           platforms: linux/amd64

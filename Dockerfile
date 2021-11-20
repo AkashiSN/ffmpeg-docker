@@ -10,6 +10,7 @@ RUN <<EOT
 apt-get update
 apt-get install -y \
     build-essential \
+    clang \
     curl \
     make \
     nasm \
@@ -17,13 +18,14 @@ apt-get install -y \
     yasm
 EOT
 
-# ffmpeg-build-base-image
-COPY --from=ghcr.io/akashisn/ffmpeg-build-base / /
+# ffmpeg-library-build image
+COPY --from=ghcr.io/akashisn/ffmpeg-library-build:linux / /
+
 
 #
 # Build ffmpeg
 #
-ARG FFMPEG_VERSION=4.4
+ARG FFMPEG_VERSION=4.4.1
 ADD https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.xz /tmp/
 RUN <<EOT
 tar xf /tmp/ffmpeg-${FFMPEG_VERSION}.tar.xz -C /tmp
@@ -58,7 +60,7 @@ cp --archive --parents --no-dereference /usr/local/configure_options /build
 EOT
 
 
-# final ffmpeg image
+# Final ffmpeg image
 FROM ubuntu:20.04 AS ffmpeg
 
 COPY --from=ffmpeg-build /build /
