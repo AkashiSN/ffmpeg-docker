@@ -1,15 +1,18 @@
-name: ffmpeg-build-base
+name: ffmpeg-library-build
 
 on:
   push:
     paths:
-      - 'base.Dockerfile'
-      - '.github/workflows/ffmpeg-build-base.yml'
+      - 'library.Dockerfile'
+      - '.github/workflows/ffmpeg-library-build.yml'
 
 jobs:
   build:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/') == false
+    strategy:
+      matrix:
+        os: [linux, windows]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -32,13 +35,20 @@ jobs:
           username: akashisn
           password: ${{ github.token }}
 
+      - name: Set build target (windows)
+        if: matrix.os == 'windows'
+        run: |
+          echo "host_target=x86_64-w64-mingw32" >> $GITHUB_ENV
+
       - name: Build ffmpeg-build-base
         uses: docker/build-push-action@v2
         with:
           context: ./
-          file: ./base.Dockerfile
+          file: ./library.Dockerfile
           tags: |
-            ghcr.io/akashisn/ffmpeg-build-base
+            ghcr.io/akashisn/ffmpeg-library-build:${{ matrix.os }}
+          build-args: |
+            HOST_TARGET=${{ env.host_target }}
           platforms: linux/amd64
           push: true
           cache-from: type=local,src=/tmp/.buildx-cache
