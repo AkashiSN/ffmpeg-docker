@@ -96,6 +96,18 @@ make -j $(nproc)
 make install
 EOT
 
+# Build openjpeg
+ADD https://github.com/uclouvain/openjpeg/archive/master.tar.gz /tmp/openjpeg-master.tar.gz
+RUN <<EOT
+tar xf /tmp/openjpeg-master.tar.gz -C /tmp
+mkdir /tmp/openjpeg_build && cd /tmp/openjpeg_build
+cmake -DCMAKE_TOOLCHAIN_FILE=../toolchains.cmake -DBUILD_SHARED_LIBS=0 \
+      -DBUILD_TESTING=0 -DCMAKE_INSTALL_PREFIX=${LIBRARY_PREFIX} -DBUILD_CODEC=0 ../openjpeg-master
+make -j $(nproc)
+make install
+EOT
+ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libopenjpeg"
+
 # Build webp
 RUN git clone https://chromium.googlesource.com/webm/libwebp.git -b master --depth 1 /tmp/libwebp
 RUN <<EOT
@@ -108,18 +120,6 @@ make install
 unset LIBPNG_CONFIG
 EOT
 ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libwebp"
-
-# Build openjpeg
-ADD https://github.com/uclouvain/openjpeg/archive/master.tar.gz /tmp/openjpeg-master.tar.gz
-RUN <<EOT
-tar xf /tmp/openjpeg-master.tar.gz -C /tmp
-mkdir /tmp/openjpeg_build && cd /tmp/openjpeg_build
-cmake -DCMAKE_TOOLCHAIN_FILE=../toolchains.cmake -DBUILD_SHARED_LIBS=0 \
-      -DBUILD_TESTING=0 -DCMAKE_INSTALL_PREFIX=${LIBRARY_PREFIX} -DBUILD_CODEC=0 ../openjpeg-master
-make -j $(nproc)
-make install
-EOT
-ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libopenjpeg"
 
 # Build bzip2
 ENV BZIP2_VERSION=1.0.8
