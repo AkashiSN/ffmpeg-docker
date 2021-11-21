@@ -179,9 +179,9 @@ RUN <<EOT
 mkdir /build
 if [ "${HOST_TARGET}" = "x86_64-w64-mingw32" ]; then
     cp /usr/local/bin/ff* /build/
-    cp /tmp/cuda/libnpp/npp/bin/nppicc64_11.dll /build/
-    cp /tmp/cuda/libnpp/npp/bin/nppidei64_11.dll /build/
-    cp /tmp/cuda/libnpp/npp/bin/nppig64_11.dll /build/
+    # cp /tmp/cuda/libnpp/npp/bin/nppicc64_11.dll /build/
+    # cp /tmp/cuda/libnpp/npp/bin/nppidei64_11.dll /build/
+    # cp /tmp/cuda/libnpp/npp/bin/nppig64_11.dll /build/
 else
     cat <<'EOS' > /usr/local/run.sh
 #!/bin/sh
