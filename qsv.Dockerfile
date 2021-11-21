@@ -7,6 +7,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Install build tools
 RUN <<EOT
+sed -i -e "s%http://[^ ]\+%http://ftp.jaist.ac.jp/pub/Linux/ubuntu/%g" /etc/apt/sources.list
 apt-get update
 apt-get install -y \
     build-essential \

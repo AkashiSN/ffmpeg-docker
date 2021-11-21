@@ -7,6 +7,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Install build tools
 RUN <<EOT
+sed -i -e "s%http://[^ ]\+%http://ftp.jaist.ac.jp/pub/Linux/ubuntu/%g" /etc/apt/sources.list
 apt-get update
 apt-get install -y \
     autopoint \
@@ -23,6 +24,7 @@ apt-get install -y \
     mingw-w64-tools \
     nasm \
     pkg-config \
+    subversion \
     yasm
 EOT
 
@@ -92,6 +94,17 @@ tar xf /tmp/libpng-${LIBPNG_VERSION}.tar.xz -C /tmp
 mkdir /tmp/libpng_build && cd /tmp/libpng_build
 cmake -DCMAKE_TOOLCHAIN_FILE=../toolchains.cmake -DPNG_SHARED=0 -DPNG_STATIC=1 -DPNG_TESTS=0 \
       -DCMAKE_INSTALL_PREFIX=${LIBRARY_PREFIX} ../libpng-${LIBPNG_VERSION}
+make -j $(nproc)
+make install
+EOT
+
+# Build libjpg
+ENV LIBJPG_VERSION=9d
+ADD http://www.ijg.org/files/jpegsrc.v${LIBJPG_VERSION}.tar.gz /tmp/jpegsrc-v${LIBJPG_VERSION}.tar.gz
+RUN <<EOT
+tar xf /tmp/jpegsrc-v${LIBJPG_VERSION}.tar.gz -C /tmp
+cd /tmp/jpeg-${LIBJPG_VERSION}
+./configure --prefix=${LIBRARY_PREFIX} --host="${HOST_TARGET}" --enable-static --disable-shared
 make -j $(nproc)
 make install
 EOT
@@ -404,12 +417,10 @@ EOT
 ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libvo-amrwbenc"
 
 # Build mp3lame
-ENV LAME_VERSION=3.100
-RUN curl -sL -o /tmp/lame-${LAME_VERSION}.tar.gz https://download.sourceforge.net/lame/lame/lame-${LAME_VERSION}.tar.gz
+RUN svn checkout https://svn.code.sf.net/p/lame/svn/trunk/lame /tmp/lame --non-interactive --trust-server-cert
 RUN <<EOT
-tar xf /tmp/lame-${LAME_VERSION}.tar.gz -C /tmp
-cd /tmp/lame-${LAME_VERSION}
-./configure --prefix=${LIBRARY_PREFIX} --host="${HOST_TARGET}" --enable-static --disable-shared --enable-nasm
+cd /tmp/lame
+./configure --prefix=${LIBRARY_PREFIX} --host="${HOST_TARGET}" --enable-static --disable-shared --enable-nasm --disable-decoder
 make -j $(nproc)
 make install
 EOT

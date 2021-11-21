@@ -8,10 +8,17 @@
 
 - [Plain ffmpeg (without HWAccel)](https://github.com/AkashiSN/ffmpeg-docker/blob/main/Dockerfile)
   - `4.4`
+  - `4.4.1`
   - `4.3.2`
-- [With Intel QSV](https://github.com/AkashiSN/ffmpeg-docker/blob/main/qsv.Dockerfile)
+  - `4.3.3`
+- [With Intel QSV(Media SDK)](https://github.com/AkashiSN/ffmpeg-docker/blob/main/qsv.Dockerfile)
   - `4.4-qsv`
+  - `4.4.1-qsv`
   - `4.3.2-qsv`
+  - `4.3.3-qsv`
+- [Windows ffmpeg](https://github.com/AkashiSN/ffmpeg-docker/blob/main/windows.Dockerfile)
+  - `4.4.1`
+  - `4.3.3`
 
 ## Supported architecture
 
@@ -19,6 +26,8 @@
   - `linux/amd64`
 - With Intel QSV
   - `linux/amd64`
+- Windows ffmpeg
+  - `windows/x64`
 
 ## Supported Codecs
 
@@ -38,6 +47,7 @@
 
 - `mfx`: Intel QSV (Intel Quick Sync Video)
 - `vaapi`: Intel Media Driver for VAAPI
+- `cuda`: NVIDIA's GPU accelerated video codecs
 
 ## Intel QSV (Intel Quick Sync Video)
 
@@ -101,7 +111,7 @@ You can find the pre-built binary files on the [release page](https://github.com
 There are files in the assets with the following naming conventions:
 
 ```
-ffmpeg-${version}-${"qsv" or ""}-linux-${arch}.tar.gz
+ffmpeg-${version}-${"qsv" or ""}-${"linux" or "windows"}-${arch}.tar.gz
 ```
 
 In `qsv` archive file:
@@ -160,5 +170,19 @@ $ docker run --rm -it --device=/dev/dri -v `pwd`:/workdir \
     -c:a aac -ar 48000 -ab 256k \
     -f mp4 \
     AB1_h264_qsv.mp4
+```
+
+# Nonfree codecs
+
+If you want to use a non-free codec(e.g. `fdk-aac`, `libnpp` ), you can generate a binary in the current directory by executing the following command.
+
+**Generated binaries cannot be redistributed due to licensing issues. Please use them for your own use only.**
+
+```bash
+# for windows build
+$ docker buildx build --build-arg HOST_TARGET=x86_64-w64-mingw32 --build-arg TARGET_OS=windows --output type=local,dest=build -t ffmpeg-nonfree:windows -f ./nonfree.Dockerfile .
+
+# for linux build
+$ docker buildx build --output type=local,dest=build -t ffmpeg-nonfree:windows -f ./nonfree.Dockerfile .
 ```
 
