@@ -101,6 +101,7 @@ RUN git clone https://chromium.googlesource.com/webm/libwebp.git -b master --dep
 RUN <<EOT
 cd /tmp/libwebp
 export LIBPNG_CONFIG="${LIBRARY_PREFIX}/bin/libpng-config --static"
+./autogen.sh
 ./configure --prefix=${LIBRARY_PREFIX} --host="${HOST_TARGET}" --enable-static --disable-shared --disable-wic
 make -j $(nproc)
 make install
