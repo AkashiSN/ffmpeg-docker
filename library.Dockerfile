@@ -96,6 +96,30 @@ make -j $(nproc)
 make install
 EOT
 
+# Build webp
+RUN git clone https://chromium.googlesource.com/webm/libwebp.git -b master --depth 1 /tmp/libwebp
+RUN <<EOT
+cd /tmp/libwebp
+export LIBPNG_CONFIG="${LIBRARY_PREFIX}/bin/libpng-config --static"
+./configure --prefix=${LIBRARY_PREFIX} --host="${HOST_TARGET}" --enable-static --disable-shared --disable-wic
+make -j $(nproc)
+make install
+unset LIBPNG_CONFIG
+EOT
+ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libwebp"
+
+# Build openjpeg
+ADD https://github.com/uclouvain/openjpeg/archive/master.tar.gz /tmp/openjpeg-master.tar.gz
+RUN <<EOT
+tar xf /tmp/openjpeg-master.tar.gz -C /tmp
+mkdir /tmp/openjpeg_build && cd /tmp/openjpeg_build
+cmake -DCMAKE_TOOLCHAIN_FILE=../toolchains.cmake -DBUILD_SHARED_LIBS=0 \
+      -DBUILD_TESTING=0 -DCMAKE_INSTALL_PREFIX=${LIBRARY_PREFIX} -DBUILD_CODEC=0 ../openjpeg-master
+make -j $(nproc)
+make install
+EOT
+ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libopenjpeg"
+
 # Build bzip2
 ENV BZIP2_VERSION=1.0.8
 ADD https://www.sourceware.org/pub/bzip2/bzip2-${BZIP2_VERSION}.tar.gz /tmp/
@@ -136,6 +160,7 @@ cd /tmp/xz-${LZMA_VERSION}
 make -j $(nproc)
 make install
 EOT
+ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-lzma"
 
 # Build Nettle
 ENV NETTLE_VERSION=3.7.3
@@ -159,6 +184,7 @@ cd /tmp/gmp-${GMP_VERSION}
 make -j $(nproc)
 make install
 EOT
+ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-gmp"
 
 # Build Libtasn1
 ENV LIBTASN1_VERSION=4.18.0
@@ -191,6 +217,7 @@ cd /tmp/libiconv-${ICONV_VERSION}
 ./configure --prefix=${LIBRARY_PREFIX} --host="${HOST_TARGET}" --enable-static --disable-shared
 make install-lib
 EOT
+ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-iconv"
 
 # Build GnuTLS
 ENV GNUTLS_VERSION=3.6.16
@@ -350,6 +377,42 @@ make -j $(nproc)
 make install
 EOT
 ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libvorbis"
+
+# Build opencore-amr
+ENV OPENCORE_AMI_VERSION=0.1.5
+RUN curl -sL -o /tmp/opencore-amr-${OPENCORE_AMI_VERSION}.tar.gz https://download.sourceforge.net/opencore-amr/opencore-amr-${OPENCORE_AMI_VERSION}.tar.gz
+RUN <<EOT
+tar xf /tmp/opencore-amr-${OPENCORE_AMI_VERSION}.tar.gz -C /tmp
+cd /tmp/opencore-amr-${OPENCORE_AMI_VERSION}
+./configure --prefix=${LIBRARY_PREFIX} --host="${HOST_TARGET}" --enable-static --disable-shared
+make -j $(nproc)
+make install
+EOT
+ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libopencore-amrnb --enable-libopencore-amrwb"
+
+# Build vo-amrwbenc
+ENV VO_AMRWBENC_VERSION=0.1.3
+RUN curl -sL -o /tmp/vo-amrwbenc-${VO_AMRWBENC_VERSION}.tar.gz https://download.sourceforge.net/opencore-amr/vo-amrwbenc-${VO_AMRWBENC_VERSION}.tar.gz
+RUN <<EOT
+tar xf /tmp/vo-amrwbenc-${VO_AMRWBENC_VERSION}.tar.gz -C /tmp
+cd /tmp/vo-amrwbenc-${VO_AMRWBENC_VERSION}
+./configure --prefix=${LIBRARY_PREFIX} --host="${HOST_TARGET}" --enable-static --disable-shared
+make -j $(nproc)
+make install
+EOT
+ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libvo-amrwbenc"
+
+# Build mp3lame
+ENV LAME_VERSION=3.100
+RUN curl -sL -o /tmp/lame-${LAME_VERSION}.tar.gz https://download.sourceforge.net/lame/lame/lame-${LAME_VERSION}.tar.gz
+RUN <<EOT
+tar xf /tmp/lame-${LAME_VERSION}.tar.gz -C /tmp
+cd /tmp/lame-${LAME_VERSION}
+./configure --prefix=${LIBRARY_PREFIX} --host="${HOST_TARGET}" --enable-static --disable-shared --enable-nasm
+make -j $(nproc)
+make install
+EOT
+ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libmp3lame"
 
 
 #
