@@ -180,6 +180,9 @@ If you want to use a non-free codec(e.g. `fdk-aac`, `libnpp` ), you can generate
 
 ```bash
 # for windows build
+# $ export CUDA_SDK_VERSION=11.4.2
+# $ export NVIDIA_DRIVER_VERSION=471.41
+# $ curl -L -o ./cuda_${CUDA_SDK_VERSION}_${NVIDIA_DRIVER_VERSION}_win10.exe https://developer.download.nvidia.com/compute/cuda/${CUDA_SDK_VERSION}/local_installers/cuda_${CUDA_SDK_VERSION}_${NVIDIA_DRIVER_VERSION}_win10.exe
 $ docker buildx build --build-arg HOST_TARGET=x86_64-w64-mingw32 --build-arg TARGET_OS=windows --output type=local,dest=build -t ffmpeg-nonfree:windows -f ./nonfree.Dockerfile .
 
 # for linux build

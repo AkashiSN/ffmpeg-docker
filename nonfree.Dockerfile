@@ -2,7 +2,7 @@
 
 ARG TARGET_OS="linux"
 
-FROM ffmpeg-library-build:${TARGET_OS} AS ffmpeg-library
+FROM ghcr.io/akashisn/ffmpeg-library-build:${TARGET_OS} AS ffmpeg-library
 
 FROM nvidia/cuda:11.4.2-devel-ubuntu20.04 AS ffmpeg-build
 
@@ -71,11 +71,13 @@ EOT
 # cuda-nvcc and libnpp
 ENV CUDA_SDK_VERSION=11.4.2 \
     NVIDIA_DRIVER_VERSION=471.41
+# ADD ./cuda_${CUDA_SDK_VERSION}_${NVIDIA_DRIVER_VERSION}_win10.exe /tmp/cuda_${CUDA_SDK_VERSION}_${NVIDIA_DRIVER_VERSION}_win10.exe
 RUN <<EOT
 if [ "${HOST_TARGET}" = "x86_64-w64-mingw32" ]; then
-    # curl -sL -o /tmp/cuda_${CUDA_SDK_VERSION}_${NVIDIA_DRIVER_VERSION}_win10.exe https://developer.download.nvidia.com/compute/cuda/${CUDA_SDK_VERSION}/local_installers/cuda_${CUDA_SDK_VERSION}_${NVIDIA_DRIVER_VERSION}_win10.exe
     # mkdir /tmp/cuda && cd /tmp/cuda
     # 7zr x /tmp/cuda_${CUDA_SDK_VERSION}_${NVIDIA_DRIVER_VERSION}_win10.exe
+    # rm /usr/local/cuda/include/npp*
+    # rm /usr/local/cuda/lib64/libnpp*
     # cp -r libnpp/npp_dev/include /usr/local
     # cp libnpp/npp_dev/lib/x64/* /usr/local/lib/
     echo -n "`cat /usr/local/ffmpeg_configure_options` --enable-cuda-nvcc" > /usr/local/ffmpeg_configure_options
