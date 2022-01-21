@@ -7,7 +7,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Install build tools
 RUN <<EOT
-sed -i -e "s%http://[^ ]\+%http://ftp.jaist.ac.jp/pub/Linux/ubuntu/%g" /etc/apt/sources.list
+sed -i -r 's!(deb|deb-src \S+!\1 http://ftp.jaist.ac.jp/pub/Linux/ubuntu/!' /etc/apt/sources.list
 apt-get update
 apt-get install -y \
     autopoint \
@@ -46,7 +46,7 @@ ENV PKG_CONFIG="pkg-config" \
 #
 
 # Download Cmake
-ENV CMAKE_VERSION=3.21.4
+ENV CMAKE_VERSION=3.22.1
 RUN curl -sL -o /tmp/cmake-${CMAKE_VERSION}-linux-$(uname -m).tar.gz https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-$(uname -m).tar.gz
 RUN <<EOT
 tar xf /tmp/cmake-${CMAKE_VERSION}-linux-$(uname -m).tar.gz -C /tmp
@@ -99,7 +99,7 @@ make install
 EOT
 
 # Build libjpg
-ENV LIBJPG_VERSION=9d
+ENV LIBJPG_VERSION=9e
 ADD http://www.ijg.org/files/jpegsrc.v${LIBJPG_VERSION}.tar.gz /tmp/jpegsrc-v${LIBJPG_VERSION}.tar.gz
 RUN <<EOT
 tar xf /tmp/jpegsrc-v${LIBJPG_VERSION}.tar.gz -C /tmp
@@ -190,7 +190,7 @@ EOT
 
 # Build GMP
 ENV GMP_VERSION=6.2.1
-ADD  https://ftp.jaist.ac.jp/pub/GNU/gmp/gmp-${GMP_VERSION}.tar.lz /tmp/
+ADD https://ftp.jaist.ac.jp/pub/GNU/gmp/gmp-${GMP_VERSION}.tar.lz /tmp/
 RUN <<EOT
 tar xf /tmp/gmp-${GMP_VERSION}.tar.lz -C /tmp
 cd /tmp/gmp-${GMP_VERSION}
@@ -212,7 +212,7 @@ make install
 EOT
 
 # Build libunistring
-ENV LIBUNISTRING_VERSION=0.9.10
+ENV LIBUNISTRING_VERSION=1.0
 ADD https://ftp.jaist.ac.jp/pub/GNU/libunistring/libunistring-${LIBUNISTRING_VERSION}.tar.xz /tmp/
 RUN <<EOT
 tar xf /tmp/libunistring-${LIBUNISTRING_VERSION}.tar.xz -C /tmp
@@ -234,8 +234,8 @@ EOT
 ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-iconv"
 
 # Build GnuTLS
-ENV GNUTLS_VERSION=3.6.16
-ADD https://mirrors.dotsrc.org/gcrypt/gnutls/v3.6/gnutls-${GNUTLS_VERSION}.tar.xz /tmp/
+ENV GNUTLS_VERSION=3.7.3
+ADD https://mirrors.dotsrc.org/gcrypt/gnutls/v3.7/gnutls-${GNUTLS_VERSION}.tar.xz /tmp/
 RUN <<EOT
 tar xf /tmp/gnutls-${GNUTLS_VERSION}.tar.xz -C /tmp
 cd /tmp/gnutls-${GNUTLS_VERSION}
@@ -432,7 +432,7 @@ ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libmp3lame"
 #
 
 # Build freetype
-ENV FREETYPE_VERSION=2.11.0
+ENV FREETYPE_VERSION=2.11.1
 RUN curl -sL -o /tmp/freetype-${FREETYPE_VERSION}.tar.xz https://download.sourceforge.net/freetype/freetype-${FREETYPE_VERSION}.tar.xz
 RUN <<EOT
 tar xf /tmp/freetype-${FREETYPE_VERSION}.tar.xz -C /tmp
@@ -485,7 +485,7 @@ EOT
 ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libfontconfig"
 
 # Build libharfbuzz
-ENV HARFBUZZ_VERSION=3.1.1
+ENV HARFBUZZ_VERSION=3.2.0
 ADD https://github.com/harfbuzz/harfbuzz/releases/download/${HARFBUZZ_VERSION}/harfbuzz-${HARFBUZZ_VERSION}.tar.xz /tmp/
 RUN <<EOT
 tar xf /tmp/harfbuzz-${HARFBUZZ_VERSION}.tar.xz -C /tmp
