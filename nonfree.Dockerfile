@@ -1,10 +1,11 @@
 # syntax = docker/dockerfile:1.3-labs
 
 ARG TARGET_OS="linux"
+ARG CUDA_SDK_VERSION=11.6.0
 
 FROM ghcr.io/akashisn/ffmpeg-library-build:${TARGET_OS} AS ffmpeg-library
 
-FROM nvidia/cuda:11.4.2-devel-ubuntu20.04 AS ffmpeg-build
+FROM nvidia/cuda:${CUDA_SDK_VERSION}-devel-ubuntu20.04 AS ffmpeg-build
 
 SHELL ["/bin/sh", "-e", "-c"]
 ENV DEBIAN_FRONTEND=noninteractive
@@ -69,18 +70,18 @@ EOT
 
 
 # cuda-nvcc and libnpp
-ENV CUDA_SDK_VERSION=11.4.2 \
-    NVIDIA_DRIVER_VERSION=471.41
-# ADD ./cuda_${CUDA_SDK_VERSION}_${NVIDIA_DRIVER_VERSION}_win10.exe /tmp/cuda_${CUDA_SDK_VERSION}_${NVIDIA_DRIVER_VERSION}_win10.exe
+ARG CUDA_SDK_VERSION
+ARG NVIDIA_DRIVER_VERSION=511.23
+ADD ./cuda_${CUDA_SDK_VERSION}_${NVIDIA_DRIVER_VERSION}_windows.exe /tmp/cuda_${CUDA_SDK_VERSION}_${NVIDIA_DRIVER_VERSION}_windows.exe
 RUN <<EOT
 if [ "${HOST_TARGET}" = "x86_64-w64-mingw32" ]; then
-    # mkdir /tmp/cuda && cd /tmp/cuda
-    # 7zr x /tmp/cuda_${CUDA_SDK_VERSION}_${NVIDIA_DRIVER_VERSION}_win10.exe
-    # rm /usr/local/cuda/include/npp*
-    # rm /usr/local/cuda/lib64/libnpp*
-    # cp -r libnpp/npp_dev/include /usr/local
-    # cp libnpp/npp_dev/lib/x64/* /usr/local/lib/
-    echo -n "`cat /usr/local/ffmpeg_configure_options` --enable-cuda-nvcc" > /usr/local/ffmpeg_configure_options
+    mkdir /tmp/cuda && cd /tmp/cuda
+    7zr x /tmp/cuda_${CUDA_SDK_VERSION}_${NVIDIA_DRIVER_VERSION}_windows.exe
+    rm /usr/local/cuda/include/npp*
+    rm /usr/local/cuda/lib64/libnpp*
+    cp -r libnpp/npp_dev/include /usr/local
+    cp libnpp/npp_dev/lib/x64/* /usr/local/lib/
+    echo -n "`cat /usr/local/ffmpeg_configure_options` --enable-cuda-nvcc --enable-libnpp" > /usr/local/ffmpeg_configure_options
 else
     echo -n "`cat /usr/local/ffmpeg_configure_options` --enable-cuda-nvcc --enable-libnpp" > /usr/local/ffmpeg_configure_options
 fi
@@ -179,9 +180,9 @@ RUN <<EOT
 mkdir /build
 if [ "${HOST_TARGET}" = "x86_64-w64-mingw32" ]; then
     cp /usr/local/bin/ff* /build/
-    # cp /tmp/cuda/libnpp/npp/bin/nppicc64_11.dll /build/
-    # cp /tmp/cuda/libnpp/npp/bin/nppidei64_11.dll /build/
-    # cp /tmp/cuda/libnpp/npp/bin/nppig64_11.dll /build/
+    cp /tmp/cuda/libnpp/npp/bin/nppicc64_11.dll /build/
+    cp /tmp/cuda/libnpp/npp/bin/nppidei64_11.dll /build/
+    cp /tmp/cuda/libnpp/npp/bin/nppig64_11.dll /build/
 else
     cat <<'EOS' > /usr/local/run.sh
 #!/bin/sh

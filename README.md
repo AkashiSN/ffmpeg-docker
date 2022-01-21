@@ -7,27 +7,159 @@
 ## Available tags
 
 - [Plain ffmpeg (without HWAccel)](https://github.com/AkashiSN/ffmpeg-docker/blob/main/Dockerfile)
-  - `4.4`
+  - `5.0`
   - `4.4.1`
-  - `4.3.2`
   - `4.3.3`
 - [With Intel QSV(Media SDK)](https://github.com/AkashiSN/ffmpeg-docker/blob/main/qsv.Dockerfile)
-  - `4.4-qsv`
+  - `5.0-qsv`
   - `4.4.1-qsv`
-  - `4.3.2-qsv`
   - `4.3.3-qsv`
 - [Windows ffmpeg](https://github.com/AkashiSN/ffmpeg-docker/blob/main/windows.Dockerfile)
+  - `5.0`
   - `4.4.1`
   - `4.3.3`
 
 ## Supported architecture
 
-- Plain ffmpeg (without HWAccel)
+- ffmpeg (without QSV)
   - `linux/amd64`
+
+    <details>
+    <summary>configure options:</summary>
+
+    ```bash
+    --enable-zlib --enable-libopenjpeg --enable-libwebp --enable-lzma --enable-gmp --enable-iconv
+    --enable-gnutls --enable-libvpx --enable-libx264 --enable-libx265 --enable-libaom --enable-libopus
+    --enable-libvorbis --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libvo-amrwbenc
+    --enable-libmp3lame --enable-libfreetype --enable-libfribidi --enable-libxml2
+    --enable-libfontconfig --enable-libass --enable-libaribb24 --enable-cuda-llvm --enable-ffnvcodec
+    --enable-cuvid --enable-nvdec --enable-nvenc --disable-autodetect --disable-debug --disable-doc
+    --enable-gpl --enable-version3 --extra-libs='-lpthread -lstdc++' --pkg-config-flags=--static
+    ```
+    </details>
+
+    <details>
+    <summary>Dependent library</summary>
+
+    ```bash
+    $ ldd ffmpeg
+      linux-vdso.so.1 (0x00007ffde9743000)
+      libm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007f59a176e000)
+      libpthread.so.0 => /lib/x86_64-linux-gnu/libpthread.so.0 (0x00007f59a174b000)
+      libdl.so.2 => /lib/x86_64-linux-gnu/libdl.so.2 (0x00007f59a1745000)
+      libstdc++.so.6 => /lib/x86_64-linux-gnu/libstdc++.so.6 (0x00007f59a1563000)
+      libmvec.so.1 => /lib/x86_64-linux-gnu/libmvec.so.1 (0x00007f59a1537000)
+      libgcc_s.so.1 => /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x00007f59a151c000)
+      libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007f59a1328000)
+      /lib64/ld-linux-x86-64.so.2 (0x00007f59a637c000)
+    ```
+    </details>
+
 - With Intel QSV
   - `linux/amd64`
+    <details>
+    <summary>configure options:</summary>
+
+      ```bash
+      --enable-zlib --enable-libopenjpeg --enable-libwebp --enable-lzma --enable-gmp --enable-iconv
+      --enable-gnutls --enable-libvpx --enable-libx264 --enable-libx265 --enable-libaom --enable-libopus
+      --enable-libvorbis --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libvo-amrwbenc
+      --enable-libmp3lame --enable-libfreetype --enable-libfribidi --enable-libxml2
+      --enable-libfontconfig --enable-libass --enable-libaribb24 --enable-cuda-llvm --enable-ffnvcodec
+      --enable-cuvid --enable-nvdec --enable-nvenc --enable-libmfx --enable-vaapi --disable-autodetect
+      --disable-debug --disable-doc --enable-gpl --enable-version3 --extra-libs='-lpthread -lstdc++'
+      --pkg-config-flags=--static
+      ```
+    </details>
+
+    <details>
+    <summary>Dependent library</summary>
+
+    ```bash
+    $ ldd ffmpeg
+      linux-vdso.so.1 (0x00007ffe71ede000)
+      libm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007efe5ed87000)
+      libpthread.so.0 => /lib/x86_64-linux-gnu/libpthread.so.0 (0x00007efe5ed64000)
+      libva.so.2 => /home/user/.local/lib/libva.so.2 (0x00007efe5eb3b000)
+      libdl.so.2 => /lib/x86_64-linux-gnu/libdl.so.2 (0x00007efe5eb35000)
+      libmfx.so.1 => /home/user/.local/lib/libmfx.so.1 (0x00007efe5e927000)
+      libstdc++.so.6 => /lib/x86_64-linux-gnu/libstdc++.so.6 (0x00007efe5e745000)
+      libmvec.so.1 => /lib/x86_64-linux-gnu/libmvec.so.1 (0x00007efe5e717000)
+      libgcc_s.so.1 => /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x00007efe5e6fc000)
+      libva-drm.so.2 => /home/user/.local/lib/libva-drm.so.2 (0x00007efe5e4f9000)
+      libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007efe5e307000)
+      /lib64/ld-linux-x86-64.so.2 (0x00007efe639ec000)
+      libdrm.so.2 => /lib/x86_64-linux-gnu/libdrm.so.2 (0x00007efe5e2f3000)
+    ```
+    </details>
+
+
 - Windows ffmpeg
   - `windows/x64`
+    <details>
+    <summary>configure options:</summary>
+
+    ```bash
+    --enable-zlib --enable-libopenjpeg --enable-libwebp --enable-lzma --enable-gmp --enable-iconv
+    --enable-gnutls --enable-libvpx --enable-libx264 --enable-libx265 --enable-libaom --enable-libopus
+    --enable-libvorbis --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libvo-amrwbenc
+    --enable-libmp3lame --enable-libfreetype --enable-libfribidi --enable-libxml2
+    --enable-libfontconfig --enable-libass --enable-libaribb24 --enable-cuda-llvm --enable-ffnvcodec
+    --enable-cuvid --enable-nvdec --enable-nvenc --enable-libmfx --enable-d3d11va --enable-dxva2
+    --arch=x86_64 --cross-prefix=x86_64-w64-mingw32- --disable-autodetect --disable-debug
+    --disable-doc --disable-w32threads --enable-cross-compile --enable-gpl --enable-version3
+    --extra-libs='-lpthread -lstdc++' --target-os=mingw64 --pkg-config=pkg-config
+    --pkg-config-flags=--static
+    ```
+    </details>
+
+    <details>
+    <summary>Dependent library</summary>
+
+    ```bat
+    > dumpbin /Dependents C:\tools\media\ffmpeg\ffmpeg.exe
+    Microsoft (R) COFF/PE Dumper Version 14.30.30705.0
+    Copyright (C) Microsoft Corporation.  All rights reserved.
+
+
+    Dump of file C:\tools\media\ffmpeg\ffmpeg.exe
+
+    File Type: EXECUTABLE IMAGE
+
+      Image has the following dependencies:
+
+        ADVAPI32.dll
+        bcrypt.dll
+        CRYPT32.dll
+        GDI32.dll
+        KERNEL32.dll
+        msvcrt.dll
+        ole32.dll
+        OLEAUT32.dll
+        PSAPI.DLL
+        SHELL32.dll
+        SHLWAPI.dll
+        USER32.dll
+        AVICAP32.dll
+        WS2_32.dll
+
+      Summary
+
+            1000 .CRT
+          85C000 .bss
+          17000 .data
+            B000 .edata
+            5000 .idata
+          C9000 .pdata
+          985000 .rdata
+          2B000 .reloc
+            1000 .rodata
+        3634000 .text
+            1000 .tls
+          FE000 .xdata
+    ```
+    </details>
+
 
 ## Supported Codecs
 
@@ -178,14 +310,16 @@ If you want to use a non-free codec(e.g. `fdk-aac`, `libnpp` ), you can generate
 
 **Generated binaries cannot be redistributed due to licensing issues. Please use them for your own use only.**
 
-```bash
+```powershell
 # for windows build
-# $ export CUDA_SDK_VERSION=11.4.2
-# $ export NVIDIA_DRIVER_VERSION=471.41
-# $ curl -L -o ./cuda_${CUDA_SDK_VERSION}_${NVIDIA_DRIVER_VERSION}_win10.exe https://developer.download.nvidia.com/compute/cuda/${CUDA_SDK_VERSION}/local_installers/cuda_${CUDA_SDK_VERSION}_${NVIDIA_DRIVER_VERSION}_win10.exe
-$ docker buildx build --build-arg HOST_TARGET=x86_64-w64-mingw32 --build-arg TARGET_OS=windows --output type=local,dest=build -t ffmpeg-nonfree:windows -f ./nonfree.Dockerfile .
-
-# for linux build
-$ docker buildx build --output type=local,dest=build -t ffmpeg-nonfree:windows -f ./nonfree.Dockerfile .
+> $Env:CUDA_SDK_VERSION = "11.6.0"
+> $Env:NVIDIA_DRIVER_VERSION = "511.23"
+> curl -L -o cuda_${Env:CUDA_SDK_VERSION}_${Env:NVIDIA_DRIVER_VERSION}_windows.exe https://developer.download.nvidia.com/compute/cuda/${Env:CUDA_SDK_VERSION}/local_installers/cuda_${Env:CUDA_SDK_VERSION}_${Env:NVIDIA_DRIVER_VERSION}_windows.exe
+> docker buildx build --build-arg HOST_TARGET=x86_64-w64-mingw32 --build-arg TARGET_OS=windows --build-arg CUDA_SDK_VERSION=${Env:CUDA_SDK_VERSION} --build-arg NVIDIA_DRIVER_VERSION=${Env:NVIDIA_DRIVER_VERSION} --output type=local,dest=build -t ffmpeg-nonfree:windows -f ./nonfree.Dockerfile .
 ```
 
+```bash
+# for linux build
+$ touch cuda_11.6.0_511.23_windows.exe # dummy file
+$ docker buildx build --output type=local,dest=build -t ffmpeg-nonfree:linux -f ./nonfree.Dockerfile .
+```
