@@ -7,7 +7,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Install build tools
 RUN <<EOT
-sed -i -r 's!(deb|deb-src \S+!\1 http://ftp.jaist.ac.jp/pub/Linux/ubuntu/!' /etc/apt/sources.list
+sed -i -r 's!(deb|deb-src) \S+!\1 http://ftp.jaist.ac.jp/pub/Linux/ubuntu/!' /etc/apt/sources.list
 apt-get update
 apt-get install -y \
     autopoint \
