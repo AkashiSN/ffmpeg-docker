@@ -246,6 +246,20 @@ make install
 EOT
 ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-gnutls"
 
+# Build SRT
+ADD https://github.com/Haivision/srt/archive/master.tar.gz /tmp/srt-master.tar.gz
+RUN <<EOT
+tar xf /tmp/srt-master.tar.gz -C /tmp
+mkdir /tmp/srt_build && cd /tmp/srt_build
+cmake -DCMAKE_TOOLCHAIN_FILE=../toolchains.cmake -DENABLE_SHARED=0 \
+      -DBUILD_TESTING=0 -DCMAKE_INSTALL_PREFIX=${LIBRARY_PREFIX} \
+      -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_INSTALL_BINDIR=bin -DCMAKE_INSTALL_INCLUDEDIR=include \
+      -DENABLE_APPS=0 -DUSE_STATIC_LIBSTDCXX=1 -DUSE_ENCLIB=gnutls ../srt-master
+make -j $(nproc)
+make install
+EOT
+ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libsrt"
+
 
 #
 # Video
