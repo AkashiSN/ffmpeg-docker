@@ -67,6 +67,15 @@ SET(CMAKE_C_COMPILER ${CROSS_PREFIX}gcc)
 SET(CMAKE_CXX_COMPILER ${CROSS_PREFIX}g++)
 SET(CMAKE_RC_COMPILER ${CROSS_PREFIX}windres)
 EOS
+if [ "${HOST_TARGET}" = "x86_64-w64-mingw32" ]; then
+      cat << EOS >> /tmp/toolchains.cmake
+SET(CMAKE_ASM_YASM_COMPILER yasm)
+SET(CMAKE_CXX_FLAGS "-static-libgcc -static-libstdc++ -static -O3 -s")
+SET(CMAKE_C_FLAGS "-static-libgcc -static-libstdc++ -static -O3 -s")
+SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-static-libgcc -static-libstdc++ -static -O3 -s")
+SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-static-libgcc -static-libstdc++ -static -O3 -s")
+EOS
+fi
 EOT
 
 
@@ -92,7 +101,7 @@ RUN curl -sL -o /tmp/libpng-${LIBPNG_VERSION}.tar.xz https://download.sourceforg
 RUN <<EOT
 tar xf /tmp/libpng-${LIBPNG_VERSION}.tar.xz -C /tmp
 mkdir /tmp/libpng_build && cd /tmp/libpng_build
-cmake -DCMAKE_TOOLCHAIN_FILE=../toolchains.cmake -DPNG_SHARED=0 -DPNG_STATIC=1 -DPNG_TESTS=0 \
+cmake -DCMAKE_TOOLCHAIN_FILE=/tmp/toolchains.cmake -DPNG_SHARED=0 -DPNG_STATIC=1 -DPNG_TESTS=0 \
       -DCMAKE_INSTALL_PREFIX=${LIBRARY_PREFIX} ../libpng-${LIBPNG_VERSION}
 make -j $(nproc)
 make install
@@ -114,7 +123,7 @@ ADD https://github.com/uclouvain/openjpeg/archive/master.tar.gz /tmp/openjpeg-ma
 RUN <<EOT
 tar xf /tmp/openjpeg-master.tar.gz -C /tmp
 mkdir /tmp/openjpeg_build && cd /tmp/openjpeg_build
-cmake -DCMAKE_TOOLCHAIN_FILE=../toolchains.cmake -DBUILD_SHARED_LIBS=0 \
+cmake -DCMAKE_TOOLCHAIN_FILE=/tmp/toolchains.cmake -DBUILD_SHARED_LIBS=0 \
       -DBUILD_TESTING=0 -DCMAKE_INSTALL_PREFIX=${LIBRARY_PREFIX} -DBUILD_CODEC=0 ../openjpeg-master
 make -j $(nproc)
 make install
@@ -251,7 +260,7 @@ ADD https://github.com/Haivision/srt/archive/master.tar.gz /tmp/srt-master.tar.g
 RUN <<EOT
 tar xf /tmp/srt-master.tar.gz -C /tmp
 mkdir /tmp/srt_build && cd /tmp/srt_build
-cmake -DCMAKE_TOOLCHAIN_FILE=../toolchains.cmake -DENABLE_SHARED=0 \
+cmake -DCMAKE_TOOLCHAIN_FILE=/tmp/toolchains.cmake -DENABLE_SHARED=0 \
       -DBUILD_TESTING=0 -DCMAKE_INSTALL_PREFIX=${LIBRARY_PREFIX} \
       -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_INSTALL_BINDIR=bin -DCMAKE_INSTALL_INCLUDEDIR=include \
       -DENABLE_APPS=0 -DUSE_STATIC_LIBSTDCXX=1 -DUSE_ENCLIB=gnutls ../srt-master
@@ -298,34 +307,22 @@ ENV X265_VERSION=3.5
 RUN git clone https://bitbucket.org/multicoreware/x265_git -b ${X265_VERSION} --depth 1 /tmp/x265
 RUN <<EOT
 mkdir /tmp/x265_build && cd /tmp/x265_build
-\
-cp ../toolchains.cmake ./
-if [ "${HOST_TARGET}" = "x86_64-w64-mingw32" ]; then
-      cat << EOS >> ./toolchains.cmake
-SET(CMAKE_ASM_YASM_COMPILER yasm)
-SET(CMAKE_CXX_FLAGS "-static-libgcc -static-libstdc++ -static -O3 -s")
-SET(CMAKE_C_FLAGS "-static-libgcc -static-libstdc++ -static -O3 -s")
-SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-static-libgcc -static-libstdc++ -static -O3 -s")
-SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-static-libgcc -static-libstdc++ -static -O3 -s")
-EOS
-fi
-\
 mkdir -p 8bit 10bit 12bit
 \
 cd 12bit
-cmake -DCMAKE_TOOLCHAIN_FILE=../toolchains.cmake -DHIGH_BIT_DEPTH=1 -DEXPORT_C_API=0 -DENABLE_SHARED=0 \
+cmake -DCMAKE_TOOLCHAIN_FILE=/tmp/toolchains.cmake -DHIGH_BIT_DEPTH=1 -DEXPORT_C_API=0 -DENABLE_SHARED=0 \
       -DBUILD_SHARED_LIBS=0 -DENABLE_CLI=0 -DENABLE_TESTS=0 -DMAIN12=1 ../../x265/source
 make -j $(nproc)
 cp libx265.a ../8bit/libx265_main12.a
 \
 cd ../10bit
-cmake -DCMAKE_TOOLCHAIN_FILE=../toolchains.cmake -DHIGH_BIT_DEPTH=1 -DEXPORT_C_API=0 -DENABLE_SHARED=0 \
+cmake -DCMAKE_TOOLCHAIN_FILE=/tmp/toolchains.cmake -DHIGH_BIT_DEPTH=1 -DEXPORT_C_API=0 -DENABLE_SHARED=0 \
       -DBUILD_SHARED_LIBS=0 -DENABLE_CLI=0 -DENABLE_TESTS=0 ../../x265/source
 make -j $(nproc)
 cp libx265.a ../8bit/libx265_main10.a
 \
 cd ../8bit
-cmake -DCMAKE_TOOLCHAIN_FILE=../toolchains.cmake -DEXTRA_LIB="x265_main10.a;x265_main12.a" -DEXTRA_LINK_FLAGS=-L. \
+cmake -DCMAKE_TOOLCHAIN_FILE=/tmp/toolchains.cmake -DEXTRA_LIB="x265_main10.a;x265_main12.a" -DEXTRA_LINK_FLAGS=-L. \
       -DLINKED_10BIT=1 -DLINKED_12BIT=1 -DENABLE_SHARED=0 -DBUILD_SHARED_LIBS=0 -DENABLE_CLI=0 -DENABLE_TESTS=0 \
       -DCMAKE_INSTALL_PREFIX=${LIBRARY_PREFIX} ../../x265/source
 make -j $(nproc)
@@ -373,7 +370,7 @@ RUN <<EOT
 tar xf /tmp/opus-master.tar.gz -C /tmp
 mkdir /tmp/opus_build && cd /tmp/opus_build
 if [ "${HOST_TARGET}" = "x86_64-w64-mingw32" ]; then
-      cmake -DCMAKE_TOOLCHAIN_FILE=../toolchains.cmake -DBUILD_SHARED_LIBS=0 -DBUILD_TESTING=0 \
+      cmake -DCMAKE_TOOLCHAIN_FILE=/tmp/toolchains.cmake -DBUILD_SHARED_LIBS=0 -DBUILD_TESTING=0 \
             -DOPUS_STACK_PROTECTOR=0 -DOPUS_FORTIFY_SOURCE=0 -DCMAKE_INSTALL_PREFIX=${LIBRARY_PREFIX} ../opus-master
 else
       cmake -DBUILD_SHARED_LIBS=0 -DBUILD_TESTING=0 ../opus-master
@@ -388,7 +385,7 @@ ADD https://github.com/xiph/ogg/archive/master.tar.gz /tmp/ogg-master.tar.gz
 RUN <<EOT
 tar xf /tmp/ogg-master.tar.gz -C /tmp
 mkdir /tmp/ogg_build && cd /tmp/ogg_build
-cmake -DCMAKE_TOOLCHAIN_FILE=../toolchains.cmake -DBUILD_SHARED_LIBS=0 -DINSTALL_CMAKE_PACKAGE_MODULE=0 \
+cmake -DCMAKE_TOOLCHAIN_FILE=/tmp/toolchains.cmake -DBUILD_SHARED_LIBS=0 -DINSTALL_CMAKE_PACKAGE_MODULE=0 \
       -DINSTALL_DOCS=0 -DBUILD_TESTING=0 -DCMAKE_INSTALL_PREFIX=${LIBRARY_PREFIX} ../ogg-master
 make -j $(nproc)
 make install
@@ -399,7 +396,7 @@ ADD https://github.com/xiph/vorbis/archive/master.tar.gz /tmp/vorbis-master.tar.
 RUN <<EOT
 tar xf /tmp/vorbis-master.tar.gz -C /tmp
 mkdir /tmp/vorbis_build && cd /tmp/vorbis_build
-cmake -DCMAKE_TOOLCHAIN_FILE=../toolchains.cmake -DBUILD_SHARED_LIBS=0 -DINSTALL_CMAKE_PACKAGE_MODULE=0 \
+cmake -DCMAKE_TOOLCHAIN_FILE=/tmp/toolchains.cmake -DBUILD_SHARED_LIBS=0 -DINSTALL_CMAKE_PACKAGE_MODULE=0 \
       -DBUILD_TESTING=0 -DCMAKE_INSTALL_PREFIX=${LIBRARY_PREFIX} ../vorbis-master
 make -j $(nproc)
 make install
@@ -476,7 +473,7 @@ ADD https://gitlab.gnome.org/GNOME/libxml2/-/archive/v${LIBXML2_VERSION}/libxml2
 RUN <<EOT
 tar xf /tmp/libxml2-v${LIBXML2_VERSION}.tar.bz2 -C /tmp
 mkdir /tmp/libxml2_build && cd /tmp/libxml2_build
-cmake -DCMAKE_TOOLCHAIN_FILE=../toolchains.cmake -DBUILD_SHARED_LIBS=0 -DLIBXML2_WITH_FTP=0 \
+cmake -DCMAKE_TOOLCHAIN_FILE=/tmp/toolchains.cmake -DBUILD_SHARED_LIBS=0 -DLIBXML2_WITH_FTP=0 \
       -DLIBXML2_WITH_HTTP=0 -DLIBXML2_WITH_PYTHON=0 -DLIBXML2_WITH_TESTS=0 \
       -DCMAKE_INSTALL_PREFIX=${LIBRARY_PREFIX} ../libxml2-v${LIBXML2_VERSION}
 make -j $(nproc)

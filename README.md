@@ -29,10 +29,10 @@
 
     ```bash
     --enable-zlib --enable-libopenjpeg --enable-libwebp --enable-lzma --enable-gmp --enable-iconv
-    --enable-gnutls --enable-libvpx --enable-libx264 --enable-libx265 --enable-libaom --enable-libopus
-    --enable-libvorbis --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libvo-amrwbenc
-    --enable-libmp3lame --enable-libfreetype --enable-libfribidi --enable-libxml2
-    --enable-libfontconfig --enable-libass --enable-libaribb24 --enable-cuda-llvm --enable-ffnvcodec
+    --enable-gnutls --enable-libsrt --enable-libvpx --enable-libx264 --enable-libx265 --enable-libaom
+    --enable-libopus --enable-libvorbis --enable-libopencore-amrnb --enable-libopencore-amrwb
+    --enable-libvo-amrwbenc --enable-libmp3lame --enable-libfreetype --enable-libfribidi --enable-libxml2
+    --enable-libfontconfig --enable-libass --enable-libaribb24 --enable-sdl2 --enable-cuda-llvm --enable-ffnvcodec
     --enable-cuvid --enable-nvdec --enable-nvenc --disable-autodetect --disable-debug --disable-doc
     --enable-gpl --enable-version3 --extra-libs='-lpthread -lstdc++' --pkg-config-flags=--static
     ```
@@ -62,10 +62,10 @@
 
       ```bash
       --enable-zlib --enable-libopenjpeg --enable-libwebp --enable-lzma --enable-gmp --enable-iconv
-      --enable-gnutls --enable-libvpx --enable-libx264 --enable-libx265 --enable-libaom --enable-libopus
-      --enable-libvorbis --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libvo-amrwbenc
-      --enable-libmp3lame --enable-libfreetype --enable-libfribidi --enable-libxml2
-      --enable-libfontconfig --enable-libass --enable-libaribb24 --enable-cuda-llvm --enable-ffnvcodec
+      --enable-gnutls --enable-libsrt --enable-libvpx --enable-libx264 --enable-libx265 --enable-libaom
+      --enable-libopus --enable-libvorbis --enable-libopencore-amrnb --enable-libopencore-amrwb
+      --enable-libvo-amrwbenc --enable-libmp3lame --enable-libfreetype --enable-libfribidi --enable-libxml2
+      --enable-libfontconfig --enable-libass --enable-libaribb24 --enable-sdl2 --enable-cuda-llvm --enable-ffnvcodec
       --enable-cuvid --enable-nvdec --enable-nvenc --enable-libmfx --enable-vaapi --disable-autodetect
       --disable-debug --disable-doc --enable-gpl --enable-version3 --extra-libs='-lpthread -lstdc++'
       --pkg-config-flags=--static
@@ -101,10 +101,10 @@
 
     ```bash
     --enable-zlib --enable-libopenjpeg --enable-libwebp --enable-lzma --enable-gmp --enable-iconv
-    --enable-gnutls --enable-libvpx --enable-libx264 --enable-libx265 --enable-libaom --enable-libopus
-    --enable-libvorbis --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libvo-amrwbenc
-    --enable-libmp3lame --enable-libfreetype --enable-libfribidi --enable-libxml2
-    --enable-libfontconfig --enable-libass --enable-libaribb24 --enable-cuda-llvm --enable-ffnvcodec
+    --enable-gnutls --enable-libsrt --enable-libvpx --enable-libx264 --enable-libx265 --enable-libaom
+    --enable-libopus --enable-libvorbis --enable-libopencore-amrnb --enable-libopencore-amrwb
+    --enable-libvo-amrwbenc --enable-libmp3lame --enable-libfreetype --enable-libfribidi --enable-libxml2
+    --enable-libfontconfig --enable-libass --enable-libaribb24 --enable-sdl2 --enable-cuda-llvm --enable-ffnvcodec
     --enable-cuvid --enable-nvdec --enable-nvenc --enable-libmfx --enable-d3d11va --enable-dxva2
     --arch=x86_64 --cross-prefix=x86_64-w64-mingw32- --disable-autodetect --disable-debug
     --disable-doc --disable-w32threads --enable-cross-compile --enable-gpl --enable-version3
