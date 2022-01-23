@@ -60,13 +60,6 @@ EOT
 RUN echo -n "`cat /usr/local/ffmpeg_configure_options` --enable-d3d11va --enable-dxva2" > /usr/local/ffmpeg_configure_options
 
 
-# Remove dynamic dll
-RUN <<EOT
-rm /usr/x86_64-w64-mingw32/lib/libpthread.dll.a
-rm /usr/lib/gcc/x86_64-w64-mingw32/*/libstdc++.dll.a
-EOT
-
-
 #
 # Build ffmpeg
 #
@@ -76,8 +69,8 @@ RUN <<EOT
 tar xf /tmp/ffmpeg-${FFMPEG_VERSION}.tar.xz -C /tmp
 cd /tmp/ffmpeg-${FFMPEG_VERSION}
 ./configure `cat /usr/local/ffmpeg_configure_options` \
-            --arch=x86_64 \
-            --cross-prefix=${CROSS_PREFIX} \
+            --arch="x86_64" \
+            --cross-prefix="${CROSS_PREFIX}" \
             --disable-autodetect \
             --disable-debug \
             --disable-doc \
@@ -85,8 +78,9 @@ cd /tmp/ffmpeg-${FFMPEG_VERSION}
             --enable-cross-compile \
             --enable-gpl \
             --enable-version3 \
-            --extra-libs="`cat /usr/local/ffmpeg_extra_libs`" \
-            --target-os=mingw64 \
+            --extra-libs="-static -static-libgcc -static-libstdc++ -Wl,-Bstatic `cat /usr/local/ffmpeg_extra_libs`" \
+            --extra-cflags="--static" \
+            --target-os="mingw64" \
             --pkg-config="pkg-config" \
             --pkg-config-flags="--static" > /usr/local/configure_options
 make -j $(nproc)
