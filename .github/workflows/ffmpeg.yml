@@ -5,7 +5,7 @@ on:
     paths:
       - 'Dockerfile'
       - 'qsv.Dockerfile'
-      - 'winodows.Dockerfile'
+      - 'windows.Dockerfile'
       - '.github/workflows/ffmpeg.yml'
   workflow_run:
     workflows: ["ffmpeg-library-build"]
