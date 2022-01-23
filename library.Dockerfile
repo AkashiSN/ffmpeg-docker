@@ -525,6 +525,24 @@ ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-libaribb24"
 
 
 #
+# Graphic
+#
+
+# Build SDL
+
+ENV SDL_VERSION=2.0.20
+ADD https://www.libsdl.org/release/SDL2-${SDL_VERSION}.tar.gz /tmp/
+RUN <<EOT
+tar xf /tmp/SDL2-${SDL_VERSION}.tar.gz -C /tmp
+cd /tmp/SDL2-${SDL_VERSION}
+./configure --prefix=${LIBRARY_PREFIX} --host="${HOST_TARGET}" --enable-static --disable-shared
+make -j $(nproc)
+make install
+EOT
+ENV FFMPEG_CONFIGURE_OPTIONS="${FFMPEG_CONFIGURE_OPTIONS} --enable-sdl2"
+
+
+#
 # HWAccel
 #
 
