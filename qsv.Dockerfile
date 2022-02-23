@@ -2,7 +2,7 @@
 
 FROM ubuntu:20.04 AS ffmpeg-build
 
-SHELL ["/bin/sh", "-e", "-c"]
+SHELL ["/bin/bash", "-e", "-c"]
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Install build tools
@@ -22,6 +22,15 @@ EOT
 # ffmpeg-library-build image
 COPY --from=ghcr.io/akashisn/ffmpeg-library-build:linux / /
 
+# Environment
+ENV TARGET_OS="Linux" \
+    PREFIX="/usr/local" \
+    WORKDIR="/workdir"
+
+WORKDIR ${WORKDIR}
+
+# Copy build script
+ADD *.sh ./
 
 #
 # HWAccel
@@ -29,39 +38,29 @@ COPY --from=ghcr.io/akashisn/ffmpeg-library-build:linux / /
 
 # Install MediaSDK
 ENV INTEL_MEDIA_SDK_VERSION=21.3.5
-ADD https://github.com/Intel-Media-SDK/MediaSDK/releases/download/intel-mediasdk-${INTEL_MEDIA_SDK_VERSION}/MediaStack.tar.gz /tmp/
 RUN apt-get install -y libdrm2 libxext6 libxfixes3
 RUN <<EOT
-tar xf /tmp/MediaStack.tar.gz -C /tmp
-cd /tmp/MediaStack/opt/intel/mediasdk
-cp --archive --no-dereference include /usr/local/
-cp --archive --no-dereference lib64/. /usr/local/lib/
+sources ./base.sh
+download_and_unpack_file "https://github.com/Intel-Media-SDK/MediaSDK/releases/download/intel-mediasdk-${INTEL_MEDIA_SDK_VERSION}/MediaStack.tar.gz"
+cd opt/intel/mediasdk
+cp --archive --no-dereference include ${PREFIX}/
+cp --archive --no-dereference lib64/. ${PREFIX}/lib/
 ldconfig
-echo -n "`cat /usr/local/ffmpeg_configure_options` --enable-libmfx --enable-vaapi" > /usr/local/ffmpeg_configure_options
+echo -n "`cat ${PREFIX}/ffmpeg_configure_options` --enable-libmfx --enable-vaapi" > ${PREFIX}/ffmpeg_configure_options
 EOT
+
 
 #
 # Build ffmpeg
 #
 ARG FFMPEG_VERSION=5.0
-ADD https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.xz /tmp/
-RUN <<EOT
-tar xf /tmp/ffmpeg-${FFMPEG_VERSION}.tar.xz -C /tmp
-cd /tmp/ffmpeg-${FFMPEG_VERSION}
-./configure `cat /usr/local/ffmpeg_configure_options` \
-            --disable-autodetect \
-            --disable-debug \
-            --disable-doc \
-            --enable-gpl \
-            --enable-version3 \
-            --extra-libs="`cat /usr/local/ffmpeg_extra_libs`" \
-            --pkg-config-flags="--static" > /usr/local/configure_options
-make -j $(nproc)
-make install
-EOT
+ENV FFMPEG_VERSION="${FFMPEG_VERSION}"
+
+# Run build
+RUN bash ./build-ffmpeg.sh
 
 # Copy run.sh
-COPY <<'EOT' /usr/local/run.sh
+COPY <<'EOT' ${PREFIX}/run.sh
 #!/bin/sh
 export PATH=$(dirname $0)/bin:$PATH
 export LD_LIBRARY_PATH=$(dirname $0)/lib:$LD_LIBRARY_PATH
@@ -73,13 +72,13 @@ EOT
 # Copy artifacts
 RUN <<EOT
 mkdir /build
-chmod +x /usr/local/run.sh
-cp --archive --parents --no-dereference /usr/local/run.sh /build
-cp --archive --parents --no-dereference /usr/local/bin/ff* /build
-cp --archive --parents --no-dereference /usr/local/configure_options /build
-cp --archive --parents --no-dereference /usr/local/lib/*.so* /build
-rm /build/usr/local/lib/libva-glx.so*
-rm /build/usr/local/lib/libva-x11.so*
+chmod +x ${PREFIX}/run.sh
+cp --archive --parents --no-dereference ${PREFIX}/run.sh /build
+cp --archive --parents --no-dereference ${PREFIX}/bin/ff* /build
+cp --archive --parents --no-dereference ${PREFIX}/configure_options /build
+cp --archive --parents --no-dereference ${PREFIX}/lib/*.so* /build
+rm /build/${PREFIX}/lib/libva-glx.so*
+rm /build/${PREFIX}/lib/libva-x11.so*
 EOT
 
 

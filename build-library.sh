@@ -1,36 +1,38 @@
-#!/bin/bash -e -c
+#!/bin/bash
 
-source base.sh
+source ./base.sh
 
 #
 # Build Tools
 #
 
 # Download Cmake
-CMAKE_VERSION=3.22.1
+CMAKE_VERSION=3.22.2
 download_and_unpack_file "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-${HOST_OS}-${HOST_ARCH}.tar.gz"
 case "$(uname)" in
 Darwin)
-  rm ./CMake.app/Contents/bin/cmake-gui
-  mv ./CMake.app/Contents/bin/* ${PREFIX}/bin/
-  mv ./CMake.app/Contents/share/* ${PREFIX}/share/
+  rm -f ./CMake.app/Contents/bin/cmake-gui
+  cp -r ./CMake.app/Contents/bin/. ${PREFIX}/bin/
+  cp -r ./CMake.app/Contents/share/. ${PREFIX}/share/
   ;;
 Linux)
-  mv ./bin/* ${PREFIX}/bin/
-  mv ./share/* ${PREFIX}/share/
+  cp -r ./bin/. ${PREFIX}/bin/
+  cp -r ./share/. ${PREFIX}/share/
   ;;
 esac
 
 # Cmake build toolchain
 cat << EOS > ${WORKDIR}/toolchains.cmake
 SET(CMAKE_SYSTEM_NAME ${TARGET_OS})
+SET(CMAKE_PREFIX_PATH ${PREFIX})
+SET(CMAKE_INSTALL_PREFIX ${PREFIX})
 SET(CMAKE_C_COMPILER ${CROSS_PREFIX}gcc)
 SET(CMAKE_CXX_COMPILER ${CROSS_PREFIX}g++)
-SET(CMAKE_RC_COMPILER ${CROSS_PREFIX}windres)
-SET(CMAKE_INSTALL_PREFIX ${PREFIX})
 EOS
+
 if [ "${TARGET_OS}" = "Windows" ]; then
   cat << EOS >> ${WORKDIR}/toolchains.cmake
+SET(CMAKE_RC_COMPILER ${CROSS_PREFIX}windres)
 SET(CMAKE_ASM_YASM_COMPILER yasm)
 SET(CMAKE_CXX_FLAGS "-static-libgcc -static-libstdc++ -static -O3 -s")
 SET(CMAKE_C_FLAGS "-static-libgcc -static-libstdc++ -static -O3 -s")
@@ -65,7 +67,7 @@ do_configure
 do_make_and_make_install
 
 # Build openjpeg
-download_and_unpack_file "https://github.com/uclouvain/openjpeg/archive/master.tar.gz openjpeg-master.tar.gz"
+download_and_unpack_file "https://github.com/uclouvain/openjpeg/archive/master.tar.gz" openjpeg-master.tar.gz
 mkcd ${WORKDIR}/openjpeg_build
 do_cmake "-DBUILD_SHARED_LIBS=0 -DBUILD_TESTING=0 -DBUILD_CODEC=0" ../openjpeg-master
 do_make_and_make_install
@@ -164,9 +166,9 @@ FFMPEG_CONFIGURE_OPTIONS+=("--enable-libsrt")
 # Build libvpx
 download_and_unpack_file "https://github.com/webmproject/libvpx/archive/master.tar.gz" libvpx-master.tar.gz
 if [ "${TARGET_OS}" = "Windows" ]; then
-  CROSS=${CROSS_PREFIX} do_configure "--target=x86_64-win64-gcc --disable-examples --disable-docs --disable-unit-tests --as=yasm"
+  CROSS=${CROSS_PREFIX} ./configure --prefix="${PREFIX}" --target=x86_64-win64-gcc --disable-examples --disable-docs --disable-unit-tests --as=yasm
 else
-  do_configure "--disable-examples --disable-docs --disable-unit-tests --as=yasm"
+  ./configure --prefix="${PREFIX}" --disable-examples --disable-docs --disable-unit-tests --as=yasm
 fi
 do_make_and_make_install
 FFMPEG_CONFIGURE_OPTIONS+=("--enable-libvpx")
@@ -184,19 +186,19 @@ mkcd ${WORKDIR}/x265_build
 mkdir -p 8bit 10bit 12bit
 
 cd 12bit
-do_cmake "-DHIGH_BIT_DEPTH=1 -DEXPORT_C_API=0 -DENABLE_SHARED=0 -DBUILD_SHARED_LIBS=0 -DENABLE_CLI=0 -DENABLE_TESTS=0 -DMAIN12=1" ../../x265/source
-make -j $(nproc)
+do_cmake "-DHIGH_BIT_DEPTH=1 -DEXPORT_C_API=0 -DENABLE_SHARED=0 -DBUILD_SHARED_LIBS=0 -DENABLE_CLI=0 -DENABLE_TESTS=0 -DMAIN12=1" ../../x265_git/source
+make -j ${CPU_NUM}
 cp libx265.a ../8bit/libx265_main12.a
 
 cd ../10bit
-do_cmake "-DHIGH_BIT_DEPTH=1 -DEXPORT_C_API=0 -DENABLE_SHARED=0 -DBUILD_SHARED_LIBS=0 -DENABLE_CLI=0 -DENABLE_TESTS=0" ../../x265/source
-make -j $(nproc)
+do_cmake "-DHIGH_BIT_DEPTH=1 -DEXPORT_C_API=0 -DENABLE_SHARED=0 -DBUILD_SHARED_LIBS=0 -DENABLE_CLI=0 -DENABLE_TESTS=0" ../../x265_git/source
+make -j ${CPU_NUM}
 cp libx265.a ../8bit/libx265_main10.a
 
 cd ../8bit
 do_cmake '-DEXTRA_LIB="x265_main10.a;x265_main12.a" -DEXTRA_LINK_FLAGS=-L. -DLINKED_10BIT=1 -DLINKED_12BIT=1
-          -DENABLE_SHARED=0 -DBUILD_SHARED_LIBS=0 -DENABLE_CLI=0 -DENABLE_TESTS=0' ../../x265/source
-make -j $(nproc)
+          -DENABLE_SHARED=0 -DBUILD_SHARED_LIBS=0 -DENABLE_CLI=0 -DENABLE_TESTS=0' ../../x265_git/source
+make -j ${CPU_NUM}
 
 mv libx265.a libx265_main.a
 
@@ -360,14 +362,8 @@ FFMPEG_CONFIGURE_OPTIONS+=("--enable-cuda-llvm" "--enable-ffnvcodec" "--enable-c
 
 
 #
-# Copy artifacts
+# Save options
 #
-mkdir /build
-rm -r ${LIBRARY_PREFIX}/lib/python3.8
-echo $FFMPEG_EXTRA_LIBS > ${LIBRARY_PREFIX}/ffmpeg_extra_libs
-echo $FFMPEG_CONFIGURE_OPTIONS >${LIBRARY_PREFIX}/ffmpeg_configure_options
-cp --archive --parents --no-dereference ${LIBRARY_PREFIX}/lib /build
-cp --archive --parents --no-dereference ${LIBRARY_PREFIX}/include /build
-cp --archive --parents --no-dereference ${LIBRARY_PREFIX}/ffmpeg_extra_libs /build
-cp --archive --parents --no-dereference ${LIBRARY_PREFIX}/ffmpeg_configure_options /build
 
+echo -n "$FFMPEG_EXTRA_LIBS" > ${PREFIX}/ffmpeg_extra_libs
+echo -n "$FFMPEG_CONFIGURE_OPTIONS" > ${PREFIX}/ffmpeg_configure_options

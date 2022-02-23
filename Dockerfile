@@ -2,12 +2,12 @@
 
 FROM ubuntu:20.04 AS ffmpeg-build
 
-SHELL ["/bin/sh", "-e", "-c"]
+SHELL ["/bin/bash", "-e", "-c"]
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Install build tools
 RUN <<EOT
-sed -i -r 's!(deb|deb-src) \S+!\1 http://ftp.jaist.ac.jp/pub/Linux/ubuntu/!' /etc/apt/sources.list
+sed -i -r 's!(deb|deb-src) \S+!\1 http://ftp.tsukuba.wide.ad.jp/Linux/ubuntu!' /etc/apt/sources.list
 apt-get update
 apt-get install -y \
     build-essential \
@@ -19,6 +19,16 @@ apt-get install -y \
     yasm
 EOT
 
+# Environment
+ENV TARGET_OS="Linux" \
+    PREFIX="/usr/local" \
+    WORKDIR="/workdir"
+
+WORKDIR ${WORKDIR}
+
+# Copy build script
+ADD *.sh ./
+
 # ffmpeg-library-build image
 COPY --from=ghcr.io/akashisn/ffmpeg-library-build:linux / /
 
@@ -27,24 +37,13 @@ COPY --from=ghcr.io/akashisn/ffmpeg-library-build:linux / /
 # Build ffmpeg
 #
 ARG FFMPEG_VERSION=5.0
-ADD https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.xz /tmp/
-RUN <<EOT
-tar xf /tmp/ffmpeg-${FFMPEG_VERSION}.tar.xz -C /tmp
-cd /tmp/ffmpeg-${FFMPEG_VERSION}
-./configure `cat /usr/local/ffmpeg_configure_options` \
-            --disable-autodetect \
-            --disable-debug \
-            --disable-doc \
-            --enable-gpl \
-            --enable-version3 \
-            --extra-libs="`cat /usr/local/ffmpeg_extra_libs`" \
-            --pkg-config-flags="--static" > /usr/local/configure_options
-make -j $(nproc)
-make install
-EOT
+ENV FFMPEG_VERSION="${FFMPEG_VERSION}"
+
+# Run build
+RUN bash ./build-ffmpeg.sh
 
 # Copy run.sh
-COPY <<'EOT' /usr/local/run.sh
+COPY <<'EOT' ${PREFIX}/run.sh
 #!/bin/sh
 export PATH=$(dirname $0)/bin:$PATH
 exec $@
@@ -53,10 +52,10 @@ EOT
 # Copy artifacts
 RUN <<EOT
 mkdir /build
-chmod +x /usr/local/run.sh
-cp --archive --parents --no-dereference /usr/local/run.sh /build
-cp --archive --parents --no-dereference /usr/local/bin/ff* /build
-cp --archive --parents --no-dereference /usr/local/configure_options /build
+chmod +x ${PREFIX}/run.sh
+cp --archive --parents --no-dereference ${PREFIX}/run.sh /build
+cp --archive --parents --no-dereference ${PREFIX}/bin/ff* /build
+cp --archive --parents --no-dereference ${PREFIX}/configure_options /build
 EOT
 
 

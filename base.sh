@@ -1,6 +1,7 @@
-#!/bin/bash -e -c
+#!/bin/bash
+set -eu
 
-TARGET_OS=Windows,Darwin,Linux
+TARGET_OS="${TARGET_OS:-"Linux"}" # Windows,Darwin,Linux
 
 case ${TARGET_OS} in
 Linux)
@@ -9,7 +10,11 @@ Linux)
   BUILD_TARGET=
   CROSS_PREFIX=
   ;;
-MacOS)
+Darwin)
+  if [ ! "$(uname)" = "Darwin" ]; then
+    echo 'When TARGET_OS is "Darwin" host must be olso "Darwin"'
+    exit 1
+  fi
   HOST_OS="macos"
   HOST_ARCH="universal"
   BUILD_TARGET=
@@ -32,8 +37,9 @@ esac
 # Environment
 #
 
-WORKDIR="${HOME}/workdir"
-PREFIX="${LOCAL_PREFIX}"
+
+WORKDIR="${WORKDIR:-"/tmp"}"
+PREFIX="${PREFIX:-"/usr/local"}"
 
 export PKG_CONFIG="pkg-config"
 export LD_LIBRARY_PATH="${PREFIX}/lib"
@@ -49,6 +55,15 @@ mkdir -p ${WORKDIR} ${PREFIX}/{bin,share,lib/pkgconfig,include}
 
 FFMPEG_CONFIGURE_OPTIONS=()
 FFMPEG_EXTRA_LIBS=()
+case "$(uname)" in
+Darwin)
+  export CFLAGS="-Wno-error=implicit-function-declaration"
+  CPU_NUM=$(getconf _NPROCESSORS_ONLN)
+  ;;
+Linux)
+  CPU_NUM=$(nproc)
+  ;;
+esac
 
 
 #
@@ -60,10 +75,13 @@ download_and_unpack_file () {
   local url="$1"
   local output_name="${2:-$(basename ${url})}"
   local output_dir="$(echo ${output_name} | sed s/\.tar\.*//)"
-  echo "downloading ${url} ..."
-  curl -4 "${url}" --retry 50 -o "${output_name}" -L --fail
+  if [ ! -e "${output_name}" ]; then
+    echo "downloading ${url} ..."
+    curl -4 "${url}" --retry 50 -o "${output_name}" -L -s --fail
+  fi
   echo "unpacking ${output_name} into ${output_dir} ..."
-  mkdir -p ${output_dir}
+  rm -rf "${output_dir}"
+  mkdir -p "${output_dir}"
   tar -xf "${output_name}" --strip-components 1 -C "${output_dir}"
   cd ${output_dir}
 }
@@ -74,6 +92,7 @@ git_clone() {
   local branch="${2:-"master"}"
   local to_dir="$(basename ${repo_url} | sed s/\.git/_git/)"
   echo "Downloading (via git clone) ${to_dir} from $repo_url"
+  rm -rf "${to_dir}"
   git clone "${repo_url}" -b "${branch}" --depth 1 "${to_dir}"
   echo "done git cloning to ${to_dir}"
   cd ${to_dir}
@@ -89,12 +108,13 @@ svn_checkout() {
 }
 
 mkcd () {
+  rm -rf "$1"
   mkdir -p "$1"
   cd "$1"
 }
 
 do_configure () {
-  local configure_options="$1"
+  local configure_options="${1:-""}"
   local configure_name="${2:-"./configure"}"
 
   if [[ ! -f "${configure_name}" ]]; then
@@ -106,6 +126,7 @@ do_configure () {
       ./autogen.sh
     else
       autoreconf -fiv
+      automake --add-missing
     fi
   fi
 
@@ -113,14 +134,14 @@ do_configure () {
 }
 
 do_make_and_make_install () {
-  local extra_make_options="$1"
-  local extra_install_options="$2"
-  nice make -j $(nproc) ${extra_make_options}
+  local extra_make_options="${1:-""}"
+  local extra_install_options="${2:-""}"
+  nice make -j ${CPU_NUM} ${extra_make_options}
   nice make install ${extra_install_options}
 }
 
 do_cmake () {
-  local extra_args="$1"
+  local extra_args="${1:-""}"
   local build_from_dir="${2:-"."}"
   nice -n 5 cmake -G"Unix Makefiles" "${build_from_dir}" -DCMAKE_INSTALL_PREFIX="${PREFIX}" -DCMAKE_TOOLCHAIN_FILE="${WORKDIR}/toolchains.cmake" $extra_args
 }
