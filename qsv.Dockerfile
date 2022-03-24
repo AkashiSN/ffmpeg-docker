@@ -7,6 +7,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Install build tools
 RUN <<EOT
+rm -rf /var/lib/apt/lists/*
 apt-get update
 apt-get install -y \
     build-essential \
@@ -89,6 +90,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Install runtime dependency
 RUN <<EOT
+rm -rf /var/lib/apt/lists/*
 apt-get update
 apt-get install -y libdrm2
 apt-get autoremove -y

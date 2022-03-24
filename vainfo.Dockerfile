@@ -15,7 +15,8 @@ FROM ubuntu:20.04 AS vainfo
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Install runtime dependency
-RUN apt-get update && \
+RUN rm -rf /var/lib/apt/lists/* && \
+    apt-get update && \
     apt-get install -y libdrm2 libxext6 libxfixes3 && \
     apt-get autoremove -y && \
     apt-get clean && \
