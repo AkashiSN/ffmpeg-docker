@@ -42,7 +42,7 @@ ADD *.sh ./
 
 # Build libmfx
 RUN <<EOT
-sources ./base.sh
+source ./base.sh
 download_and_unpack_file "https://github.com/lu-zero/mfx_dispatch/archive/master.tar.gz" mfx_dispatch-master.tar.gz
 do_configure
 do_make_and_make_install

@@ -40,7 +40,7 @@ ADD *.sh ./
 ENV INTEL_MEDIA_SDK_VERSION=21.3.5
 RUN apt-get install -y libdrm2 libxext6 libxfixes3
 RUN <<EOT
-sources ./base.sh
+source ./base.sh
 download_and_unpack_file "https://github.com/Intel-Media-SDK/MediaSDK/releases/download/intel-mediasdk-${INTEL_MEDIA_SDK_VERSION}/MediaStack.tar.gz"
 cd opt/intel/mediasdk
 cp --archive --no-dereference include ${PREFIX}/

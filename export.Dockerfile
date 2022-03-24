@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.3
 
-ARG FFMPEG_VERSION=4.4
+ARG FFMPEG_VERSION=5.0
 
 FROM akashisn/ffmpeg:${FFMPEG_VERSION} AS ffmpeg-image
 FROM akashisn/ffmpeg:${FFMPEG_VERSION}-qsv AS ffmpeg-image-qsv
