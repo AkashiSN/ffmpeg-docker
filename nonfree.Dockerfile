@@ -15,6 +15,7 @@ ENV NVIDIA_DRIVER_CAPABILITIES compute,utility,video
 # Install build tools
 RUN <<EOT
 rm -rf /var/lib/apt/lists/*
+sed -i -r 's!(deb|deb-src) \S+!\1 http://jp.archive.ubuntu.com/ubuntu/!' /etc/apt/sources.list
 apt-get update
 apt-get install -y \
     build-essential \

@@ -76,13 +76,15 @@ download_and_unpack_file () {
   local output_name="${2:-$(basename ${url})}"
   local output_dir="$(echo ${output_name} | sed s/\.tar\.*//)"
   if [ ! -e "${output_name}" ]; then
-    echo "downloading ${url} ..."
+    echo -n "downloading ${url} ..."
     curl -4 "${url}" --retry 50 -o "${output_name}" -L -s --fail
+    echo "done."
   fi
-  echo "unpacking ${output_name} into ${output_dir} ..."
+  echo -n "unpacking ${output_name} into ${output_dir} ..."
   rm -rf "${output_dir}"
   mkdir -p "${output_dir}"
   tar -xf "${output_name}" --strip-components 1 -C "${output_dir}"
+  echo "done."
   cd ${output_dir}
 }
 
@@ -91,10 +93,10 @@ git_clone() {
   local repo_url="$1"
   local branch="${2:-"master"}"
   local to_dir="$(basename ${repo_url} | sed s/\.git/_git/)"
-  echo "Downloading (via git clone) ${to_dir} from $repo_url"
+  echo -n "downloading (via git clone) ${to_dir} from $repo_url ..."
   rm -rf "${to_dir}"
   git clone "${repo_url}" -b "${branch}" --depth 1 "${to_dir}"
-  echo "done git cloning to ${to_dir}"
+  echo "done."
   cd ${to_dir}
 }
 
@@ -102,9 +104,10 @@ svn_checkout() {
   cd ${WORKDIR}
   local repo_url="$1"
   local to_dir="$(basename ${repo_url})"
-  echo "svn checking out to ${to_dir}"
+  echo -n "svn checking out to ${to_dir} ..."
   svn checkout "${repo_url}" "${to_dir}" --non-interactive --trust-server-cert
   cd ${to_dir}
+  echo "done."
 }
 
 mkcd () {
