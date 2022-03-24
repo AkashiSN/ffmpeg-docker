@@ -60,7 +60,7 @@ cp --archive --parents --no-dereference ${PREFIX}/ffmpeg_configure_options /buil
 EOT
 
 
-# # final image
-# FROM scratch
+# final image
+FROM scratch
 
-# COPY --from=ffmpeg-library-build /build /
+COPY --from=ffmpeg-library-build /build /
