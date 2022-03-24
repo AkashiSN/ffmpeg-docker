@@ -5,6 +5,7 @@ on:
     paths:
       - 'library.Dockerfile'
       - '.github/workflows/ffmpeg-library-build.yml'
+    branches: [main]
 
 jobs:
   build:
