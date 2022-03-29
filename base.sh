@@ -49,6 +49,9 @@ export INFOPATH="${PREFIX}/share/info"
 export LIBRARY_PATH="${PREFIX}/lib"
 export C_INCLUDE_PATH="${PREFIX}/include"
 export CPLUS_INCLUDE_PATH="${PREFIX}/include"
+export LDFLAGS="-L${PREFIX}/lib"
+export CFLAGS="-I${PREFIX}/include"
+export CXXFLAGS="${CFLAGS}"
 export PATH="${PREFIX}/bin:$PATH"
 
 mkdir -p ${WORKDIR} ${PREFIX}/{bin,share,lib/pkgconfig,include}
@@ -57,7 +60,7 @@ FFMPEG_CONFIGURE_OPTIONS=()
 FFMPEG_EXTRA_LIBS=()
 case "$(uname)" in
 Darwin)
-  export CFLAGS="-Wno-error=implicit-function-declaration"
+  export CFLAGS="${CFLAGS} -Wno-error=implicit-function-declaration"
   CPU_NUM=$(getconf _NPROCESSORS_ONLN)
   ;;
 Linux)
