@@ -269,7 +269,7 @@ VO_AMRWBENC_VERSION=0.1.3
 download_and_unpack_file "https://download.sourceforge.net/opencore-amr/vo-amrwbenc-${VO_AMRWBENC_VERSION}.tar.gz"
 do_configure
 do_make_and_make_install
-FFMPEG_CONFIGURE_OPTIONS+=("--enable-amrwbenc")
+FFMPEG_CONFIGURE_OPTIONS+=("--enable-libvo-amrwbenc")
 
 # Build mp3lame
 svn_checkout "https://svn.code.sf.net/p/lame/svn/trunk/lame"
@@ -318,7 +318,7 @@ FFMPEG_CONFIGURE_OPTIONS+=("--enable-libfontconfig")
 HARFBUZZ_VERSION=3.2.0
 download_and_unpack_file "https://github.com/harfbuzz/harfbuzz/releases/download/${HARFBUZZ_VERSION}/harfbuzz-${HARFBUZZ_VERSION}.tar.xz"
 export LIBS="-lbz2"
-do_configure "--with-freetype=yes --with-fontconfig=yes"
+do_configure "--with-freetype=yes"
 do_make_and_make_install
 unset LIBS
 
@@ -365,5 +365,5 @@ FFMPEG_CONFIGURE_OPTIONS+=("--enable-cuda-llvm" "--enable-ffnvcodec" "--enable-c
 # Save options
 #
 
-echo -n "$FFMPEG_EXTRA_LIBS" > ${PREFIX}/ffmpeg_extra_libs
-echo -n "$FFMPEG_CONFIGURE_OPTIONS" > ${PREFIX}/ffmpeg_configure_options
+echo -n "${FFMPEG_EXTRA_LIBS[@]}" > ${PREFIX}/ffmpeg_extra_libs
+echo -n "${FFMPEG_CONFIGURE_OPTIONS[@]}" > ${PREFIX}/ffmpeg_configure_options

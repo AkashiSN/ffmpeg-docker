@@ -70,6 +70,7 @@ RUN bash ./build-ffmpeg.sh
 RUN <<EOT
 mkdir /build
 cp ${PREFIX}/bin/ff* /build/
+cp ${PREFIX}/configure_options /build/
 EOT
 
 
