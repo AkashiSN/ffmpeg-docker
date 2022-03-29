@@ -4,6 +4,8 @@ on:
   push:
     paths:
       - 'library.Dockerfile'
+      - 'scripts/base.sh'
+      - 'scripts/build-library.sh'
       - '.github/workflows/ffmpeg-library-build.yml'
     branches: [main]
 

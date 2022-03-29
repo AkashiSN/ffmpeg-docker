@@ -43,7 +43,7 @@ WORKDIR ${WORKDIR}
 #
 
 # Copy build script
-ADD *.sh ./
+ADD ./scripts/*.sh ./
 
 # Run build
 RUN bash ./build-library.sh

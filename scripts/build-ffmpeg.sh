@@ -6,7 +6,7 @@ source ./base.sh
 FFMPEG_VERSION="${FFMPEG_VERSION:-"5.0"}"
 download_and_unpack_file "https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.xz"
 case ${TARGET_OS} in
-Linux)
+Linux | linux)
   ./configure `cat ${PREFIX}/ffmpeg_configure_options` \
               --disable-autodetect \
               --disable-debug \
@@ -17,13 +17,13 @@ Linux)
               --pkg-config-flags="--static" \
               --prefix=${PREFIX} > ${PREFIX}/configure_options
   ;;
-MacOS)
+Darwin | darwin)
   HOST_OS="macos"
   HOST_ARCH="universal"
   BUILD_TARGET=
   CROSS_PREFIX=
   ;;
-Windows)
+Windows | windows)
   ./configure `cat ${PREFIX}/ffmpeg_configure_options` \
               --arch="x86_64" \
               --cross-prefix="${CROSS_PREFIX}" \

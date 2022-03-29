@@ -28,7 +28,7 @@ ENV TARGET_OS="Linux" \
 WORKDIR ${WORKDIR}
 
 # Copy build script
-ADD *.sh ./
+ADD ./scripts/*.sh ./
 
 # ffmpeg-library-build image
 COPY --from=ghcr.io/akashisn/ffmpeg-library-build:linux / /

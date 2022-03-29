@@ -6,6 +6,8 @@ on:
       - 'Dockerfile'
       - 'qsv.Dockerfile'
       - 'windows.Dockerfile'
+      - 'scripts/base.sh'
+      - 'scripts/build-ffmpeg.sh'
       - '.github/workflows/ffmpeg.yml'
     branches: [main]
   workflow_run:

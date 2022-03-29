@@ -4,13 +4,13 @@ set -eu
 TARGET_OS="${TARGET_OS:-"Linux"}" # Windows,Darwin,Linux
 
 case ${TARGET_OS} in
-Linux)
+Linux | linux)
   HOST_OS="linux"
   HOST_ARCH=$(uname -m)
   BUILD_TARGET=
   CROSS_PREFIX=
   ;;
-Darwin)
+Darwin | darwin)
   if [ ! "$(uname)" = "Darwin" ]; then
     echo 'When TARGET_OS is "Darwin" host must be olso "Darwin"'
     exit 1
@@ -20,7 +20,7 @@ Darwin)
   BUILD_TARGET=
   CROSS_PREFIX=
   ;;
-Windows)
+Windows | windows)
   HOST_OS="linux"
   HOST_ARCH=$(uname -m)
   BUILD_TARGET="x86_64-w64-mingw32"
@@ -49,8 +49,8 @@ export INFOPATH="${PREFIX}/share/info"
 export LIBRARY_PATH="${PREFIX}/lib"
 export C_INCLUDE_PATH="${PREFIX}/include"
 export CPLUS_INCLUDE_PATH="${PREFIX}/include"
-export LDFLAGS="-L${PREFIX}/lib"
-export CFLAGS="-I${PREFIX}/include"
+export LDFLAGS="-L${PREFIX}/lib ${LDFLAGS}"
+export CFLAGS="-I${PREFIX}/include ${CFLAGS}"
 export CXXFLAGS="${CFLAGS}"
 export PATH="${PREFIX}/bin:$PATH"
 
@@ -58,6 +58,7 @@ mkdir -p ${WORKDIR} ${PREFIX}/{bin,share,lib/pkgconfig,include}
 
 FFMPEG_CONFIGURE_OPTIONS=()
 FFMPEG_EXTRA_LIBS=()
+
 case "$(uname)" in
 Darwin)
   export CFLAGS="${CFLAGS} -Wno-error=implicit-function-declaration"

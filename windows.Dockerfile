@@ -34,7 +34,7 @@ ENV TARGET_OS="Windows" \
 WORKDIR ${WORKDIR}
 
 # Copy build script
-ADD *.sh ./
+ADD ./scripts/*.sh ./
 
 
 #
@@ -59,9 +59,6 @@ RUN echo -n "`cat ${PREFIX}/ffmpeg_configure_options` --enable-d3d11va --enable-
 #
 ARG FFMPEG_VERSION=5.0
 ENV FFMPEG_VERSION="${FFMPEG_VERSION}"
-
-# Copy build script
-ADD *.sh ./
 
 # Run build
 RUN bash ./build-ffmpeg.sh
