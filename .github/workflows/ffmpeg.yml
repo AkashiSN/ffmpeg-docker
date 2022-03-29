@@ -7,6 +7,7 @@ on:
       - 'qsv.Dockerfile'
       - 'windows.Dockerfile'
       - '.github/workflows/ffmpeg.yml'
+    branches: [main]
   workflow_run:
     workflows: ["ffmpeg-library-build"]
     branches: [main]

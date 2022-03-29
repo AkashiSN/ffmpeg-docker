@@ -5,6 +5,7 @@ on:
     paths:
       - 'library.Dockerfile'
       - '.github/workflows/ffmpeg-library-build.yml'
+    branches: [main]
 
 jobs:
   build:
@@ -38,7 +39,7 @@ jobs:
       - name: Set build target (windows)
         if: matrix.os == 'windows'
         run: |
-          echo "host_target=x86_64-w64-mingw32" >> $GITHUB_ENV
+          echo "target_os=Windows" >> $GITHUB_ENV
 
       - name: Build ffmpeg-build-base
         uses: docker/build-push-action@v2
@@ -48,7 +49,7 @@ jobs:
           tags: |
             ghcr.io/akashisn/ffmpeg-library-build:${{ matrix.os }}
           build-args: |
-            HOST_TARGET=${{ env.host_target }}
+            TARGET_OS=${{ env.target_os }}
           platforms: linux/amd64
           push: true
           cache-from: type=local,src=/tmp/.buildx-cache

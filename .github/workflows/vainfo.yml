@@ -5,6 +5,7 @@ on:
     paths:
       - 'vainfo.Dockerfile'
       - '.github/workflows/vainfo.yml'
+    branches: [main]
 
 jobs:
   build:
