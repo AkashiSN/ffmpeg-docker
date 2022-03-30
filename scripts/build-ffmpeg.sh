@@ -18,10 +18,15 @@ Linux | linux)
               --prefix=${PREFIX} > ${PREFIX}/configure_options
   ;;
 Darwin | darwin)
-  HOST_OS="macos"
-  HOST_ARCH="universal"
-  BUILD_TARGET=
-  CROSS_PREFIX=
+ ./configure `cat ${PREFIX}/ffmpeg_configure_options` \
+              --disable-autodetect \
+              --disable-debug \
+              --disable-doc \
+              --enable-gpl \
+              --enable-version3 \
+              --extra-libs="`cat ${PREFIX}/ffmpeg_extra_libs`" \
+              --pkg-config-flags="--static" \
+              --prefix=${PREFIX} > ${PREFIX}/configure_options
   ;;
 Windows | windows)
   ./configure `cat ${PREFIX}/ffmpeg_configure_options` \

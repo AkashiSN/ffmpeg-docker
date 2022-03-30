@@ -152,7 +152,7 @@ FFMPEG_CONFIGURE_OPTIONS+=("--enable-gnutls")
 # Build SRT
 download_and_unpack_file "https://github.com/Haivision/srt/archive/master.tar.gz" srt-master.tar.gz
 mkcd ${WORKDIR}/srt_build
-do_cmake "-DENABLE_SHARED=0 -DBUILD_TESTING=0 -DCMAKE_INSTALL_LIBDIR=lib
+do_cmake "-DENABLE_SHARED=0 -DCMAKE_INSTALL_LIBDIR=lib
           -DCMAKE_INSTALL_BINDIR=bin -DCMAKE_INSTALL_INCLUDEDIR=include
           -DENABLE_APPS=0 -DUSE_STATIC_LIBSTDCXX=1 -DUSE_ENCLIB=gnutls" ../srt-master
 do_make_and_make_install
@@ -344,11 +344,13 @@ FFMPEG_CONFIGURE_OPTIONS+=("--enable-libaribb24")
 #
 
 # Build SDL
-SDL_VERSION=2.0.20
-download_and_unpack_file "https://www.libsdl.org/release/SDL2-${SDL_VERSION}.tar.gz"
-do_configure
-do_make_and_make_install
-FFMPEG_CONFIGURE_OPTIONS+=("--enable-sdl2")
+if [ "${HOST_OS}" != "macos" ]; then
+  SDL_VERSION=2.0.20
+  download_and_unpack_file "https://www.libsdl.org/release/SDL2-${SDL_VERSION}.tar.gz"
+  do_configure
+  do_make_and_make_install
+  FFMPEG_CONFIGURE_OPTIONS+=("--enable-sdl2")
+fi
 
 
 #
@@ -356,9 +358,11 @@ FFMPEG_CONFIGURE_OPTIONS+=("--enable-sdl2")
 #
 
 # Build NVcodec
-download_and_unpack_file "https://github.com/FFmpeg/nv-codec-headers/archive/master.tar.gz" nv-codec-headers-master.tar.gz
-make install "PREFIX=${PREFIX}"
-FFMPEG_CONFIGURE_OPTIONS+=("--enable-cuda-llvm" "--enable-ffnvcodec" "--enable-cuvid" "--enable-nvdec" "--enable-nvenc")
+if [ "${HOST_OS}" != "macos" ]; then
+  download_and_unpack_file "https://github.com/FFmpeg/nv-codec-headers/archive/master.tar.gz" nv-codec-headers-master.tar.gz
+  make install "PREFIX=${PREFIX}"
+  FFMPEG_CONFIGURE_OPTIONS+=("--enable-cuda-llvm" "--enable-ffnvcodec" "--enable-cuvid" "--enable-nvdec" "--enable-nvenc")
+fi
 
 
 #
