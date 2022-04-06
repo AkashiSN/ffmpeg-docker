@@ -231,8 +231,6 @@ apt-get clean
 rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
 EOT
 
-COPY --from=ffmpeg-build /build /
-
 ENV LIBVA_DRIVERS_PATH=/usr/local/lib \
     LIBVA_DRIVER_NAME=iHD
 
