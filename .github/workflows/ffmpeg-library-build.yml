@@ -3,7 +3,7 @@ name: ffmpeg-library-build
 on:
   push:
     paths:
-      - 'library.Dockerfile'
+      - 'Dockerfile'
       - 'scripts/base.sh'
       - 'scripts/build-library.sh'
       - '.github/workflows/ffmpeg-library-build.yml'
@@ -47,11 +47,13 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: ./
-          file: ./library.Dockerfile
+          file: ./Dockerfile
           tags: |
             ghcr.io/akashisn/ffmpeg-library-build:${{ matrix.os }}
           build-args: |
+            BUILD_TARGET='library'
             TARGET_OS=${{ env.target_os }}
+          target: artifacts
           platforms: linux/amd64
           push: true
           cache-from: type=local,src=/tmp/.buildx-cache

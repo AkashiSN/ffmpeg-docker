@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ffmpeg: ["4.3.3", "4.4.1", "5.0"]
+        ffmpeg: ["4.4.1", "5.0"]
         flavor: [linux, qsv-linux, windows]
     steps:
       - name: Checkout
@@ -41,7 +41,7 @@ jobs:
       - name: Export - ffmpeg
         run: |
            docker buildx build --platform linux/amd64 --target export${{ env.build_tag }} --output type=local,dest=/tmp/build \
-                  -t ffmpeg${{ env.build_tag }} --build-arg FFMPEG_VERSION=${{ matrix.ffmpeg }} -f ./export.Dockerfile .
+                  -t ffmpeg${{ env.build_tag }} --build-arg FFMPEG_VERSION=${{ matrix.ffmpeg }} -f ./Dockerfile .
 
       - name: Archive artifact
         run: |
