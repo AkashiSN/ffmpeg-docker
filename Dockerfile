@@ -1,8 +1,9 @@
 # syntax = docker/dockerfile:1.3-labs
 
-# "library", "linux", "linux-qsv", "windows"
-ARG BUILD_TARGET="library"
 ARG FFMPEG_VERSION="5.0"
+FROM akashisn/ffmpeg:${FFMPEG_VERSION} AS ffmpeg-image
+FROM akashisn/ffmpeg:${FFMPEG_VERSION}-qsv AS ffmpeg-image-qsv
+FROM ghcr.io/akashisn/ffmpeg-windows:${FFMPEG_VERSION} AS ffmpeg-image-windows
 
 #
 # build env image
@@ -188,11 +189,11 @@ EOT
 
 
 #
-# final artifacts image
+# final ffmpeg-library image
 #
-FROM scratch AS artifacts
+FROM scratch AS ffmpeg-library
 
-COPY --from=ffmpeg-${BUILD_TARGET}-build /build /
+COPY --from=ffmpeg-library-build /build /
 
 
 #
@@ -201,7 +202,7 @@ COPY --from=ffmpeg-${BUILD_TARGET}-build /build /
 FROM ubuntu:20.04 AS ffmpeg
 
 # Copy ffmpeg
-COPY --from=artifacts / /
+COPY --from=ffmpeg-linux-build /build /
 
 WORKDIR /workdir
 ENTRYPOINT [ "ffmpeg" ]
@@ -214,7 +215,7 @@ CMD [ "--help" ]
 FROM ubuntu:20.04 AS ffmpeg-qsv
 
 # Copy ffmpeg
-COPY --from=artifacts / /
+COPY --from=ffmpeg-linux-qsv-build /build /
 
 SHELL ["/bin/sh", "-e", "-c"]
 ENV DEBIAN_FRONTEND=noninteractive
@@ -243,11 +244,12 @@ CMD [ "--help" ]
 
 
 #
-# export image
+# final ffmpeg-windows image
 #
-FROM akashisn/ffmpeg:${FFMPEG_VERSION} AS ffmpeg-image
-FROM akashisn/ffmpeg:${FFMPEG_VERSION}-qsv AS ffmpeg-image-qsv
-FROM ghcr.io/akashisn/ffmpeg-windows:${FFMPEG_VERSION} AS ffmpeg-image-windows
+FROM scratch AS ffmpeg-windows
+
+COPY --from=ffmpeg-windows-build /build /
+
 
 #
 # export image

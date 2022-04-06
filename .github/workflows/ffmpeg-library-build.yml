@@ -51,9 +51,8 @@ jobs:
           tags: |
             ghcr.io/akashisn/ffmpeg-library-build:${{ matrix.os }}
           build-args: |
-            BUILD_TARGET='library'
             TARGET_OS=${{ env.target_os }}
-          target: artifacts
+          target: ffmpeg-library
           platforms: linux/amd64
           push: true
           cache-from: type=local,src=/tmp/.buildx-cache

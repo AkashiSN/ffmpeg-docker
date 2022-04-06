@@ -54,7 +54,6 @@ jobs:
       - name: Set build target (linux)
         if: matrix.flavor == 'linux'
         run: |
-          echo "build_target=linux" >> $GITHUB_ENV
           echo "target=ffmpeg" >> $GITHUB_ENV
           echo "image_name=akashisn/ffmpeg" >> $GITHUB_ENV
           echo "image_tag=${{ matrix.ffmpeg }}" >> $GITHUB_ENV
@@ -62,7 +61,6 @@ jobs:
       - name: Set build target (qsv-linux)
         if: matrix.flavor == 'qsv-linux'
         run: |
-          echo "build_target=linux-qsv" >> $GITHUB_ENV
           echo "target=ffmpeg-qsv" >> $GITHUB_ENV
           echo "image_name=akashisn/ffmpeg" >> $GITHUB_ENV
           echo "image_tag=${{ matrix.ffmpeg }}-qsv" >> $GITHUB_ENV
@@ -70,8 +68,7 @@ jobs:
       - name: Set build target (windows)
         if: matrix.flavor == 'windows'
         run: |
-          echo "build_target=windows" >> $GITHUB_ENV
-          echo "target=artifacts" >> $GITHUB_ENV
+          echo "target=ffmpeg-windows" >> $GITHUB_ENV
           echo "image_name=ghcr.io/akashisn/ffmpeg-windows" >> $GITHUB_ENV
           echo "image_tag=${{ matrix.ffmpeg }}" >> $GITHUB_ENV
 
@@ -83,7 +80,6 @@ jobs:
           tags: |
             ${{ env.image_name }}:${{ env.image_tag }}
           build-args: |
-            BUILD_TARGET=${{ env.build_target }}
             FFMPEG_VERSION=${{ matrix.ffmpeg }}
           platforms: linux/amd64
           target: ${{ env.target }}
