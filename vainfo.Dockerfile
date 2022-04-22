@@ -1,4 +1,4 @@
-FROM ubuntu:20.04 AS vainfo-build
+FROM ubuntu:22.04 AS vainfo-build
 
 # Install MediaSDK
 ENV INTEL_MEDIA_SDK_VERSION=21.3.5
@@ -10,7 +10,7 @@ RUN cd /tmp && \
     cp --archive --no-dereference lib64/. /usr/local/lib/
 
 # vainfo image
-FROM ubuntu:20.04 AS vainfo
+FROM ubuntu:22.04 AS vainfo
 
 ENV DEBIAN_FRONTEND=noninteractive
 

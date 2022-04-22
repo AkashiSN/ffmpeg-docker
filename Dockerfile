@@ -8,7 +8,7 @@ FROM ghcr.io/akashisn/ffmpeg-windows:${FFMPEG_VERSION} AS ffmpeg-image-windows
 #
 # build env image
 #
-FROM ubuntu:20.04 AS ffmpeg-build-env
+FROM ubuntu:22.04 AS ffmpeg-build-env
 
 SHELL ["/bin/bash", "-e", "-c"]
 ENV DEBIAN_FRONTEND=noninteractive
@@ -199,7 +199,7 @@ COPY --from=ffmpeg-library-build /build /
 #
 # final ffmpeg image
 #
-FROM ubuntu:20.04 AS ffmpeg
+FROM ubuntu:22.04 AS ffmpeg
 
 # Copy ffmpeg
 COPY --from=ffmpeg-linux-build /build /
@@ -212,7 +212,7 @@ CMD [ "--help" ]
 #
 # final ffmpeg-qsv image
 #
-FROM ubuntu:20.04 AS ffmpeg-qsv
+FROM ubuntu:22.04 AS ffmpeg-qsv
 
 # Copy ffmpeg
 COPY --from=ffmpeg-linux-qsv-build /build /
