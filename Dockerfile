@@ -63,7 +63,6 @@ RUN bash ./build-library.sh
 # Copy artifacts
 RUN <<EOT
 mkdir /build
-rm -r ${PREFIX}/lib/python3.8
 cp --archive --parents --no-dereference ${PREFIX}/lib /build
 cp --archive --parents --no-dereference ${PREFIX}/include /build
 cp --archive --parents --no-dereference ${PREFIX}/ffmpeg_extra_libs /build
