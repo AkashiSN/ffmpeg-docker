@@ -1,6 +1,6 @@
 # syntax = docker/dockerfile:1.3-labs
 
-ARG FFMPEG_VERSION="5.0"
+ARG FFMPEG_VERSION="5.0.1"
 FROM akashisn/ffmpeg:${FFMPEG_VERSION} AS ffmpeg-image
 FROM akashisn/ffmpeg:${FFMPEG_VERSION}-qsv AS ffmpeg-image-qsv
 FROM ghcr.io/akashisn/ffmpeg-windows:${FFMPEG_VERSION} AS ffmpeg-image-windows

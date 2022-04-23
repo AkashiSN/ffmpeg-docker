@@ -134,7 +134,7 @@ RUN echo -n "`cat ${PREFIX}/ffmpeg_configure_options` --enable-d3d11va --enable-
 #
 # Build ffmpeg
 #
-ARG FFMPEG_VERSION=5.0
+ARG FFMPEG_VERSION=5.0.1
 ENV FFMPEG_VERSION="${FFMPEG_VERSION}"
 
 # Run build

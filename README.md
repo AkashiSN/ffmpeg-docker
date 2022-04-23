@@ -7,17 +7,14 @@
 ## Available tags
 
 - [Plain ffmpeg (without HWAccel)](https://github.com/AkashiSN/ffmpeg-docker/blob/main/Dockerfile)
-  - `5.0`
-  - `4.4.1`
-  - `4.3.3`
+  - `5.0.1`
+  - `4.4.2`
 - [With Intel QSV(Media SDK)](https://github.com/AkashiSN/ffmpeg-docker/blob/main/qsv.Dockerfile)
-  - `5.0-qsv`
-  - `4.4.1-qsv`
-  - `4.3.3-qsv`
+  - `5.0.1-qsv`
+  - `4.4.2-qsv`
 - [Windows ffmpeg](https://github.com/AkashiSN/ffmpeg-docker/blob/main/windows.Dockerfile)
-  - `5.0`
-  - `4.4.1`
-  - `4.3.3`
+  - `5.0.1`
+  - `4.4.2`
 
 ## Supported architecture
 

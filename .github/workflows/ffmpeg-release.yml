@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ffmpeg: ["4.4.1", "5.0"]
+        ffmpeg: ["4.4.2", "5.0.1"]
         flavor: [linux, qsv-linux, windows]
     steps:
       - name: Checkout

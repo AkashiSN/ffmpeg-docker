@@ -3,7 +3,7 @@
 source ./base.sh
 
 # Build ffmpeg
-FFMPEG_VERSION="${FFMPEG_VERSION:-"5.0"}"
+FFMPEG_VERSION="${FFMPEG_VERSION:-"5.0.1"}"
 download_and_unpack_file "https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.xz"
 case ${TARGET_OS} in
 Linux | linux)
