@@ -9,6 +9,7 @@ on:
 jobs:
   export:
     runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
     strategy:
       matrix:
         ffmpeg: ["4.4.2", "5.0.1"]
