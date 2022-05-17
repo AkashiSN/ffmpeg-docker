@@ -39,6 +39,7 @@ apt-get install -y \
 EOT
 
 # Environment
+ARG FFMPEG_VERSION
 ENV FFMPEG_VERSION="${FFMPEG_VERSION}" \
     PREFIX="/usr/local" \
     WORKDIR="/workdir"
