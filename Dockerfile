@@ -273,3 +273,39 @@ COPY --from=ffmpeg-image-qsv /usr/local/run.sh /
 FROM scratch AS export-windows
 
 COPY --from=ffmpeg-image-windows / /
+
+
+#
+# vainfo image
+#
+FROM ubuntu:22.04 AS vainfo
+
+SHELL ["/bin/bash", "-e", "-c"]
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    LIBVA_DRIVERS_PATH=/usr/local/lib \
+    LIBVA_DRIVER_NAME=iHD
+
+# Download MediaSDK
+ENV INTEL_MEDIA_SDK_VERSION=21.3.5
+ADD https://github.com/Intel-Media-SDK/MediaSDK/releases/download/intel-mediasdk-${INTEL_MEDIA_SDK_VERSION}/MediaStack.tar.gz /tmp/
+RUN <<EOT
+mkdir -p /tmp/MediaStack
+tar -xf "/tmp/MediaStack.tar.gz" --strip-components 1 -C "/tmp/MediaStack"
+cd /tmp/MediaStack/opt/intel/mediasdk
+cp --archive --no-dereference bin/vainfo /usr/local/bin/
+cp --archive --no-dereference lib64/*.so* /usr/local/lib/
+
+rm -rf /var/lib/apt/lists/*
+sed -i -r 's!(deb|deb-src) \S+!\1 http://jp.archive.ubuntu.com/ubuntu/!' /etc/apt/sources.list
+apt-get update
+apt-get install -y libdrm2 libxext6 libxfixes3
+apt-get autoremove -y
+apt-get clean
+rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
+
+ldconfig
+EOT
+
+WORKDIR /workdir
+ENTRYPOINT [ "/usr/local/bin/vainfo" ]
