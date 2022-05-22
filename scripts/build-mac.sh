@@ -59,4 +59,4 @@ bash ./build-library.sh
 # Build FFmpeg
 #
 
-# bash ./build-ffmpeg.sh
+bash ./build-ffmpeg.sh

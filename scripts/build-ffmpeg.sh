@@ -26,7 +26,7 @@ Darwin | darwin)
               --enable-version3 \
               --extra-libs="`cat ${PREFIX}/ffmpeg_extra_libs`" \
               --pkg-config-flags="--static" \
-              --prefix=${PREFIX} > ${PREFIX}/configure_options
+              --prefix=${PREFIX} > ${PREFIX}/configure_options || cat ${PREFIX}/configure_options
   ;;
 Windows | windows)
   ./configure `cat ${PREFIX}/ffmpeg_configure_options` \

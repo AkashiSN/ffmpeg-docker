@@ -1,0 +1,26 @@
+name: ffmpeg-mac
+
+on:
+  push:
+    paths:
+      - 'scripts/base.sh'
+      - 'scripts/build-library.sh'
+      - 'scripts/build-ffmpeg.sh'
+      - 'scripts/build-mac.sh'
+      - '.github/workflows/ffmpeg-mac.yml'
+    branches: [main, mac]
+
+jobs:
+  build:
+    runs-on: macos-latest
+    if: startsWith(github.ref, 'refs/tags/') == false
+    strategy:
+      matrix:
+        ffmpeg: ["4.4.2", "5.0.1"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Build - ffmpeg
+        run: |
+          bash ./scripts/build-mac.sh
