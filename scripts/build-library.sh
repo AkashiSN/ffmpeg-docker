@@ -202,7 +202,10 @@ make -j ${CPU_NUM}
 
 mv libx265.a libx265_main.a
 
-ar -M <<EOS
+if [ "${HOST_OS}" == "macos" ]; then
+  libtool -static -o libx265.a libx265_main.a libx265_main10.a libx265_main12.a
+else
+  ar -M <<EOS
 CREATE libx265.a
 ADDLIB libx265_main.a
 ADDLIB libx265_main10.a
@@ -210,6 +213,7 @@ ADDLIB libx265_main12.a
 SAVE
 END
 EOS
+fi
 
 make install
 FFMPEG_CONFIGURE_OPTIONS+=("--enable-libx265")
@@ -345,7 +349,7 @@ FFMPEG_CONFIGURE_OPTIONS+=("--enable-libaribb24")
 
 # Build SDL
 if [ "${HOST_OS}" != "macos" ]; then
-  SDL_VERSION=2.0.20
+  SDL_VERSION=2.0.22
   download_and_unpack_file "https://www.libsdl.org/release/SDL2-${SDL_VERSION}.tar.gz"
   do_configure
   do_make_and_make_install
@@ -358,7 +362,9 @@ fi
 #
 
 # Build NVcodec
-if [ "${HOST_OS}" != "macos" ]; then
+if [ "${HOST_OS}" == "macos" ]; then
+  FFMPEG_CONFIGURE_OPTIONS+=("--enable-videotoolbox")
+else
   download_and_unpack_file "https://github.com/FFmpeg/nv-codec-headers/archive/master.tar.gz" nv-codec-headers-master.tar.gz
   make install "PREFIX=${PREFIX}"
   FFMPEG_CONFIGURE_OPTIONS+=("--enable-cuda-llvm" "--enable-ffnvcodec" "--enable-cuvid" "--enable-nvdec" "--enable-nvenc")

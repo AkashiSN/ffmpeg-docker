@@ -50,7 +50,7 @@ export LIBRARY_PATH="${PREFIX}/lib"
 export C_INCLUDE_PATH="${PREFIX}/include"
 export CPLUS_INCLUDE_PATH="${PREFIX}/include"
 export LDFLAGS="-L${PREFIX}/lib ${LDFLAGS:-""}"
-export CFLAGS="-I${PREFIX}/include ${CFLAGS:-""}"
+export CFLAGS="-I${PREFIX}/include ${CFLAGS:-""} -O2 -Wl,-no_pie"
 export CXXFLAGS="${CFLAGS}"
 export PATH="${PREFIX}/bin:$PATH"
 
@@ -61,7 +61,7 @@ FFMPEG_EXTRA_LIBS=()
 
 case "$(uname)" in
 Darwin)
-  export CFLAGS="${CFLAGS} -O2 -Wno-error=implicit-function-declaration"
+  export CFLAGS="${CFLAGS} -Wno-error=implicit-function-declaration"
   CPU_NUM=$(getconf _NPROCESSORS_ONLN)
   ;;
 Linux)

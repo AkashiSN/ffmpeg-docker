@@ -6,7 +6,7 @@ export PATH=/usr/local/sbin:/usr/local/bin:/sbin:/usr/sbin:/bin:/usr/bin
 export TARGET_OS="Darwin"
 export PREFIX="$HOME/.local"
 export WORKDIR="$HOME/workdir"
-export FFMPEG_VERSION="5.0"
+export FFMPEG_VERSION="5.0.1"
 
 GCC_VERSION="11"
 
@@ -54,3 +54,9 @@ ln -s /usr/local/bin/gmake /usr/local/bin/make
 
 bash ./build-library.sh
 
+
+#
+# Build FFmpeg
+#
+
+# bash ./build-ffmpeg.sh
