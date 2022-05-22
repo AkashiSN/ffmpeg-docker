@@ -7,7 +7,7 @@ source ./base.sh
 #
 
 # Download Cmake
-CMAKE_VERSION=3.22.2
+CMAKE_VERSION=3.23.1
 download_and_unpack_file "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-${HOST_OS}-${HOST_ARCH}.tar.gz"
 case "$(uname)" in
 Darwin)
@@ -143,7 +143,7 @@ make install-lib
 FFMPEG_CONFIGURE_OPTIONS+=("--enable-iconv")
 
 # Build GnuTLS
-GNUTLS_VERSION=3.7.3
+GNUTLS_VERSION=3.7.4
 download_and_unpack_file "https://mirrors.dotsrc.org/gcrypt/gnutls/v3.7/gnutls-${GNUTLS_VERSION}.tar.xz"
 do_configure "--disable-tests --disable-doc --disable-tools --without-p11-kit"
 do_make_and_make_install
@@ -283,21 +283,21 @@ FFMPEG_CONFIGURE_OPTIONS+=("--enable-libmp3lame")
 #
 
 # Build freetype
-FREETYPE_VERSION=2.11.1
-download_and_unpack_file https://download.sourceforge.net/freetype/freetype-${FREETYPE_VERSION}.tar.xz
+FREETYPE_VERSION=2.12.0
+download_and_unpack_file "https://download.sourceforge.net/freetype/freetype-${FREETYPE_VERSION}.tar.xz"
 do_configure "--with-zlib=yes --with-png=yes --with-bzip2=yes"
 do_make_and_make_install
 FFMPEG_CONFIGURE_OPTIONS+=("--enable-libfreetype")
 
-# Build fribidi; Newer than 1.0.9 will cause a link error
-FRIBIDI_VERSION=1.0.9
+# Build fribidi
+FRIBIDI_VERSION=1.0.12
 download_and_unpack_file "https://github.com/fribidi/fribidi/releases/download/v${FRIBIDI_VERSION}/fribidi-${FRIBIDI_VERSION}.tar.xz"
 do_configure "--disable-debug"
 do_make_and_make_install
 FFMPEG_CONFIGURE_OPTIONS+=("--enable-libfribidi")
 
 # Build libxml2
-LIBXML2_VERSION=2.9.12
+LIBXML2_VERSION=2.9.13
 download_and_unpack_file "https://gitlab.gnome.org/GNOME/libxml2/-/archive/v${LIBXML2_VERSION}/libxml2-v${LIBXML2_VERSION}.tar.bz2"
 mkcd ${WORKDIR}/libxml2_build
 do_cmake "-DBUILD_SHARED_LIBS=0 -DLIBXML2_WITH_FTP=0 -DLIBXML2_WITH_HTTP=0 -DLIBXML2_WITH_PYTHON=0 -DLIBXML2_WITH_TESTS=0" ../libxml2-v${LIBXML2_VERSION}
@@ -305,7 +305,7 @@ do_make_and_make_install
 FFMPEG_CONFIGURE_OPTIONS+=("--enable-libxml2")
 
 # Build fontconfig
-FONTCONFIG_VERSION=2.13.94
+FONTCONFIG_VERSION=2.14.0
 download_and_unpack_file "https://www.freedesktop.org/software/fontconfig/release/fontconfig-${FONTCONFIG_VERSION}.tar.xz"
 export LIBS="-lm -lz -lbz2 -llzma"
 do_configure "--enable-iconv --enable-libxml2 --disable-docs --with-libiconv"
@@ -315,10 +315,10 @@ unset LIBS
 FFMPEG_CONFIGURE_OPTIONS+=("--enable-libfontconfig")
 
 # Build libharfbuzz
-HARFBUZZ_VERSION=3.2.0
+HARFBUZZ_VERSION=4.2.0
 download_and_unpack_file "https://github.com/harfbuzz/harfbuzz/releases/download/${HARFBUZZ_VERSION}/harfbuzz-${HARFBUZZ_VERSION}.tar.xz"
 export LIBS="-lbz2"
-do_configure "--with-freetype=yes"
+do_configure "--with-freetype=yes --with-icu=no"
 do_make_and_make_install
 unset LIBS
 

@@ -3,7 +3,7 @@ name: vainfo
 on:
   push:
     paths:
-      - 'vainfo.Dockerfile'
+      - 'Dockerfile'
       - '.github/workflows/vainfo.yml'
     branches: [main]
 
@@ -36,10 +36,11 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: ./
-          file: ./vainfo.Dockerfile
+          file: ./Dockerfile
           tags: |
             akashisn/vainfo
           platforms: linux/amd64
+          target: vainfo
           push: true
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
