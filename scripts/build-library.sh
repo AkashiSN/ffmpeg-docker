@@ -145,7 +145,7 @@ FFMPEG_CONFIGURE_OPTIONS+=("--enable-iconv")
 # Build GnuTLS
 GNUTLS_VERSION=3.7.4
 download_and_unpack_file "https://mirrors.dotsrc.org/gcrypt/gnutls/v3.7/gnutls-${GNUTLS_VERSION}.tar.xz"
-do_configure "--disable-tests --disable-doc --disable-tools --enable-ssl3-support --without-p11-kit --without-libbrotli"
+do_configure "--disable-tests --disable-doc --disable-tools --without-p11-kit --without-libbrotli"
 do_make_and_make_install
 FFMPEG_CONFIGURE_OPTIONS+=("--enable-gnutls")
 
