@@ -23,4 +23,5 @@ jobs:
 
       - name: Build - ffmpeg
         run: |
-          bash ./scripts/build-mac.sh
+          cd scripts
+          bash ./build-mac.sh
