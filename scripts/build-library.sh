@@ -93,16 +93,15 @@ install -m 644 libbz2.a ${PREFIX}/lib
 cat <<EOS > ${PKG_CONFIG_PATH}/bz2.pc
 prefix=${PREFIX}
 exec_prefix=\${prefix}
+bindir=\${prefix}/bin
 libdir=\${exec_prefix}/lib
-sharedlibdir=\${libdir}
 includedir=\${prefix}/include
 
 Name: bzip2
-Description: bzip2 compression library
+Description: A file compression library
 Version: ${BZIP2_VERSION}
 
-Requires:
-Libs: -L\${libdir} -L\${sharedlibdir}
+Libs: -L\${libdir} -lbz2
 Cflags: -I\${includedir}
 EOS
 ln -s ${PKG_CONFIG_PATH}/bz2.pc ${PKG_CONFIG_PATH}/bzip2.pc
@@ -299,7 +298,7 @@ git_clone "https://gitlab.freedesktop.org/freetype/freetype.git" VER-${FREETYPE_
 mkcd ${WORKDIR}/freetype_build
 do_cmake "-D BUILD_SHARED_LIBS=0 -D FT_REQUIRE_ZLIB=1 -D FT_REQUIRE_BZIP2=1 -D FT_REQUIRE_PNG=1 -D FT_DISABLE_HARFBUZZ=1" ../freetype-VER-${FREETYPE_VERSION}
 do_make_and_make_install
-sed -i -e "s%Libs: \(.*\)%Libs: \1 -lbz2 -lz -lpng%g" ${PKG_CONFIG_PATH}/freetype2.pc
+sed -i -e "s%Libs: \(.*\)%Libs: \1 -lpng%g" ${PKG_CONFIG_PATH}/freetype2.pc
 FFMPEG_CONFIGURE_OPTIONS+=("--enable-libfreetype")
 
 # Build fribidi
@@ -315,16 +314,16 @@ git_clone "https://gitlab.gnome.org/GNOME/libxml2.git" v${LIBXML2_VERSION}
 mkcd ${WORKDIR}/libxml2_build
 do_cmake "-DBUILD_SHARED_LIBS=0 -DLIBXML2_WITH_FTP=0 -DLIBXML2_WITH_HTTP=0 -DLIBXML2_WITH_PYTHON=0 -DLIBXML2_WITH_TESTS=0" ../libxml2-v${LIBXML2_VERSION}
 do_make_and_make_install
+sed -i -e "s%Libs: \(.*\)%Libs: \1 -lz -llzma -lm%g" ${PKG_CONFIG_PATH}/libxml-2.0.pc
+ln -s ${PKG_CONFIG_PATH}/libxml-2.0.pc ${PKG_CONFIG_PATH}/libxml2.pc
 FFMPEG_CONFIGURE_OPTIONS+=("--enable-libxml2")
 
 # Build fontconfig
 FONTCONFIG_VERSION="2.14.2"
 git_clone "https://gitlab.freedesktop.org/fontconfig/fontconfig.git" ${FONTCONFIG_VERSION}
-export LIBS="-lm -lz -lbz2 -llzma"
 do_configure "--enable-iconv --enable-libxml2 --disable-docs --with-libiconv"
 do_make_and_make_install
-sed -i -e "s%Libs: \(.*\)%Libs: \1 -lm -lz -lbz2 -llzma%g" ${PKG_CONFIG_PATH}/fontconfig.pc
-unset LIBS
+sed -i -e "s%Libs: \(.*\)%Libs: \1 -lxml2%g" ${PKG_CONFIG_PATH}/fontconfig.pc
 FFMPEG_CONFIGURE_OPTIONS+=("--enable-libfontconfig")
 
 # Build libharfbuzz
@@ -332,12 +331,6 @@ HARFBUZZ_VERSION="6.0.0"
 git_clone "https://github.com/harfbuzz/harfbuzz.git" ${HARFBUZZ_VERSION}
 do_configure "--with-freetype=yes --with-icu=no"
 do_make_and_make_install
-
-# Build freetype 2nd
-mkcd ${WORKDIR}/freetype_build
-do_cmake "-D BUILD_SHARED_LIBS=0 -D FT_REQUIRE_ZLIB=1 -D FT_REQUIRE_BZIP2=1 -D FT_REQUIRE_PNG=1 -D FT_REQUIRE_HARFBUZZ=1" ../freetype-VER-${FREETYPE_VERSION}
-do_make_and_make_install
-sed -i -e "s%Libs: \(.*\)%Libs: \1 -lbz2 -lz -lpng -lharfbuzz%g" ${PKG_CONFIG_PATH}/freetype2.pc
 
 # Build libass
 LIBASS_VERSION="0.17.0"

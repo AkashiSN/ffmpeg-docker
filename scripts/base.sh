@@ -64,7 +64,7 @@ export PATH="${PREFIX}/bin:$PATH"
 mkdir -p ${WORKDIR} ${PREFIX}/{bin,share,lib/pkgconfig,include}
 
 FFMPEG_CONFIGURE_OPTIONS=()
-FFMPEG_EXTRA_LIBS=()
+FFMPEG_EXTRA_LIBS=("-lm")
 
 case "$(uname)" in
 Darwin)

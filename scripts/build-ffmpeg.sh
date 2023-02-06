@@ -3,8 +3,12 @@
 source ./base.sh
 
 # Build ffmpeg
-FFMPEG_VERSION="${FFMPEG_VERSION:-"5.0.1"}"
-download_and_unpack_file "https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.xz"
+FFMPEG_VERSION="${FFMPEG_VERSION:-"5.1.2"}"
+if [ "${FFMPEG_VERSION}" = "master" ]; then
+  git_clone "https://git.ffmpeg.org/ffmpeg.git"
+else
+  download_and_unpack_file "https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.xz"
+fi
 case ${TARGET_OS} in
 Linux | linux)
   ./configure `cat ${PREFIX}/ffmpeg_configure_options` \
@@ -15,7 +19,7 @@ Linux | linux)
               --enable-version3 \
               --extra-libs="`cat ${PREFIX}/ffmpeg_extra_libs`" \
               --pkg-config-flags="--static" \
-              --prefix=${PREFIX} > ${PREFIX}/configure_options
+              --prefix=${PREFIX} | tee ${PREFIX}/configure_options
   ;;
 Darwin | darwin)
   HOST_OS="macos"
@@ -39,7 +43,7 @@ Windows | windows)
               --target-os="mingw64" \
               --pkg-config="pkg-config" \
               --pkg-config-flags="--static" \
-              --prefix=${PREFIX} > ${PREFIX}/configure_options
+              --prefix=${PREFIX} | tee ${PREFIX}/configure_options
   ;;
 esac
 

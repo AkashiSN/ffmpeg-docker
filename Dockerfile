@@ -1,6 +1,6 @@
-# syntax = docker/dockerfile:1.3-labs
+# syntax = docker/dockerfile:1.5
 
-ARG FFMPEG_VERSION="5.0.1"
+ARG FFMPEG_VERSION="5.1.2"
 FROM akashisn/ffmpeg:${FFMPEG_VERSION} AS ffmpeg-image
 FROM akashisn/ffmpeg:${FFMPEG_VERSION}-qsv AS ffmpeg-image-qsv
 FROM ghcr.io/akashisn/ffmpeg-windows:${FFMPEG_VERSION} AS ffmpeg-image-windows
@@ -16,7 +16,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Install build tools
 RUN <<EOT
 rm -rf /var/lib/apt/lists/*
-sed -i -r 's!(deb|deb-src) \S+!\1 http://jp.archive.ubuntu.com/ubuntu/!' /etc/apt/sources.list
+sed -i -r 's@http://(jp.)?archive.ubuntu.com/ubuntu/@http://ftp.udx.icscoe.jp/Linux/ubuntu/@g' /etc/apt/sources.list
 apt-get update
 apt-get install -y \
     autopoint \
@@ -46,8 +46,7 @@ ENV FFMPEG_VERSION="${FFMPEG_VERSION}" \
 WORKDIR ${WORKDIR}
 
 # Copy build script
-ADD ./scripts/*.sh ./
-
+ADD ./scripts/base.sh ./
 
 #
 # ffmpeg library build image
@@ -57,6 +56,9 @@ FROM ffmpeg-build-env AS ffmpeg-library-build
 # Environment
 ARG TARGET_OS="Linux"
 ENV TARGET_OS=${TARGET_OS}
+
+# Copy build script
+ADD ./scripts/build-library.sh ./
 
 # Run build
 RUN bash ./build-library.sh
@@ -79,8 +81,11 @@ FROM ffmpeg-build-env AS ffmpeg-linux-build-base
 # Environment
 ENV TARGET_OS="Linux"
 
+# Copy build script
+ADD ./scripts/build-ffmpeg.sh ./
+
 # Copy ffmpeg-library image
-COPY --from=ghcr.io/akashisn/ffmpeg-library-build:linux / /
+COPY --from=ghcr.io/akashisn/ffmpeg-library:linux / /
 
 
 #
@@ -161,8 +166,11 @@ FROM ffmpeg-build-env AS ffmpeg-windows-build
 # Environment
 ENV TARGET_OS="Windows"
 
+# Copy build script
+ADD ./scripts/build-ffmpeg.sh ./
+
 # Copy ffmpeg-library image
-COPY --from=ghcr.io/akashisn/ffmpeg-library-build:windows / /
+COPY --from=ghcr.io/akashisn/ffmpeg-library:windows / /
 
 # HWAccel
 # Build libmfx
@@ -223,7 +231,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Install runtime dependency
 RUN <<EOT
 rm -rf /var/lib/apt/lists/*
-sed -i -r 's!(deb|deb-src) \S+!\1 http://jp.archive.ubuntu.com/ubuntu/!' /etc/apt/sources.list
+sed -i -r 's@http://(jp.)?archive.ubuntu.com/ubuntu/@http://ftp.udx.icscoe.jp/Linux/ubuntu/@g' /etc/apt/sources.list
 apt-get update
 apt-get install -y libdrm2
 apt-get autoremove -y
@@ -298,7 +306,7 @@ cp --archive --no-dereference bin/vainfo /usr/local/bin/
 cp --archive --no-dereference lib64/*.so* /usr/local/lib/
 
 rm -rf /var/lib/apt/lists/*
-sed -i -r 's!(deb|deb-src) \S+!\1 http://jp.archive.ubuntu.com/ubuntu/!' /etc/apt/sources.list
+sed -i -r 's@http://(jp.)?archive.ubuntu.com/ubuntu/@http://ftp.udx.icscoe.jp/Linux/ubuntu/@g' /etc/apt/sources.list
 apt-get update
 apt-get install -y libdrm2 libxext6 libxfixes3
 apt-get autoremove -y

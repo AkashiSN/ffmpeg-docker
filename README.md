@@ -7,14 +7,17 @@
 ## Available tags
 
 - [Plain ffmpeg (without HWAccel)](https://github.com/AkashiSN/ffmpeg-docker/blob/main/Dockerfile)
-  - `5.0.1`
-  - `4.4.2`
+  - `5.1.2`
+  - `5.0.2`
+  - `4.4.3`
 - [With Intel QSV(Media SDK)](https://github.com/AkashiSN/ffmpeg-docker/blob/main/qsv.Dockerfile)
-  - `5.0.1-qsv`
-  - `4.4.2-qsv`
+  - `5.1.2-qsv`
+  - `5.0.2-qsv`
+  - `4.4.3-qsv`
 - [Windows ffmpeg](https://github.com/AkashiSN/ffmpeg-docker/blob/main/windows.Dockerfile)
-  - `5.0.1`
-  - `4.4.2`
+  - `5.1.2`
+  - `5.0.2`
+  - `4.4.3`
 
 ## Supported architecture
 
@@ -29,9 +32,9 @@
     --enable-gnutls --enable-libsrt --enable-libvpx --enable-libx264 --enable-libx265 --enable-libaom
     --enable-libopus --enable-libvorbis --enable-libopencore-amrnb --enable-libopencore-amrwb
     --enable-libvo-amrwbenc --enable-libmp3lame --enable-libfreetype --enable-libfribidi --enable-libxml2
-    --enable-libfontconfig --enable-libass --enable-libaribb24 --enable-sdl2 --enable-cuda-llvm --enable-ffnvcodec
-    --enable-cuvid --enable-nvdec --enable-nvenc --disable-autodetect --disable-debug --disable-doc
-    --enable-gpl --enable-version3 --extra-libs='-lpthread -lstdc++' --pkg-config-flags=--static
+    --enable-libfontconfig --enable-libass --enable-libaribb24 --enable-sdl2 --enable-cuda-llvm
+    --enable-ffnvcodec --enable-cuvid --enable-nvdec --enable-nvenc --disable-autodetect --disable-debug
+    --disable-doc --enable-gpl --enable-version3 --extra-libs="-lm -lpthread -lstdc++" --pkg-config-flags="--static" --prefix=/usr/local
     ```
     </details>
 
@@ -40,15 +43,13 @@
 
     ```bash
     $ ldd ffmpeg
-      linux-vdso.so.1 (0x00007ffde9743000)
-      libm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007f59a176e000)
-      libpthread.so.0 => /lib/x86_64-linux-gnu/libpthread.so.0 (0x00007f59a174b000)
-      libdl.so.2 => /lib/x86_64-linux-gnu/libdl.so.2 (0x00007f59a1745000)
-      libstdc++.so.6 => /lib/x86_64-linux-gnu/libstdc++.so.6 (0x00007f59a1563000)
-      libmvec.so.1 => /lib/x86_64-linux-gnu/libmvec.so.1 (0x00007f59a1537000)
-      libgcc_s.so.1 => /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x00007f59a151c000)
-      libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007f59a1328000)
-      /lib64/ld-linux-x86-64.so.2 (0x00007f59a637c000)
+        linux-vdso.so.1 (0x00007ffc7af61000)
+        libm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007f1ef7cca000)
+        libstdc++.so.6 => /lib/x86_64-linux-gnu/libstdc++.so.6 (0x00007f1ef7aa0000)
+        libgcc_s.so.1 => /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x00007f1ef7a80000)
+        libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007f1ef7858000)
+        libmvec.so.1 => /lib/x86_64-linux-gnu/libmvec.so.1 (0x00007f1ef775b000)
+        /lib64/ld-linux-x86-64.so.2 (0x00007f1efc829000)
     ```
     </details>
 
@@ -57,15 +58,15 @@
     <details>
     <summary>configure options:</summary>
 
-      ```bash
-      --enable-zlib --enable-libopenjpeg --enable-libwebp --enable-lzma --enable-gmp --enable-iconv
-      --enable-gnutls --enable-libsrt --enable-libvpx --enable-libx264 --enable-libx265 --enable-libaom
-      --enable-libopus --enable-libvorbis --enable-libopencore-amrnb --enable-libopencore-amrwb
-      --enable-libvo-amrwbenc --enable-libmp3lame --enable-libfreetype --enable-libfribidi --enable-libxml2
-      --enable-libfontconfig --enable-libass --enable-libaribb24 --enable-sdl2 --enable-cuda-llvm --enable-ffnvcodec
-      --enable-cuvid --enable-nvdec --enable-nvenc --enable-libmfx --enable-vaapi --disable-autodetect
-      --disable-debug --disable-doc --enable-gpl --enable-version3 --extra-libs='-lpthread -lstdc++'
-      --pkg-config-flags=--static
+    ```bash
+    --enable-zlib --enable-libopenjpeg --enable-libwebp --enable-lzma --enable-gmp --enable-iconv
+    --enable-gnutls --enable-libsrt --enable-libvpx --enable-libx264 --enable-libx265 --enable-libaom
+    --enable-libopus --enable-libvorbis --enable-libopencore-amrnb --enable-libopencore-amrwb
+    --enable-libvo-amrwbenc --enable-libmp3lame --enable-libfreetype --enable-libfribidi --enable-libxml2
+    --enable-libfontconfig --enable-libass --enable-libaribb24 --enable-sdl2 --enable-cuda-llvm
+    --enable-ffnvcodec --enable-cuvid --enable-nvdec --enable-nvenc --enable-libmfx --enable-vaapi
+    --disable-autodetect --disable-debug --disable-doc --enable-gpl --enable-version3
+    --extra-libs="-lm -lpthread -lstdc++" --pkg-config-flags="--static" --prefix=/usr/local
       ```
     </details>
 
@@ -74,19 +75,18 @@
 
     ```bash
     $ ldd ffmpeg
-      linux-vdso.so.1 (0x00007ffe71ede000)
-      libm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007efe5ed87000)
-      libpthread.so.0 => /lib/x86_64-linux-gnu/libpthread.so.0 (0x00007efe5ed64000)
-      libva.so.2 => /home/user/.local/lib/libva.so.2 (0x00007efe5eb3b000)
-      libdl.so.2 => /lib/x86_64-linux-gnu/libdl.so.2 (0x00007efe5eb35000)
-      libmfx.so.1 => /home/user/.local/lib/libmfx.so.1 (0x00007efe5e927000)
-      libstdc++.so.6 => /lib/x86_64-linux-gnu/libstdc++.so.6 (0x00007efe5e745000)
-      libmvec.so.1 => /lib/x86_64-linux-gnu/libmvec.so.1 (0x00007efe5e717000)
-      libgcc_s.so.1 => /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x00007efe5e6fc000)
-      libva-drm.so.2 => /home/user/.local/lib/libva-drm.so.2 (0x00007efe5e4f9000)
-      libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007efe5e307000)
-      /lib64/ld-linux-x86-64.so.2 (0x00007efe639ec000)
-      libdrm.so.2 => /lib/x86_64-linux-gnu/libdrm.so.2 (0x00007efe5e2f3000)
+        linux-vdso.so.1 (0x00007ffe367a0000)
+        libm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007efee94db000)
+        libva.so.2 => /usr/local/lib/libva.so.2 (0x00007efee9200000)
+        libmfx.so.1 => /usr/local/lib/libmfx.so.1 (0x00007efee8e00000)
+        libstdc++.so.6 => /lib/x86_64-linux-gnu/libstdc++.so.6 (0x00007efee8bd6000)
+        libgcc_s.so.1 => /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x00007efee94bb000)
+        libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007efee89ae000)
+        libmvec.so.1 => /lib/x86_64-linux-gnu/libmvec.so.1 (0x00007efee9103000)
+        libva-drm.so.2 => /usr/local/lib/libva-drm.so.2 (0x00007efee8600000)
+        /lib64/ld-linux-x86-64.so.2 (0x00007efeee093000)
+        libdl.so.2 => /lib/x86_64-linux-gnu/libdl.so.2 (0x00007efee94b4000)
+        libdrm.so.2 => /lib/x86_64-linux-gnu/libdrm.so.2 (0x00007efee949e000)
     ```
     </details>
 
