@@ -86,14 +86,12 @@ FFMPEG_CONFIGURE_OPTIONS+=("--enable-libwebp")
 # Build bzip2
 BZIP2_VERSION="1.0.8"
 download_and_unpack_file "https://www.sourceware.org/pub/bzip2/bzip2-${BZIP2_VERSION}.tar.gz"
-make CC=${CROSS_PREFIX}gcc AR=${CROSS_PREFIX}ar RANLIB=${CROSS_PREFIX}ranlib libbz2.a bzip2
-install -m 755 bzip2 ${PREFIX}/bin
+make CC=${CROSS_PREFIX}gcc AR=${CROSS_PREFIX}ar RANLIB=${CROSS_PREFIX}ranlib libbz2.a
 install -m 644 bzlib.h ${PREFIX}/include
 install -m 644 libbz2.a ${PREFIX}/lib
 cat <<EOS > ${PKG_CONFIG_PATH}/bz2.pc
 prefix=${PREFIX}
 exec_prefix=\${prefix}
-bindir=\${prefix}/bin
 libdir=\${exec_prefix}/lib
 includedir=\${prefix}/include
 
@@ -227,7 +225,7 @@ git_clone "https://aomedia.googlesource.com/aom" v${LIBAOM_VERSION}
 mkcd ${WORKDIR}/aom_build
 if [ "${TARGET_OS}" = "Windows" ]; then
   cmake -DBUILD_SHARED_LIBS=0 -DENABLE_NASM=1 -DENABLE_DOCS=0 -DENABLE_TESTS=0 -DENABLE_EXAMPLES=0 \
-        -DCMAKE_TOOLCHAIN_FILE=../aom/build/cmake/toolchains/x86_64-mingw-gcc.cmake -DAOM_TARGET_CPU=x86_64 \
+        -DCMAKE_TOOLCHAIN_FILE=../aom-v${LIBAOM_VERSION}/build/cmake/toolchains/x86_64-mingw-gcc.cmake -DAOM_TARGET_CPU=x86_64 \
         -DCMAKE_INSTALL_PREFIX=${PREFIX} ../aom-v${LIBAOM_VERSION}
 else
   do_cmake "-DBUILD_SHARED_LIBS=0 -DENABLE_NASM=1 -DENABLE_DOCS=0 -DENABLE_TESTS=0 -DENABLE_EXAMPLES=0" ../aom-v${LIBAOM_VERSION}
@@ -299,6 +297,9 @@ mkcd ${WORKDIR}/freetype_build
 do_cmake "-D BUILD_SHARED_LIBS=0 -D FT_REQUIRE_ZLIB=1 -D FT_REQUIRE_BZIP2=1 -D FT_REQUIRE_PNG=1 -D FT_DISABLE_HARFBUZZ=1" ../freetype-VER-${FREETYPE_VERSION}
 do_make_and_make_install
 sed -i -e "s%Libs: \(.*\)%Libs: \1 -lpng%g" ${PKG_CONFIG_PATH}/freetype2.pc
+if [ "${TARGET_OS}" = "Windows" ]; then
+  sed -i -e "s%Libs: \(.*\)%Libs: \1 -lpthread%g" ${PKG_CONFIG_PATH}/freetype2.pc
+fi
 FFMPEG_CONFIGURE_OPTIONS+=("--enable-libfreetype")
 
 # Build fribidi

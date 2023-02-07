@@ -69,10 +69,10 @@ FFMPEG_EXTRA_LIBS=("-lm")
 case "$(uname)" in
 Darwin)
   export CFLAGS="${CFLAGS} -Wno-error=implicit-function-declaration"
-  CPU_NUM=$(getconf _NPROCESSORS_ONLN)
+  CPU_NUM=$(expr $(getconf _NPROCESSORS_ONLN) / 2)
   ;;
 Linux)
-  CPU_NUM=$(nproc)
+  CPU_NUM=$(expr $(nproc) / 2)
   ;;
 esac
 

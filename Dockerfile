@@ -34,6 +34,7 @@ apt-get install -y \
     nasm \
     p7zip \
     pkg-config \
+    ragel \
     subversion \
     yasm
 EOT
