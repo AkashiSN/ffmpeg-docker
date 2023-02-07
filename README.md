@@ -101,12 +101,12 @@
     --enable-gnutls --enable-libsrt --enable-libvpx --enable-libx264 --enable-libx265 --enable-libaom
     --enable-libopus --enable-libvorbis --enable-libopencore-amrnb --enable-libopencore-amrwb
     --enable-libvo-amrwbenc --enable-libmp3lame --enable-libfreetype --enable-libfribidi --enable-libxml2
-    --enable-libfontconfig --enable-libass --enable-libaribb24 --enable-sdl2 --enable-cuda-llvm --enable-ffnvcodec
-    --enable-cuvid --enable-nvdec --enable-nvenc --enable-libmfx --enable-d3d11va --enable-dxva2
-    --arch=x86_64 --cross-prefix=x86_64-w64-mingw32- --disable-autodetect --disable-debug
+    --enable-libfontconfig --enable-libass --enable-libaribb24 --enable-sdl2 --enable-cuda-llvm
+    --enable-ffnvcodec --enable-cuvid --enable-nvdec --enable-nvenc --enable-libmfx --enable-d3d11va
+    --enable-dxva2 --arch=x86_64 --cross-prefix=x86_64-w64-mingw32- --disable-autodetect --disable-debug
     --disable-doc --disable-w32threads --enable-cross-compile --enable-gpl --enable-version3
-    --extra-libs='-lpthread -lstdc++' --target-os=mingw64 --pkg-config=pkg-config
-    --pkg-config-flags=--static
+    --extra-libs='-static -static-libgcc -static-libstdc++ -Wl,-Bstatic -lm -lpthread -lstdc++'
+    --extra-cflags=--static --target-os=mingw64 --pkg-config=pkg-config --pkg-config-flags=--static -prefix=/usr/local
     ```
     </details>
 
@@ -114,12 +114,12 @@
     <summary>Dependent library</summary>
 
     ```bat
-    > dumpbin /Dependents C:\tools\media\ffmpeg\ffmpeg.exe
-    Microsoft (R) COFF/PE Dumper Version 14.30.30705.0
+    > dumpbin /Dependents ffmpeg-5.1.2-windows-x64\ffmpeg.exe
+    Microsoft (R) COFF/PE Dumper Version 14.34.31937.0
     Copyright (C) Microsoft Corporation.  All rights reserved.
 
 
-    Dump of file C:\tools\media\ffmpeg\ffmpeg.exe
+    Dump of file ffmpeg-5.1.2-windows-x64\ffmpeg.exe
 
     File Type: EXECUTABLE IMAGE
 
@@ -129,31 +129,36 @@
         bcrypt.dll
         CRYPT32.dll
         GDI32.dll
+        IMM32.dll
         KERNEL32.dll
         msvcrt.dll
         ole32.dll
         OLEAUT32.dll
         PSAPI.DLL
+        SETUPAPI.dll
         SHELL32.dll
         SHLWAPI.dll
         USER32.dll
+        VERSION.dll
         AVICAP32.dll
+        WINMM.dll
         WS2_32.dll
+        WSOCK32.dll
 
       Summary
 
             1000 .CRT
-          85C000 .bss
-          17000 .data
+          864000 .bss
+          25000 .data
             B000 .edata
-            5000 .idata
-          C9000 .pdata
-          985000 .rdata
-          2B000 .reloc
+            7000 .idata
+          E4000 .pdata
+          A19000 .rdata
+          30000 .reloc
             1000 .rodata
-        3634000 .text
+        399B000 .text
             1000 .tls
-          FE000 .xdata
+          128000 .xdata
     ```
     </details>
 
