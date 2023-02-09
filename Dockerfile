@@ -22,13 +22,23 @@ apt-get install -y \
     autopoint \
     build-essential \
     clang \
+    cmake \
     curl \
     gettext \
     git \
     gperf \
+    libdrm-dev \
+    libgl-dev \
     libtool \
+    libwayland-dev \
+    libx11-xcb-dev \
+    libxcb-dri3-dev \
+    libxcb-present-dev \
+    libxext-dev \
+    libxfixes-dev \
     lzip \
     make \
+    meson \
     mingw-w64 \
     mingw-w64-tools \
     nasm \
@@ -36,6 +46,7 @@ apt-get install -y \
     pkg-config \
     ragel \
     subversion \
+    xxd \
     yasm
 EOT
 
@@ -115,23 +126,12 @@ EOT
 
 
 #
-# ffmpeg linux binary build image
+# ffmpeg qsv linux binary build image
 #
 FROM ffmpeg-linux-build-base AS ffmpeg-linux-qsv-build
 
-# HWAccel
-# Install MediaSDK
-ENV INTEL_MEDIA_SDK_VERSION=21.3.5
-RUN apt-get install -y libdrm2 libxext6 libxfixes3
-RUN <<EOT
-source ./base.sh
-download_and_unpack_file "https://github.com/Intel-Media-SDK/MediaSDK/releases/download/intel-mediasdk-${INTEL_MEDIA_SDK_VERSION}/MediaStack.tar.gz"
-cd opt/intel/mediasdk
-cp --archive --no-dereference include ${PREFIX}/
-cp --archive --no-dereference lib64/. ${PREFIX}/lib/
-ldconfig
-echo -n "`cat ${PREFIX}/ffmpeg_configure_options` --enable-libmfx --enable-vaapi" > ${PREFIX}/ffmpeg_configure_options
-EOT
+ARG INTEL_HWACCEL_LIBRARY="libmfx"
+ENV INTEL_HWACCEL_LIBRARY="${INTEL_HWACCEL_LIBRARY}"
 
 # Build ffmpeg
 RUN bash ./build-ffmpeg.sh
@@ -141,7 +141,7 @@ COPY <<'EOT' ${PREFIX}/run.sh
 #!/bin/sh
 export PATH=$(dirname $0)/bin:$PATH
 export LD_LIBRARY_PATH=$(dirname $0)/lib:$LD_LIBRARY_PATH
-export LIBVA_DRIVERS_PATH=$(dirname $0)/lib
+export LIBVA_DRIVERS_PATH=$(dirname $0)/lib/dri
 export LIBVA_DRIVER_NAME=iHD
 exec $@
 EOT
@@ -153,9 +153,12 @@ chmod +x ${PREFIX}/run.sh
 cp --archive --parents --no-dereference ${PREFIX}/run.sh /build
 cp --archive --parents --no-dereference ${PREFIX}/bin/ff* /build
 cp --archive --parents --no-dereference ${PREFIX}/configure_options /build
-cp --archive --parents --no-dereference ${PREFIX}/lib/*.so* /build
-rm /build/${PREFIX}/lib/libva-glx.so*
-rm /build/${PREFIX}/lib/libva-x11.so*
+cp --archive --parents --no-dereference ${PREFIX}/lib/dri /build
+if [ "${INTEL_HWACCEL_LIBRARY}" = "libmfx" ]; then
+    cp --archive --parents --no-dereference ${PREFIX}/lib/{libva,libva-drm,libmfx,libmfxhw64,libigdgmm}.so* /build
+elif [ "${INTEL_HWACCEL_LIBRARY}" = "libvpl" ]; then
+    cp --archive --parents --no-dereference ${PREFIX}/lib/{libva,libva-drm,libmvpl,libigdgmm}.so* /build
+fi
 EOT
 
 
@@ -227,23 +230,20 @@ FROM ubuntu:22.04 AS ffmpeg-qsv
 COPY --from=ffmpeg-linux-qsv-build /build /
 
 SHELL ["/bin/sh", "-e", "-c"]
-ENV DEBIAN_FRONTEND=noninteractive
+ENV DEBIAN_FRONTEND=noninteractive \
+    LIBVA_DRIVERS_PATH=/usr/local/lib/dri \
+    LIBVA_DRIVER_NAME=iHD
 
 # Install runtime dependency
 RUN <<EOT
-rm -rf /var/lib/apt/lists/*
-sed -i -r 's@http://(jp.)?archive.ubuntu.com/ubuntu/@http://ftp.udx.icscoe.jp/Linux/ubuntu/@g' /etc/apt/sources.list
 apt-get update
 apt-get install -y libdrm2
 apt-get autoremove -y
 apt-get clean
 rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
+
+ldconfig
 EOT
-
-ENV LIBVA_DRIVERS_PATH=/usr/local/lib \
-    LIBVA_DRIVER_NAME=iHD
-
-RUN ldconfig
 
 WORKDIR /workdir
 ENTRYPOINT [ "ffmpeg" ]

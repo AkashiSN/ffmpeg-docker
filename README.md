@@ -254,18 +254,24 @@ In `qsv` archive file:
 $ ls
 bin  configure_options  lib  run.sh
 $ ls bin/
-ffmpeg  ffprobe
-$ ls lib/
-iHD_drv_video.so     libigfxcmrt.so.7       libmfx.so        libmfxhw64.so.1.35     libva.so.2
-libigdgmm.so         libigfxcmrt.so.7.2.0   libmfx.so.1      libva-drm.so           libva.so.2.1300.0
-libigdgmm.so.11      libmfx-tracer.so       libmfx.so.1.35   libva-drm.so.2
-libigdgmm.so.11.3.0  libmfx-tracer.so.1     libmfxhw64.so    libva-drm.so.2.1300.0
-libigfxcmrt.so       libmfx-tracer.so.1.35  libmfxhw64.so.1  libva.so
+ffmpeg  ffplay  ffprobe
+$ ls lib/*
+lib/libigdgmm.so          lib/libmfx-gen.so.1.2.8  lib/libva-drm.so.2             lib/libva-x11.so
+lib/libigdgmm.so.12       lib/libmfx.so            lib/libva-drm.so.2.1700.0      lib/libva-x11.so.2
+lib/libigdgmm.so.12.3.0   lib/libmfx.so.1          lib/libva-glx.so               lib/libva-x11.so.2.1700.0
+lib/libigfxcmrt.so        lib/libmfx.so.1.35       lib/libva-glx.so.2             lib/libva.so
+lib/libigfxcmrt.so.7      lib/libmfxhw64.so        lib/libva-glx.so.2.1700.0      lib/libva.so.2
+lib/libigfxcmrt.so.7.2.0  lib/libmfxhw64.so.1      lib/libva-wayland.so           lib/libva.so.2.1700.0
+lib/libmfx-gen.so         lib/libmfxhw64.so.1.35   lib/libva-wayland.so.2
+lib/libmfx-gen.so.1.2     lib/libva-drm.so         lib/libva-wayland.so.2.1700.0
+
+lib/dri:
+iHD_drv_video.so
 $ cat run.sh
 #!/bin/sh
 export PATH=$(dirname $0)/bin:$PATH
 export LD_LIBRARY_PATH=$(dirname $0)/lib:$LD_LIBRARY_PATH
-export LIBVA_DRIVERS_PATH=$(dirname $0)/lib
+export LIBVA_DRIVERS_PATH=$(dirname $0)/lib/dri
 export LIBVA_DRIVER_NAME=iHD
 exec $@
 ```

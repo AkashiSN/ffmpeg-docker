@@ -160,7 +160,16 @@ do_make_and_make_install () {
 do_cmake () {
   local extra_args="${1:-""}"
   local build_from_dir="${2:-"."}"
-  cmake -G"Unix Makefiles" "${build_from_dir}" -DCMAKE_INSTALL_PREFIX="${PREFIX}" -DCMAKE_TOOLCHAIN_FILE="${WORKDIR}/toolchains.cmake" $extra_args
+  cmake -G"Unix Makefiles" "${build_from_dir}" -DCMAKE_INSTALL_PREFIX="${PREFIX}" -DCMAKE_TOOLCHAIN_FILE="${WORKDIR}/toolchains.cmake" $extra_args 1>&2
 }
 
+do_meson () {
+  local extra_args="${1:-""}"
+  local build_from_dir="${2:-"."}"
+  meson setup --buildtype=release --default-library=static --prefix="${PREFIX}" --bindir="${PREFIX}/bin" --libdir="${PREFIX}/lib" $build_from_dir $extra_args 1>&2
+}
 
+do_ninja_and_ninja_install () {
+  ninja
+  ninja install
+}

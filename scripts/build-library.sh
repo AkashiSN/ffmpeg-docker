@@ -6,21 +6,6 @@ source ./base.sh
 # Build Tools
 #
 
-# Download Cmake
-CMAKE_VERSION=3.25.2
-download_and_unpack_file "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-${HOST_OS}-${HOST_ARCH}.tar.gz"
-case "$(uname)" in
-Darwin)
-  rm -f ./CMake.app/Contents/bin/cmake-gui
-  cp -r ./CMake.app/Contents/bin/. ${PREFIX}/bin/
-  cp -r ./CMake.app/Contents/share/. ${PREFIX}/share/
-  ;;
-Linux)
-  cp -r ./bin/. ${PREFIX}/bin/
-  cp -r ./share/. ${PREFIX}/share/
-  ;;
-esac
-
 # Cmake build toolchain
 cat << EOS > ${WORKDIR}/toolchains.cmake
 SET(CMAKE_SYSTEM_NAME ${TARGET_OS})
@@ -40,6 +25,22 @@ SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-static-libgcc -static-libstdc++ -static 
 SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-static-libgcc -static-libstdc++ -static -O3 -s")
 EOS
 fi
+
+# meson build toolchain
+cat << EOS > ${WORKDIR}/x86_64-w64-mingw32.txt
+[binaries]
+c = 'x86_64-w64-mingw32-gcc'
+cpp = 'x86_64-w64-mingw32-g++'
+ar = 'x86_64-w64-mingw32-ar'
+strip = 'x86_64-w64-mingw32-strip'
+exe_wrapper = 'wine64'
+
+[host_machine]
+system = 'windows'
+cpu_family = 'x86_64'
+cpu = 'x86_64'
+endian = 'little'
+EOS
 
 
 #
@@ -67,16 +68,16 @@ do_configure
 do_make_and_make_install
 
 # Build openjpeg
-OPENJPEG_VERSION="2.5.0"
-git_clone "https://github.com/uclouvain/openjpeg.git" v${OPENJPEG_VERSION}
+OPENJPEG_VERSION="v2.5.0"
+git_clone "https://github.com/uclouvain/openjpeg.git" ${OPENJPEG_VERSION}
 mkcd ${WORKDIR}/openjpeg_build
-do_cmake "-DBUILD_SHARED_LIBS=0 -DBUILD_TESTING=0 -DBUILD_CODEC=0" ../openjpeg-v${OPENJPEG_VERSION}
+do_cmake "-DBUILD_SHARED_LIBS=0 -DBUILD_TESTING=0 -DBUILD_CODEC=0" ../openjpeg-${OPENJPEG_VERSION}
 do_make_and_make_install
 FFMPEG_CONFIGURE_OPTIONS+=("--enable-libopenjpeg")
 
 # Build webp
-WEBP_VERSION="1.3.0"
-git_clone "https://chromium.googlesource.com/webm/libwebp.git" v${WEBP_VERSION}
+WEBP_VERSION="v1.3.0"
+git_clone "https://chromium.googlesource.com/webm/libwebp.git" ${WEBP_VERSION}
 export LIBPNG_CONFIG="${PREFIX}/bin/libpng-config --static"
 do_configure "--disable-wic"
 do_make_and_make_install
@@ -152,12 +153,12 @@ do_make_and_make_install
 FFMPEG_CONFIGURE_OPTIONS+=("--enable-gnutls")
 
 # Build SRT
-SRT_VERSION="1.5.1"
-git_clone "https://github.com/Haivision/srt.git" v${SRT_VERSION}
+SRT_VERSION="v1.5.1"
+git_clone "https://github.com/Haivision/srt.git" ${SRT_VERSION}
 mkcd ${WORKDIR}/srt_build
 do_cmake "-DENABLE_SHARED=0 -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_INSTALL_BINDIR=bin
           -DCMAKE_INSTALL_INCLUDEDIR=include -DENABLE_APPS=0 -DUSE_STATIC_LIBSTDCXX=1
-          -DUSE_ENCLIB=gnutls" ../srt-v${SRT_VERSION}
+          -DUSE_ENCLIB=gnutls" ../srt-${SRT_VERSION}
 do_make_and_make_install
 FFMPEG_CONFIGURE_OPTIONS+=("--enable-libsrt")
 
@@ -167,8 +168,8 @@ FFMPEG_CONFIGURE_OPTIONS+=("--enable-libsrt")
 #
 
 # Build libvpx
-LIBVPX_VERSION="1.12.0"
-git_clone "https://chromium.googlesource.com/webm/libvpx" v${LIBVPX_VERSION}
+LIBVPX_VERSION="v1.12.0"
+git_clone "https://chromium.googlesource.com/webm/libvpx" ${LIBVPX_VERSION}
 if [ "${TARGET_OS}" = "Windows" ]; then
   CROSS=${CROSS_PREFIX} ./configure --prefix="${PREFIX}" --target=x86_64-win64-gcc --disable-examples --disable-docs --disable-unit-tests --as=yasm
 else
@@ -220,18 +221,30 @@ FFMPEG_CONFIGURE_OPTIONS+=("--enable-libx265")
 FFMPEG_EXTRA_LIBS+=("-lpthread" "-lstdc++")
 
 # Build libaom
-LIBAOM_VERSION="3.5.0"
-git_clone "https://aomedia.googlesource.com/aom" v${LIBAOM_VERSION}
+LIBAOM_VERSION="v3.5.0"
+git_clone "https://aomedia.googlesource.com/aom" ${LIBAOM_VERSION}
 mkcd ${WORKDIR}/aom_build
 if [ "${TARGET_OS}" = "Windows" ]; then
   cmake -DBUILD_SHARED_LIBS=0 -DENABLE_NASM=1 -DENABLE_DOCS=0 -DENABLE_TESTS=0 -DENABLE_EXAMPLES=0 \
-        -DCMAKE_TOOLCHAIN_FILE=../aom-v${LIBAOM_VERSION}/build/cmake/toolchains/x86_64-mingw-gcc.cmake -DAOM_TARGET_CPU=x86_64 \
-        -DCMAKE_INSTALL_PREFIX=${PREFIX} ../aom-v${LIBAOM_VERSION}
+        -DCMAKE_TOOLCHAIN_FILE=../aom-${LIBAOM_VERSION}/build/cmake/toolchains/x86_64-mingw-gcc.cmake -DAOM_TARGET_CPU=x86_64 \
+        -DCMAKE_INSTALL_PREFIX=${PREFIX} ../aom-${LIBAOM_VERSION}
 else
-  do_cmake "-DBUILD_SHARED_LIBS=0 -DENABLE_NASM=1 -DENABLE_DOCS=0 -DENABLE_TESTS=0 -DENABLE_EXAMPLES=0" ../aom-v${LIBAOM_VERSION}
+  do_cmake "-DBUILD_SHARED_LIBS=0 -DENABLE_NASM=1 -DENABLE_DOCS=0 -DENABLE_TESTS=0 -DENABLE_EXAMPLES=0" ../aom-${LIBAOM_VERSION}
 fi
 do_make_and_make_install
 FFMPEG_CONFIGURE_OPTIONS+=("--enable-libaom")
+
+# Build vmaf
+VMAF_VERSION="v2.3.1"
+git_clone "https://github.com/Netflix/vmaf.git" ${VMAF_VERSION}
+mkcd ${WORKDIR}/vmaf_build
+if [ "${TARGET_OS}" = "Windows" ]; then
+  do_meson "-Denable_tests=false -Denable_docs=false --cross-file=${WORKDIR}/x86_64-w64-mingw32.txt" ../vmaf-${VMAF_VERSION}/libvmaf
+else
+  do_meson "-Denable_tests=false -Denable_docs=false" ../vmaf-${VMAF_VERSION}/libvmaf
+fi
+do_ninja_and_ninja_install
+FFMPEG_CONFIGURE_OPTIONS+=("--enable-libvmaf")
 
 
 #
@@ -239,29 +252,29 @@ FFMPEG_CONFIGURE_OPTIONS+=("--enable-libaom")
 #
 
 # Build opus
-OPUS_VERSION="1.3.1"
-git_clone "https://github.com/xiph/opus.git" v${OPUS_VERSION}
+OPUS_VERSION="v1.3.1"
+git_clone "https://github.com/xiph/opus.git" ${OPUS_VERSION}
 mkcd ${WORKDIR}/opus_build
 if [ "${TARGET_OS}" = "Windows" ]; then
-  do_cmake "-DBUILD_SHARED_LIBS=0 -DBUILD_TESTING=0 -DOPUS_STACK_PROTECTOR=0 -DOPUS_FORTIFY_SOURCE=0" ../opus-v${OPUS_VERSION}
+  do_cmake "-DBUILD_SHARED_LIBS=0 -DBUILD_TESTING=0 -DOPUS_STACK_PROTECTOR=0 -DOPUS_FORTIFY_SOURCE=0" ../opus-${OPUS_VERSION}
 else
-  do_cmake "-DBUILD_SHARED_LIBS=0 -DBUILD_TESTING=0" ../opus-v${OPUS_VERSION}
+  do_cmake "-DBUILD_SHARED_LIBS=0 -DBUILD_TESTING=0" ../opus-${OPUS_VERSION}
 fi
 do_make_and_make_install
 FFMPEG_CONFIGURE_OPTIONS+=("--enable-libopus")
 
 # Build libogg, for vorbis
-OGG_VERSION="1.3.5"
-git_clone "https://github.com/xiph/ogg.git" v${OGG_VERSION}
+OGG_VERSION="v1.3.5"
+git_clone "https://github.com/xiph/ogg.git" ${OGG_VERSION}
 mkcd ${WORKDIR}/ogg_build
-do_cmake "-DBUILD_SHARED_LIBS=0 -DINSTALL_CMAKE_PACKAGE_MODULE=0 -DINSTALL_DOCS=0 -DBUILD_TESTING=0" ../ogg-v${OGG_VERSION}
+do_cmake "-DBUILD_SHARED_LIBS=0 -DINSTALL_CMAKE_PACKAGE_MODULE=0 -DINSTALL_DOCS=0 -DBUILD_TESTING=0" ../ogg-${OGG_VERSION}
 do_make_and_make_install
 
 # Build vorbis
-VORBIS_VERSION="1.3.7"
-git_clone "https://github.com/xiph/vorbis.git" v${VORBIS_VERSION}
+VORBIS_VERSION="v1.3.7"
+git_clone "https://github.com/xiph/vorbis.git" ${VORBIS_VERSION}
 mkcd ${WORKDIR}/vorbis_build
-do_cmake "-DBUILD_SHARED_LIBS=0 -DINSTALL_CMAKE_PACKAGE_MODULE=0 -DBUILD_TESTING=0" ../vorbis-v${VORBIS_VERSION}
+do_cmake "-DBUILD_SHARED_LIBS=0 -DINSTALL_CMAKE_PACKAGE_MODULE=0 -DBUILD_TESTING=0" ../vorbis-${VORBIS_VERSION}
 do_make_and_make_install
 FFMPEG_CONFIGURE_OPTIONS+=("--enable-libvorbis")
 
@@ -291,10 +304,10 @@ FFMPEG_CONFIGURE_OPTIONS+=("--enable-libmp3lame")
 #
 
 # Build freetype
-FREETYPE_VERSION="2-12-1"
-git_clone "https://gitlab.freedesktop.org/freetype/freetype.git" VER-${FREETYPE_VERSION}
+FREETYPE_VERSION="VER-2-12-1"
+git_clone "https://gitlab.freedesktop.org/freetype/freetype.git" ${FREETYPE_VERSION}
 mkcd ${WORKDIR}/freetype_build
-do_cmake "-D BUILD_SHARED_LIBS=0 -D FT_REQUIRE_ZLIB=1 -D FT_REQUIRE_BZIP2=1 -D FT_REQUIRE_PNG=1 -D FT_DISABLE_HARFBUZZ=1" ../freetype-VER-${FREETYPE_VERSION}
+do_cmake "-DBUILD_SHARED_LIBS=0 -DFT_REQUIRE_ZLIB=1 -DFT_REQUIRE_BZIP2=1 -DFT_REQUIRE_PNG=1 -DFT_DISABLE_HARFBUZZ=1" ../freetype-${FREETYPE_VERSION}
 do_make_and_make_install
 sed -i -e "s%Libs: \(.*\)%Libs: \1 -lpng%g" ${PKG_CONFIG_PATH}/freetype2.pc
 if [ "${TARGET_OS}" = "Windows" ]; then
@@ -303,17 +316,17 @@ fi
 FFMPEG_CONFIGURE_OPTIONS+=("--enable-libfreetype")
 
 # Build fribidi
-FRIBIDI_VERSION="1.0.12"
-git_clone "https://github.com/fribidi/fribidi.git" v${FRIBIDI_VERSION}
+FRIBIDI_VERSION="v1.0.12"
+git_clone "https://github.com/fribidi/fribidi.git" ${FRIBIDI_VERSION}
 do_configure "--disable-debug"
 do_make_and_make_install 1
 FFMPEG_CONFIGURE_OPTIONS+=("--enable-libfribidi")
 
 # Build libxml2
-LIBXML2_VERSION="2.10.3"
-git_clone "https://gitlab.gnome.org/GNOME/libxml2.git" v${LIBXML2_VERSION}
+LIBXML2_VERSION="v2.10.3"
+git_clone "https://gitlab.gnome.org/GNOME/libxml2.git" ${LIBXML2_VERSION}
 mkcd ${WORKDIR}/libxml2_build
-do_cmake "-DBUILD_SHARED_LIBS=0 -DLIBXML2_WITH_FTP=0 -DLIBXML2_WITH_HTTP=0 -DLIBXML2_WITH_PYTHON=0 -DLIBXML2_WITH_TESTS=0" ../libxml2-v${LIBXML2_VERSION}
+do_cmake "-DBUILD_SHARED_LIBS=0 -DLIBXML2_WITH_FTP=0 -DLIBXML2_WITH_HTTP=0 -DLIBXML2_WITH_PYTHON=0 -DLIBXML2_WITH_TESTS=0" ../libxml2-${LIBXML2_VERSION}
 do_make_and_make_install
 sed -i -e "s%Libs: \(.*\)%Libs: \1 -lz -llzma -lm%g" ${PKG_CONFIG_PATH}/libxml-2.0.pc
 ln -s ${PKG_CONFIG_PATH}/libxml-2.0.pc ${PKG_CONFIG_PATH}/libxml2.pc
@@ -367,10 +380,61 @@ FFMPEG_CONFIGURE_OPTIONS+=("--enable-sdl2")
 #
 
 # Build NVcodec
-NVCODEC_VERSION="11.1.5.2"
-git_clone "https://git.videolan.org/git/ffmpeg/nv-codec-headers.git" n${NVCODEC_VERSION}
+NVCODEC_VERSION="n11.1.5.2"
+git_clone "https://git.videolan.org/git/ffmpeg/nv-codec-headers.git" ${NVCODEC_VERSION}
 make install "PREFIX=${PREFIX}"
 FFMPEG_CONFIGURE_OPTIONS+=("--enable-cuda-llvm" "--enable-ffnvcodec" "--enable-cuvid" "--enable-nvdec" "--enable-nvenc")
+
+if [ "${TARGET_OS}" = "Linux" ]; then
+  # Build libva
+  LIBVA_VERSION="2.17.0"
+  git_clone "https://github.com/intel/libva.git" ${LIBVA_VERSION}
+  ./autogen.sh --prefix="${PREFIX}" --enable-static --enable-drm --enable-x11 --enable-glx --enable-wayland
+  do_make_and_make_install
+
+  # Build libva-utils
+  LIBVA_UTILS_VERSION="2.17.1"
+  git_clone "https://github.com/intel/libva-utils.git" ${LIBVA_UTILS_VERSION}
+  do_configure "--enable-drm --enable-x11 --enable-glx --enable-wayland"
+  do_make_and_make_install
+
+  # Build oneVPL
+  ONEVPL_VERSION="v2023.1.2"
+  git_clone "https://github.com/oneapi-src/oneVPL.git" ${ONEVPL_VERSION}
+  mkcd ${WORKDIR}/oneVPL_build
+  do_cmake "-DBUILD_EXAMPLES=0 -DBUILD_PREVIEW=0" ../oneVPL-${ONEVPL_VERSION}
+  do_make_and_make_install
+  # FFMPEG_CONFIGURE_OPTIONS+=("--enable-vaapi" "--enable-libvpl") @ ffmpeg-master
+
+  # Build oneVPL gpu runtime
+  ONEVPL_INTEL_GPU_VERSION="intel-onevpl-23.1.1"
+  git_clone "https://github.com/oneapi-src/oneVPL-intel-gpu.git" ${ONEVPL_INTEL_GPU_VERSION}
+  mkcd ${WORKDIR}/oneVPL-intel-gpu_build
+  do_cmake "-DBUILD_TESTS=0" ../oneVPL-intel-gpu-${ONEVPL_INTEL_GPU_VERSION}
+  do_make_and_make_install
+
+  # Build gmmlib
+  GMMLIB_VERSION="intel-gmmlib-22.3.3"
+  git_clone "https://github.com/intel/gmmlib.git" ${GMMLIB_VERSION}
+  mkcd ${WORKDIR}/gmmlib_build
+  do_cmake "-DBUILD_TYPE=Release" ../gmmlib-${GMMLIB_VERSION}
+  do_make_and_make_install
+
+  # Build media-driver
+  MEDIA_DRIVER_VERSION="intel-media-23.1.1"
+  git_clone "https://github.com/intel/media-driver.git" ${MEDIA_DRIVER_VERSION}
+  mkcd ${WORKDIR}/media-driver_build
+  do_cmake "-DBUILD_TYPE=Release" ../media-driver-${MEDIA_DRIVER_VERSION}
+  do_make_and_make_install
+
+  # Build MediaSDK
+  MEDIASDK_VERSION="intel-mediasdk-23.1.1"
+  git_clone "https://github.com/Intel-Media-SDK/MediaSDK.git" ${MEDIASDK_VERSION}
+  mkcd ${WORKDIR}/MediaSDK_build
+  do_cmake "-DBUILD_TYPE=Release -DENABLE_WAYLAND=1 -DENABLE_X11_DRI3=1" ../MediaSDK-${MEDIASDK_VERSION}
+  do_make_and_make_install
+  # FFMPEG_CONFIGURE_OPTIONS+=("--enable-vaapi" "--enable-libmfx") @ ffmpeg-stable
+fi
 
 
 #
