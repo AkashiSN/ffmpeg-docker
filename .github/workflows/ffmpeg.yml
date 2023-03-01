@@ -20,8 +20,13 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/') == false && (github.event_name == 'push' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'))
     strategy:
       matrix:
-        ffmpeg: ["5.1.2", "5.0.2", "4.4.3"]
+        ffmpeg: ["6.0", "5.1.2", "4.4.3"]
         flavor: [linux, qsv-linux, windows]
+        hwlib: [libmfx]
+        include:
+          - ffmpeg: "6.0"
+            flavor: qsv-linux
+            hwlib: libvpl
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -54,7 +59,8 @@ jobs:
         run: |
           echo "target=ffmpeg-qsv" >> $GITHUB_ENV
           echo "image_name=akashisn/ffmpeg" >> $GITHUB_ENV
-          echo "image_tag=${{ matrix.ffmpeg }}-qsv" >> $GITHUB_ENV
+          echo "hwlib=${{ matrix.hwlib }}" >> $GITHUB_ENV
+          echo "image_tag=${{ matrix.ffmpeg }}-${{ matrix.hwlib }}" >> $GITHUB_ENV
 
       - name: Set build target (windows)
         if: matrix.flavor == 'windows'
@@ -72,6 +78,7 @@ jobs:
             ${{ env.image_name }}:${{ env.image_tag }}
           build-args: |
             FFMPEG_VERSION=${{ matrix.ffmpeg }}
+            INTEL_HWACCEL_LIBRARY=${{ matrix.hwlib }}
           platforms: linux/amd64
           target: ${{ env.target }}
           push: true

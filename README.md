@@ -6,17 +6,21 @@
 
 ## Available tags
 
-- [Plain ffmpeg (without HWAccel)](https://github.com/AkashiSN/ffmpeg-docker/blob/main/Dockerfile)
+- Plain ffmpeg (without HWAccel)
+  - `6.0`
   - `5.1.2`
-  - `5.0.2`
   - `4.4.3`
-- [With Intel QSV(Media SDK)](https://github.com/AkashiSN/ffmpeg-docker/blob/main/qsv.Dockerfile)
-  - `5.1.2-qsv`
-  - `5.0.2-qsv`
-  - `4.4.3-qsv`
-- [Windows ffmpeg](https://github.com/AkashiSN/ffmpeg-docker/blob/main/windows.Dockerfile)
+- With Intel QSV(Media SDK)
+  - `6.0-libmfx`
+  - `5.1.2-libmfx`
+  - `4.4.3-libmfx`
+- With Intel QSV(oneVPL)
+  - `6.0-libvpl`
+  - `5.1.2-libvpl`
+  - `4.4.3-libvpl`
+- Windows ffmpeg
+  - `6.0`
   - `5.1.2`
-  - `5.0.2`
   - `4.4.3`
 
 ## Supported architecture
@@ -320,8 +324,8 @@ If you want to use a non-free codec(e.g. `fdk-aac`, `libnpp` ), you can generate
 
 ```powershell
 # for windows build
-> $Env:CUDA_SDK_VERSION = "11.6.0"
-> $Env:NVIDIA_DRIVER_VERSION = "511.23"
+> $Env:CUDA_SDK_VERSION = "12.0.1"
+> $Env:NVIDIA_DRIVER_VERSION = "528.33"
 > curl -L -o cuda_${Env:CUDA_SDK_VERSION}_${Env:NVIDIA_DRIVER_VERSION}_windows.exe https://developer.download.nvidia.com/compute/cuda/${Env:CUDA_SDK_VERSION}/local_installers/cuda_${Env:CUDA_SDK_VERSION}_${Env:NVIDIA_DRIVER_VERSION}_windows.exe
 > docker buildx build --build-arg HOST_TARGET=x86_64-w64-mingw32 --build-arg TARGET_OS=windows --build-arg CUDA_SDK_VERSION=${Env:CUDA_SDK_VERSION} --build-arg NVIDIA_DRIVER_VERSION=${Env:NVIDIA_DRIVER_VERSION} --output type=local,dest=build -t ffmpeg-nonfree:windows -f ./nonfree.Dockerfile .
 ```

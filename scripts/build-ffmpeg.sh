@@ -3,26 +3,28 @@
 source ./base.sh
 
 # Build ffmpeg
-FFMPEG_VERSION="${FFMPEG_VERSION:-"5.1.2"}"
-INTEL_HWACCEL_LIBRARY="${INTEL_HWACCEL_LIBRARY:-""}"
-if [ "${FFMPEG_VERSION}" = "master" ]; then
-  git_clone "https://github.com/FFmpeg/FFmpeg.git"
-  if [ -n "${INTEL_HWACCEL_LIBRARY}" ]; then
-    if [ "${INTEL_HWACCEL_LIBRARY}" = "libmfx" ] || [ "${INTEL_HWACCEL_LIBRARY}" = "libvpl" ]; then
-      echo -n "`cat ${PREFIX}/ffmpeg_configure_options` --enable-vaapi --enable-${INTEL_HWACCEL_LIBRARY}" > ${PREFIX}/ffmpeg_configure_options
-    else
-      echoerr 'INTEL_HWACCEL_LIBRARY must be "libmfx" or "libvpl" when FFMPEG_VERSION is master'
-      exit 1
+FFMPEG_VERSION="${FFMPEG_VERSION:-"6.0"}"
+git_clone "https://github.com/FFmpeg/FFmpeg.git" n${FFMPEG_VERSION}
+
+INTEL_HWACCEL_LIBRARY="${INTEL_HWACCEL_LIBRARY:-"libmfx"}"
+if [ "${TARGET_OS}" = "Linux" ]; then
+  if [ "${FFMPEG_VERSION}" = "6.0" ]; then
+    if [ -n "${INTEL_HWACCEL_LIBRARY}" ]; then
+      if [ "${INTEL_HWACCEL_LIBRARY}" = "libmfx" ] || [ "${INTEL_HWACCEL_LIBRARY}" = "libvpl" ]; then
+        echo -n "`cat ${PREFIX}/ffmpeg_configure_options` --enable-vaapi --enable-${INTEL_HWACCEL_LIBRARY}" > ${PREFIX}/ffmpeg_configure_options
+      else
+        echoerr 'INTEL_HWACCEL_LIBRARY must be "libmfx" or "libvpl" when FFMPEG_VERSION is 6.0'
+        exit 1
+      fi
     fi
-  fi
-else
-  download_and_unpack_file "https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.xz"
-  if [ -n "${INTEL_HWACCEL_LIBRARY}" ]; then
-    if [ "${INTEL_HWACCEL_LIBRARY}" = "libmfx" ]; then
-      echo -n "`cat ${PREFIX}/ffmpeg_configure_options` --enable-vaapi --enable-libmfx" > ${PREFIX}/ffmpeg_configure_options
-    else
-      echoerr 'INTEL_HWACCEL_LIBRARY must be "libmfx" when FFMPEG_VERSION is stable'
-      exit 1
+  else
+    if [ -n "${INTEL_HWACCEL_LIBRARY}" ]; then
+      if [ "${INTEL_HWACCEL_LIBRARY}" = "libmfx" ]; then
+        echo -n "`cat ${PREFIX}/ffmpeg_configure_options` --enable-vaapi --enable-libmfx" > ${PREFIX}/ffmpeg_configure_options
+      else
+        echoerr 'INTEL_HWACCEL_LIBRARY must be "libmfx" when FFMPEG_VERSION is stable'
+        exit 1
+      fi
     fi
   fi
 fi

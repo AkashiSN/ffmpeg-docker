@@ -12,8 +12,13 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v')
     strategy:
       matrix:
-        ffmpeg: ["5.1.2", "5.0.2", "4.4.3"]
+        ffmpeg: ["6.0", "5.1.2", "4.4.3"]
         flavor: [linux, qsv-linux, windows]
+        hwlib: [libmfx]
+        include:
+          - ffmpeg: "6.0"
+            flavor: qsv-linux
+            hwlib: libvpl
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -30,7 +35,7 @@ jobs:
       - name: Set build target (qsv-linux)
         if: matrix.flavor == 'qsv-linux'
         run: |
-          echo "build_tag=-qsv" >> $GITHUB_ENV
+          echo "build_tag=-${{ matrix.hwlib }}" >> $GITHUB_ENV
           echo "target_os=linux-amd64" >> $GITHUB_ENV
 
       - name: Set build target (windows)

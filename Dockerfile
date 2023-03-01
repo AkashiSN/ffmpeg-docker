@@ -1,8 +1,9 @@
 # syntax = docker/dockerfile:1.5
 
-ARG FFMPEG_VERSION="5.1.2"
+ARG FFMPEG_VERSION="6.0"
+ARG INTEL_HWACCEL_LIBRARY="libmfx"
 FROM akashisn/ffmpeg:${FFMPEG_VERSION} AS ffmpeg-image
-FROM akashisn/ffmpeg:${FFMPEG_VERSION}-qsv AS ffmpeg-image-qsv
+FROM akashisn/ffmpeg:${FFMPEG_VERSION}-${INTEL_HWACCEL_LIBRARY} AS ffmpeg-image-qsv
 FROM ghcr.io/akashisn/ffmpeg-windows:${FFMPEG_VERSION} AS ffmpeg-image-windows
 
 #
@@ -130,7 +131,7 @@ EOT
 #
 FROM ffmpeg-linux-build-base AS ffmpeg-linux-qsv-build
 
-ARG INTEL_HWACCEL_LIBRARY="libmfx"
+ARG INTEL_HWACCEL_LIBRARY
 ENV INTEL_HWACCEL_LIBRARY="${INTEL_HWACCEL_LIBRARY}"
 
 # Build ffmpeg
