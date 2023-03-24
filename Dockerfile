@@ -158,7 +158,7 @@ cp --archive --parents --no-dereference ${PREFIX}/lib/dri /build
 if [ "${INTEL_HWACCEL_LIBRARY}" = "libmfx" ]; then
     cp --archive --parents --no-dereference ${PREFIX}/lib/{libva,libva-drm,libmfx,libmfxhw64,libigdgmm}.so* /build
 elif [ "${INTEL_HWACCEL_LIBRARY}" = "libvpl" ]; then
-    cp --archive --parents --no-dereference ${PREFIX}/lib/{libva,libva-drm,libmvpl,libigdgmm}.so* /build
+    cp --archive --parents --no-dereference ${PREFIX}/lib/{libva,libva-drm,libvpl,libigdgmm}.so* /build
 fi
 EOT
 
