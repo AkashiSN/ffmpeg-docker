@@ -53,18 +53,21 @@ export LD_LIBRARY_PATH="${PREFIX}/lib"
 export PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig"
 export MANPATH="${PREFIX}/share/man"
 export INFOPATH="${PREFIX}/share/info"
+export ACLOCAL_PATH="${PREFIX}/share/aclocal"
 export LIBRARY_PATH="${PREFIX}/lib"
 export C_INCLUDE_PATH="${PREFIX}/include"
 export CPLUS_INCLUDE_PATH="${PREFIX}/include"
-export LDFLAGS="-L${PREFIX}/lib ${LDFLAGS:-""}"
-export CFLAGS="-I${PREFIX}/include ${CFLAGS:-""}"
+export CFLAGS="-static-libgcc -static-libstdc++ -I${PREFIX}/include -O2 -pipe -fPIC -DPIC -D_FORTIFY_SOURCE=2 -fstack-protector-strong -fstack-clash-protection -pthread ${CFLAGS:-""}"
 export CXXFLAGS="${CFLAGS}"
+export LDFLAGS="-static-libgcc -static-libstdc++ -L${PREFIX}/lib -O2 -pipe -fstack-protector-strong -fstack-clash-protection -Wl,-z,relro,-z,now -pthread -lm ${LDFLAGS:-""}"
+export STAGE_CFLAGS="-fvisibility=hidden -fno-semantic-interposition"
+export STAGE_CXXFLAGS="-fvisibility=hidden -fno-semantic-interposition"
 export PATH="${PREFIX}/bin:$PATH"
 
 mkdir -p ${WORKDIR} ${PREFIX}/{bin,share,lib/pkgconfig,include}
 
 FFMPEG_CONFIGURE_OPTIONS=()
-FFMPEG_EXTRA_LIBS=("-lm")
+FFMPEG_EXTRA_LIBS=("-lm" "-lpthread" "-lstdc++")
 
 case "$(uname)" in
 Darwin)
@@ -75,6 +78,47 @@ Linux)
   CPU_NUM=$(expr $(nproc) / 2)
   ;;
 esac
+
+
+#
+# Build Tools config
+#
+
+# Cmake build toolchain
+cat << EOS > ${WORKDIR}/toolchains.cmake
+SET(CMAKE_SYSTEM_NAME ${TARGET_OS})
+SET(CMAKE_PREFIX_PATH ${PREFIX})
+SET(CMAKE_INSTALL_PREFIX ${PREFIX})
+SET(CMAKE_C_COMPILER ${CROSS_PREFIX}gcc)
+SET(CMAKE_CXX_COMPILER ${CROSS_PREFIX}g++)
+EOS
+
+if [ "${TARGET_OS}" = "Windows" ]; then
+  cat << EOS >> ${WORKDIR}/toolchains.cmake
+SET(CMAKE_RC_COMPILER ${CROSS_PREFIX}windres)
+SET(CMAKE_ASM_YASM_COMPILER yasm)
+SET(CMAKE_CXX_FLAGS "-static-libgcc -static-libstdc++ -static -O3 -s")
+SET(CMAKE_C_FLAGS "-static-libgcc -static-libstdc++ -static -O3 -s")
+SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-static-libgcc -static-libstdc++ -static -O3 -s")
+SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-static-libgcc -static-libstdc++ -static -O3 -s")
+EOS
+fi
+
+# meson build toolchain
+cat << EOS > ${WORKDIR}/x86_64-w64-mingw32.txt
+[binaries]
+c = 'x86_64-w64-mingw32-gcc'
+cpp = 'x86_64-w64-mingw32-g++'
+ar = 'x86_64-w64-mingw32-ar'
+strip = 'x86_64-w64-mingw32-strip'
+exe_wrapper = 'wine64'
+
+[host_machine]
+system = 'windows'
+cpu_family = 'x86_64'
+cpu = 'x86_64'
+endian = 'little'
+EOS
 
 
 #
@@ -103,7 +147,13 @@ git_clone() {
   cd ${WORKDIR}
   local repo_url="$1"
   local branch="${2:-"master"}"
-  local to_dir="$(basename ${repo_url} | sed s/\.git//)-${branch}"
+  local version="${3:-""}"
+  local package="$(basename ${repo_url} | sed s/\.git//)"
+  if [ -n "${version}" ]; then
+    local to_dir="${package}-${version}"
+  else
+    local to_dir="${package}-$(echo ${branch} | sed s/^v//)"
+  fi
   echoerr -n "downloading (via git clone) ${to_dir} from $repo_url ..."
   rm -rf "${to_dir}"
   git clone -c advice.detachedHead=false "${repo_url}" -b "${branch}" --depth 1 "${to_dir}"
@@ -127,26 +177,19 @@ mkcd () {
   cd "$1"
 }
 
+cp_archive () {
+  cp --archive --parents --no-dereference $@
+}
+
 do_configure () {
   local configure_options="${1:-""}"
   local configure_name="${2:-"./configure"}"
 
   if [[ ! -f "${configure_name}" ]]; then
-    if [ -f "autogen.sh" ]; then
-      export NOCONFIGURE=yes
-      ./autogen.sh
-      unset NOCONFIGURE
-    elif [ -f "bootstrap" ]; then
-      ./bootstrap
-    elif [ -f "bootstrap.sh" ]; then
-      ./bootstrap.sh
-    else
-      autoreconf -fiv
-      automake --add-missing
-    fi
+    autoreconf -fiv
   fi
 
-  "${configure_name}" --prefix="${PREFIX}" --host="${BUILD_TARGET}" --enable-static --disable-shared ${configure_options} 1>&2
+  "${configure_name}" --prefix="${PREFIX}" --host="${BUILD_TARGET}" ${configure_options} 1>&2
 }
 
 do_make_and_make_install () {
@@ -160,16 +203,35 @@ do_make_and_make_install () {
 do_cmake () {
   local extra_args="${1:-""}"
   local build_from_dir="${2:-"."}"
-  cmake -G"Unix Makefiles" "${build_from_dir}" -DCMAKE_INSTALL_PREFIX="${PREFIX}" -DCMAKE_TOOLCHAIN_FILE="${WORKDIR}/toolchains.cmake" $extra_args 1>&2
+  cmake -G"Unix Makefiles" "${build_from_dir}" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="${PREFIX}" \
+        -DCMAKE_INSTALL_BINDIR=bin -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_INSTALL_INCLUDEDIR=include \
+        -DCMAKE_TOOLCHAIN_FILE="${WORKDIR}/toolchains.cmake" $extra_args 1>&2
 }
 
 do_meson () {
   local extra_args="${1:-""}"
   local build_from_dir="${2:-"."}"
-  meson setup --buildtype=release --default-library=static --prefix="${PREFIX}" --bindir="${PREFIX}/bin" --libdir="${PREFIX}/lib" $build_from_dir $extra_args 1>&2
+  meson --buildtype=release --prefix="${PREFIX}" --bindir=bin --libdir=lib $build_from_dir $extra_args 1>&2
 }
 
 do_ninja_and_ninja_install () {
   ninja
   ninja install
+}
+
+gen_implib () {
+  local in="$1"
+  local out="$2"
+
+  local tmpdir="$(mktemp -d)"
+  trap "rm -rf '$tmpdir'" EXIT
+  pushd "$tmpdir"
+
+  set -x
+  python3 /opt/implib/implib-gen.py --target x86_64-linux-gnu --dlopen --lazy-load --verbose "$in"
+  ${CROSS_PREFIX}gcc $CFLAGS $STAGE_CFLAGS -DIMPLIB_HIDDEN_SHIMS -c *.tramp.S *.init.c
+  ${CROSS_PREFIX}ar -rcs "$out" *.tramp.o *.init.o
+  set +x
+
+  popd
 }

@@ -1,23 +1,27 @@
 # syntax = docker/dockerfile:1.5
 
 ARG FFMPEG_VERSION="6.0"
-ARG INTEL_HWACCEL_LIBRARY="libmfx"
 FROM akashisn/ffmpeg:${FFMPEG_VERSION} AS ffmpeg-image
-FROM akashisn/ffmpeg:${FFMPEG_VERSION}-${INTEL_HWACCEL_LIBRARY} AS ffmpeg-image-qsv
 FROM ghcr.io/akashisn/ffmpeg-windows:${FFMPEG_VERSION} AS ffmpeg-image-windows
 
 #
-# build env image
+# build env base image
 #
-FROM ubuntu:22.04 AS ffmpeg-build-env
+FROM ubuntu:22.04 AS build-env
 
 SHELL ["/bin/bash", "-e", "-c"]
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Install ca-certificates
+RUN <<EOT
+apt-get update
+apt-get install -y ca-certificates
+rm -rf /var/lib/apt/lists/*
+EOT
+
 # Install build tools
 RUN <<EOT
-rm -rf /var/lib/apt/lists/*
-sed -i -r 's@http://(jp.)?archive.ubuntu.com/ubuntu/@http://ftp.udx.icscoe.jp/Linux/ubuntu/@g' /etc/apt/sources.list
+sed -i -r 's@http://(jp.)?archive.ubuntu.com/ubuntu/@https://ftp.udx.icscoe.jp/Linux/ubuntu/@g' /etc/apt/sources.list
 apt-get update
 apt-get install -y \
     autopoint \
@@ -27,16 +31,9 @@ apt-get install -y \
     curl \
     gettext \
     git \
+    git-lfs \
     gperf \
-    libdrm-dev \
-    libgl-dev \
     libtool \
-    libwayland-dev \
-    libx11-xcb-dev \
-    libxcb-dri3-dev \
-    libxcb-present-dev \
-    libxext-dev \
-    libxfixes-dev \
     lzip \
     make \
     meson \
@@ -45,30 +42,41 @@ apt-get install -y \
     nasm \
     p7zip \
     pkg-config \
+    python3 \
     ragel \
     subversion \
+    wget \
     xxd \
     yasm
+EOT
+
+# Clone Implib.so
+RUN <<EOT
+git clone --filter=blob:none --depth=1 https://github.com/yugr/Implib.so /opt/implib
 EOT
 
 # Environment
 ARG FFMPEG_VERSION
 ENV FFMPEG_VERSION="${FFMPEG_VERSION}" \
     PREFIX="/usr/local" \
+    ARTIFACT_DIR="/dist" \
+    RUNTIME_LIB_DIR="/runtime" \
     WORKDIR="/workdir"
 WORKDIR ${WORKDIR}
 
 # Copy build script
 ADD ./scripts/base.sh ./
 
+
 #
-# ffmpeg library build image
+# ffmpeg library build stage
 #
-FROM ffmpeg-build-env AS ffmpeg-library-build
+FROM build-env AS ffmpeg-library-build
 
 # Environment
 ARG TARGET_OS="Linux"
-ENV TARGET_OS=${TARGET_OS}
+ENV TARGET_OS=${TARGET_OS} \
+    RUNTIME_LIB_DIR=${ARTIFACT_DIR}${RUNTIME_LIB_DIR}
 
 # Copy build script
 ADD ./scripts/build-library.sh ./
@@ -76,20 +84,19 @@ ADD ./scripts/build-library.sh ./
 # Run build
 RUN bash ./build-library.sh
 
-# Copy artifacts
-RUN <<EOT
-mkdir /build
-cp --archive --parents --no-dereference ${PREFIX}/lib /build
-cp --archive --parents --no-dereference ${PREFIX}/include /build
-cp --archive --parents --no-dereference ${PREFIX}/ffmpeg_extra_libs /build
-cp --archive --parents --no-dereference ${PREFIX}/ffmpeg_configure_options /build
-EOT
+
+#
+# final ffmpeg-library image
+#
+FROM scratch AS ffmpeg-library
+
+COPY --from=ffmpeg-library-build /dist /
 
 
 #
-# ffmpeg linux binary build base image
+# ffmpeg linux binary build stage
 #
-FROM ffmpeg-build-env AS ffmpeg-linux-build-base
+FROM build-env AS ffmpeg-linux-build
 
 # Environment
 ENV TARGET_OS="Linux"
@@ -100,45 +107,11 @@ ADD ./scripts/build-ffmpeg.sh ./
 # Copy ffmpeg-library image
 COPY --from=ghcr.io/akashisn/ffmpeg-library:linux / /
 
-
-#
-# ffmpeg linux binary build image
-#
-FROM ffmpeg-linux-build-base AS ffmpeg-linux-build
-
-# Build ffmpeg
+# # Build ffmpeg
 RUN bash ./build-ffmpeg.sh
 
 # Copy run.sh
-COPY <<'EOT' ${PREFIX}/run.sh
-#!/bin/sh
-export PATH=$(dirname $0)/bin:$PATH
-exec $@
-EOT
-
-# Copy artifacts
-RUN <<EOT
-mkdir /build
-chmod +x ${PREFIX}/run.sh
-cp --archive --parents --no-dereference ${PREFIX}/run.sh /build
-cp --archive --parents --no-dereference ${PREFIX}/bin/ff* /build
-cp --archive --parents --no-dereference ${PREFIX}/configure_options /build
-EOT
-
-
-#
-# ffmpeg qsv linux binary build image
-#
-FROM ffmpeg-linux-build-base AS ffmpeg-linux-qsv-build
-
-ARG INTEL_HWACCEL_LIBRARY
-ENV INTEL_HWACCEL_LIBRARY="${INTEL_HWACCEL_LIBRARY}"
-
-# Build ffmpeg
-RUN bash ./build-ffmpeg.sh
-
-# Copy run.sh
-COPY <<'EOT' ${PREFIX}/run.sh
+COPY --chmod=755 <<'EOT' ${ARTIFACT_DIR}/${PREFIX}/run.sh
 #!/bin/sh
 export PATH=$(dirname $0)/bin:$PATH
 export LD_LIBRARY_PATH=$(dirname $0)/lib:$LD_LIBRARY_PATH
@@ -147,26 +120,35 @@ export LIBVA_DRIVER_NAME=iHD
 exec $@
 EOT
 
-# Copy artifacts
-RUN <<EOT
-mkdir /build
-chmod +x ${PREFIX}/run.sh
-cp --archive --parents --no-dereference ${PREFIX}/run.sh /build
-cp --archive --parents --no-dereference ${PREFIX}/bin/ff* /build
-cp --archive --parents --no-dereference ${PREFIX}/configure_options /build
-cp --archive --parents --no-dereference ${PREFIX}/lib/dri /build
-if [ "${INTEL_HWACCEL_LIBRARY}" = "libmfx" ]; then
-    cp --archive --parents --no-dereference ${PREFIX}/lib/{libva,libva-drm,libmfx,libmfxhw64,libigdgmm}.so* /build
-elif [ "${INTEL_HWACCEL_LIBRARY}" = "libvpl" ]; then
-    cp --archive --parents --no-dereference ${PREFIX}/lib/{libva,libva-drm,libvpl,libigdgmm}.so* /build
-fi
-EOT
+
+#
+# final ffmpeg-linux image
+#
+FROM ubuntu:22.04 AS ffmpeg-linux
+
+SHELL ["/bin/sh", "-e", "-c"]
+
+# Environment
+ENV DEBIAN_FRONTEND=noninteractive \
+    LD_LIBRARY_PATH=/usr/local/lib \
+    LIBVA_DRIVERS_PATH=/usr/local/lib/dri \
+    LIBVA_DRIVER_NAME=iHD
+
+# Copy ffmpeg
+COPY --from=ffmpeg-linux-build /dist /
+
+# Run ldconfig
+RUN ldconfig
+
+WORKDIR /workdir
+ENTRYPOINT [ "ffmpeg" ]
+CMD [ "--help" ]
 
 
 #
 # ffmpeg windows binary build image
 #
-FROM ffmpeg-build-env AS ffmpeg-windows-build
+FROM build-env AS ffmpeg-windows-build
 
 # Environment
 ENV TARGET_OS="Windows"
@@ -202,56 +184,6 @@ EOT
 
 
 #
-# final ffmpeg-library image
-#
-FROM scratch AS ffmpeg-library
-
-COPY --from=ffmpeg-library-build /build /
-
-
-#
-# final ffmpeg image
-#
-FROM ubuntu:22.04 AS ffmpeg
-
-# Copy ffmpeg
-COPY --from=ffmpeg-linux-build /build /
-
-WORKDIR /workdir
-ENTRYPOINT [ "ffmpeg" ]
-CMD [ "--help" ]
-
-
-#
-# final ffmpeg-qsv image
-#
-FROM ubuntu:22.04 AS ffmpeg-qsv
-
-# Copy ffmpeg
-COPY --from=ffmpeg-linux-qsv-build /build /
-
-SHELL ["/bin/sh", "-e", "-c"]
-ENV DEBIAN_FRONTEND=noninteractive \
-    LIBVA_DRIVERS_PATH=/usr/local/lib/dri \
-    LIBVA_DRIVER_NAME=iHD
-
-# Install runtime dependency
-RUN <<EOT
-apt-get update
-apt-get install -y libdrm2
-apt-get autoremove -y
-apt-get clean
-rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
-
-ldconfig
-EOT
-
-WORKDIR /workdir
-ENTRYPOINT [ "ffmpeg" ]
-CMD [ "--help" ]
-
-
-#
 # final ffmpeg-windows image
 #
 FROM scratch AS ffmpeg-windows
@@ -262,28 +194,43 @@ COPY --from=ffmpeg-windows-build /build /
 #
 # export image
 #
-FROM scratch AS export
+FROM scratch AS ffmpeg-linux-export
 
 COPY --from=ffmpeg-image /usr/local/bin /bin
+COPY --from=ffmpeg-image /usr/local/lib /lib
 COPY --from=ffmpeg-image /usr/local/configure_options /
 COPY --from=ffmpeg-image /usr/local/run.sh /
 
-#
-# export qsv image
-#
-FROM scratch AS export-qsv
-
-COPY --from=ffmpeg-image-qsv /usr/local/bin /bin
-COPY --from=ffmpeg-image-qsv /usr/local/lib /lib
-COPY --from=ffmpeg-image-qsv /usr/local/configure_options /
-COPY --from=ffmpeg-image-qsv /usr/local/run.sh /
 
 #
 # export windws exe
 #
-FROM scratch AS export-windows
+FROM scratch AS ffmpeg-windows-export
 
 COPY --from=ffmpeg-image-windows / /
+
+
+#
+# vainfo build image
+#
+FROM ubuntu:22.04 AS vainfo-build
+
+SHELL ["/bin/bash", "-e", "-c"]
+
+# Copy ffmpeg-library image
+COPY --from=ghcr.io/akashisn/ffmpeg-library:linux / /
+
+# Copy vainfo library
+RUN <<EOT
+mkdir -p /dist
+cp --archive --parents --no-dereference /usr/local/bin/vainfo /dist
+cd /runtime
+cp --archive --parents --no-dereference usr/local/lib/libpciaccess.so* /dist
+cp --archive --parents --no-dereference usr/local/lib/libva{,-drm}.so* /dist
+cp --archive --parents --no-dereference usr/local/lib/libdrm*.so* /dist
+cp --archive --parents --no-dereference usr/local/lib/libigdgmm.so* /dist
+cp --archive --parents --no-dereference usr/local/lib/dri /dist
+EOT
 
 
 #
@@ -293,30 +240,17 @@ FROM ubuntu:22.04 AS vainfo
 
 SHELL ["/bin/bash", "-e", "-c"]
 
+# Environment
 ENV DEBIAN_FRONTEND=noninteractive \
-    LIBVA_DRIVERS_PATH=/usr/local/lib \
+    LD_LIBRARY_PATH=/usr/local/lib \
+    LIBVA_DRIVERS_PATH=/usr/local/lib/dri \
     LIBVA_DRIVER_NAME=iHD
 
-# Download MediaSDK
-ENV INTEL_MEDIA_SDK_VERSION=21.3.5
-ADD https://github.com/Intel-Media-SDK/MediaSDK/releases/download/intel-mediasdk-${INTEL_MEDIA_SDK_VERSION}/MediaStack.tar.gz /tmp/
-RUN <<EOT
-mkdir -p /tmp/MediaStack
-tar -xf "/tmp/MediaStack.tar.gz" --strip-components 1 -C "/tmp/MediaStack"
-cd /tmp/MediaStack/opt/intel/mediasdk
-cp --archive --no-dereference bin/vainfo /usr/local/bin/
-cp --archive --no-dereference lib64/*.so* /usr/local/lib/
+# Copy ffmpeg-library image
+COPY --from=vainfo-build /dist /
 
-rm -rf /var/lib/apt/lists/*
-sed -i -r 's@http://(jp.)?archive.ubuntu.com/ubuntu/@http://ftp.udx.icscoe.jp/Linux/ubuntu/@g' /etc/apt/sources.list
-apt-get update
-apt-get install -y libdrm2 libxext6 libxfixes3
-apt-get autoremove -y
-apt-get clean
-rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
-
-ldconfig
-EOT
+# Run ldconfig
+RUN ldconfig
 
 WORKDIR /workdir
 ENTRYPOINT [ "/usr/local/bin/vainfo" ]

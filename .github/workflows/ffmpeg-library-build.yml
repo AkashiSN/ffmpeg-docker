@@ -15,7 +15,8 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/') == false
     strategy:
       matrix:
-        os: [linux, windows]
+        # os: [linux, windows]
+        os: [linux]
     steps:
       - name: Checkout
         uses: actions/checkout@v3

@@ -335,3 +335,19 @@ If you want to use a non-free codec(e.g. `fdk-aac`, `libnpp` ), you can generate
 $ touch cuda_11.6.0_511.23_windows.exe # dummy file
 $ docker buildx build --output type=local,dest=build -t ffmpeg-nonfree:linux -f ./nonfree.Dockerfile .
 ```
+
+# Technical information
+
+To execute QSV (Quick Sync Video) on a Virtual Machine, it is necessary to pass through Intel's integrated GPU (iGPU) to the VM.
+
+Pass-through technologies include Intel GVT-g, SR-IOV, etc., and the compatibility varies depending on the generation of the CPU[^1].
+
+For Intel GVT-g, please refer to the ArchWiki[^2].
+
+In Proxmox, if you are using systemd-boot instead of GRUB, kernel parameters can be set using `/etc/kernel/cmdline`. Also, don't forget to apply the changes by running `proxmox-boot-tool refresh`. If necessary, adding `kvm.ignore_msrs=1` is recommended[^3].
+
+[^1]: [Graphics Virtualization Technologies Support for Each Intel® Graphics Family](https://www.intel.com/content/www/us/en/support/articles/000093216/graphics/processor-graphics.html)
+
+[^2]:https://wiki.archlinux.org/title/Intel_GVT-g
+
+[^3]:https://kagasu.hatenablog.com/entry/2021/01/29/111659
