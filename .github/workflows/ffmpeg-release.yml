@@ -24,31 +24,31 @@ jobs:
       - name: Set build target (linux)
         if: matrix.flavor == 'linux'
         run: |
-          echo "build_tag=linux" >> $GITHUB_ENV
+          echo "build_tag=ffmpeg-linux-export" >> $GITHUB_ENV
           echo "target_os=linux-amd64" >> $GITHUB_ENV
 
       - name: Set build target (windows)
         if: matrix.flavor == 'windows'
         run: |
-          echo "build_tag=windows" >> $GITHUB_ENV
-          echo "target_os=x64" >> $GITHUB_ENV
+          echo "build_tag=ffmpeg-windows-export" >> $GITHUB_ENV
+          echo "target_os=windows-x64" >> $GITHUB_ENV
 
       - name: Export - ffmpeg
         run: |
-          docker buildx build --platform linux/amd64 --target ffmpeg-${{ env.build_tag }}-export --output type=local,dest=/tmp/build \
-            -t ffmpeg-${{ env.build_tag }} --build-arg FFMPEG_VERSION=${{ matrix.ffmpeg }} -f ./Dockerfile .
+          docker buildx build --platform linux/amd64 --target ${{ env.build_tag }} --output type=local,dest=/tmp/build \
+            -t ${{ env.build_tag }} --build-arg FFMPEG_VERSION=${{ matrix.ffmpeg }} -f ./Dockerfile .
 
       - name: Archive artifact
         run: |
-          mkdir /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-${{ env.target_os }}
-          mv /tmp/build/* /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-${{ env.target_os }}/
-          tar acvf /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-${{ env.target_os }}.tar.xz -C /tmp ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-${{ env.target_os }}
+          mkdir /tmp/ffmpeg-${{ matrix.ffmpeg }}-${{ env.target_os }}
+          mv /tmp/build/* /tmp/ffmpeg-${{ matrix.ffmpeg }}-${{ env.target_os }}/
+          tar acvf /tmp/ffmpeg-${{ matrix.ffmpeg }}-${{ env.target_os }}.tar.xz -C /tmp ffmpeg-${{ matrix.ffmpeg }}-${{ env.target_os }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}
-          path: /tmp/ffmpeg-${{ matrix.ffmpeg }}${{ env.build_tag }}-${{ env.target_os }}.tar.xz
+          name: ffmpeg-${{ matrix.ffmpeg }}-${{ env.target_os }}
+          path: /tmp/ffmpeg-${{ matrix.ffmpeg }}-${{ env.target_os }}.tar.xz
 
   release:
     runs-on: ubuntu-latest
