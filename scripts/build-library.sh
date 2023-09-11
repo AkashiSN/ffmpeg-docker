@@ -101,16 +101,17 @@ do_cmake "-DENABLE_SHARED=0 -DENABLE_APPS=0 -DENABLE_CXX_DEPS=1 -DUSE_STATIC_LIB
 do_make_and_make_install
 FFMPEG_CONFIGURE_OPTIONS+=("--enable-libsrt")
 
-# Build libpciaccess
-LIBPCIACCESS_VERSION="0.17"
-LIBPCIACCESS_TAG="libpciaccess-${LIBPCIACCESS_VERSION}"
-git_clone "https://gitlab.freedesktop.org/xorg/lib/libpciaccess.git" ${LIBPCIACCESS_TAG} ${LIBPCIACCESS_VERSION}
-do_configure "--enable-shared --disable-static --with-pic --with-zlib"
-do_make_and_make_install
-gen_implib ${PREFIX}/lib/{libpciaccess.so.0,libpciaccess.a}
-cp_archive ${PREFIX}/lib/libpciaccess.so* ${RUNTIME_LIB_DIR}
-rm ${PREFIX}/lib/libpciaccess{.so*,.la}
-
+if [ "${TARGET_OS}" = "Linux" ]; then
+  # Build libpciaccess
+  LIBPCIACCESS_VERSION="0.17"
+  LIBPCIACCESS_TAG="libpciaccess-${LIBPCIACCESS_VERSION}"
+  git_clone "https://gitlab.freedesktop.org/xorg/lib/libpciaccess.git" ${LIBPCIACCESS_TAG} ${LIBPCIACCESS_VERSION}
+  do_configure "--enable-shared --disable-static --with-pic --with-zlib"
+  do_make_and_make_install
+  gen_implib ${PREFIX}/lib/{libpciaccess.so.0,libpciaccess.a}
+  cp_archive ${PREFIX}/lib/libpciaccess.so* ${RUNTIME_LIB_DIR}
+  rm ${PREFIX}/lib/libpciaccess{.so*,.la}
+fi
 
 #
 # Image
@@ -208,13 +209,7 @@ FFMPEG_CONFIGURE_OPTIONS+=("--enable-libx265")
 LIBAOM_VERSION="3.7.0"
 git_clone "https://aomedia.googlesource.com/aom" v${LIBAOM_VERSION}
 mkcd _build
-if [ "${TARGET_OS}" = "Windows" ]; then
-  cmake -DBUILD_SHARED_LIBS=0 -DENABLE_NASM=1 -DENABLE_DOCS=0 -DENABLE_TESTS=0 -DENABLE_EXAMPLES=0 \
-        -DCMAKE_TOOLCHAIN_FILE=../build/cmake/toolchains/x86_64-mingw-gcc.cmake -DAOM_TARGET_CPU=x86_64 \
-        -DCMAKE_INSTALL_PREFIX=${PREFIX} ..
-else
-  do_cmake "-DBUILD_SHARED_LIBS=0 -DENABLE_NASM=1 -DENABLE_DOCS=0 -DENABLE_TESTS=0 -DENABLE_EXAMPLES=0" ..
-fi
+do_cmake "-DAOM_TARGET_CPU=x86_64 -DBUILD_SHARED_LIBS=0 -DENABLE_NASM=1 -DENABLE_DOCS=0 -DENABLE_TESTS=0 -DENABLE_EXAMPLES=0" ..
 do_make_and_make_install
 FFMPEG_CONFIGURE_OPTIONS+=("--enable-libaom")
 
@@ -223,7 +218,7 @@ VMAF_VERSION="2.3.1"
 git_clone "https://github.com/Netflix/vmaf.git" v${VMAF_VERSION}
 mkcd build
 if [ "${TARGET_OS}" = "Windows" ]; then
-  do_meson "--default-library=static -Denable_tests=false -Denable_docs=false --cross-file=${WORKDIR}/x86_64-w64-mingw32.txt" ../libvmaf
+  do_meson "--default-library=static -Denable_tests=false -Denable_docs=false --cross-file=${WORKDIR}/${BUILD_TARGET}.txt" ../libvmaf
 else
   do_meson "--default-library=static -Denable_tests=false -Denable_docs=false" ../libvmaf
 fi
@@ -326,7 +321,11 @@ FFMPEG_CONFIGURE_OPTIONS+=("--enable-libfontconfig")
 HARFBUZZ_VERSION="8.1.1"
 git_clone "https://github.com/harfbuzz/harfbuzz.git" ${HARFBUZZ_VERSION}
 mkcd build
-do_meson "--default-library=static -Dfreetype=enabled -Dicu=disabled -Dtests=disabled" ..
+if [ "${TARGET_OS}" = "Windows" ]; then
+  do_meson "--default-library=static -Dfreetype=enabled -Dicu=disabled -Dtests=disabled --cross-file=${WORKDIR}/${BUILD_TARGET}.txt" ..
+else
+  do_meson "--default-library=static -Dfreetype=enabled -Dicu=disabled -Dtests=disabled" ..
+fi
 do_ninja_and_ninja_install
 
 # Build libass
@@ -436,15 +435,6 @@ if [ "${TARGET_OS}" = "Linux" ]; then
   do_ninja_and_ninja_install
   cp_archive ${PREFIX}/lib/dri ${RUNTIME_LIB_DIR}
 
-  # Build oneVPL
-  ONEVPL_VERSION="2023.3.1"
-  git_clone "https://github.com/oneapi-src/oneVPL.git" v${ONEVPL_VERSION}
-  mkcd build
-  do_cmake "-DBUILD_DISPATCHER=1 -DBUILD_DEV=1 -DBUILD_PREVIEW=0 -DBUILD_TOOLS=0
-            -DBUILD_TOOLS_ONEVPL_EXPERIMENTAL=0 -DINSTALL_EXAMPLE_CODE=0 -DBUILD_SHARED_LIBS=0 -DBUILD_TESTS=0" ..
-  do_make_and_make_install
-  FFMPEG_CONFIGURE_OPTIONS+=("--enable-libvpl")
-
   # Build oneVPL gpu runtime
   ONEVPL_INTEL_GPU_VERSION="23.3.3"
   ONEVPL_INTEL_GPU_TAG="intel-onevpl-${ONEVPL_INTEL_GPU_VERSION}"
@@ -467,6 +457,25 @@ if [ "${TARGET_OS}" = "Linux" ]; then
   cp_archive ${PREFIX}/lib/libmfx.so* ${RUNTIME_LIB_DIR}
   cp_archive ${PREFIX}/lib/libmfxhw64.so* ${RUNTIME_LIB_DIR}
   rm ${PREFIX}/lib/libmfx.so*
+fi
+
+# Build oneVPL
+ONEVPL_VERSION="2023.3.1"
+git_clone "https://github.com/oneapi-src/oneVPL.git" v${ONEVPL_VERSION}
+mkcd build
+do_cmake "-DBUILD_DISPATCHER=1 -DBUILD_DEV=1 -DBUILD_PREVIEW=0 -DBUILD_TOOLS=0
+          -DBUILD_TOOLS_ONEVPL_EXPERIMENTAL=0 -DINSTALL_EXAMPLE_CODE=0 -DBUILD_SHARED_LIBS=0 -DBUILD_TESTS=0" ..
+do_make_and_make_install
+FFMPEG_CONFIGURE_OPTIONS+=("--enable-libvpl")
+
+if [ "${TARGET_OS}" = "Windows" ]; then
+  # Build MFX_dispatch
+  git_clone "https://github.com/lu-zero/mfx_dispatch.git"
+  do_configure "--disable-shared --enable-static"
+  do_make_and_make_install
+
+  # Other hwaccel
+  FFMPEG_CONFIGURE_OPTIONS+=("--enable-d3d11va" "--enable-dxva2")
 fi
 
 

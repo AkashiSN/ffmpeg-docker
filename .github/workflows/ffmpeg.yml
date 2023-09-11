@@ -20,9 +20,8 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/') == false && (github.event_name == 'push' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'))
     strategy:
       matrix:
-        ffmpeg: ["6.0", "5.1.2", "4.4.3"]
-        # flavor: [linux, windows]
-        flavor: [linux]
+        ffmpeg: ["6.0", "5.1.3", "4.4.4"]
+        flavor: [linux, windows]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -68,4 +67,6 @@ jobs:
             FFMPEG_VERSION=${{ matrix.ffmpeg }}
           platforms: linux/amd64
           target: ${{ env.target }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           push: true

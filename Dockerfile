@@ -25,6 +25,7 @@ sed -i -r 's@http://(jp.)?archive.ubuntu.com/ubuntu/@https://ftp.udx.icscoe.jp/L
 apt-get update
 apt-get install -y \
     autopoint \
+    bc \
     build-essential \
     clang \
     cmake \
@@ -107,7 +108,7 @@ ADD ./scripts/build-ffmpeg.sh ./
 # Copy ffmpeg-library image
 COPY --from=ghcr.io/akashisn/ffmpeg-library:linux / /
 
-# # Build ffmpeg
+# Build ffmpeg
 RUN bash ./build-ffmpeg.sh
 
 # Copy run.sh
@@ -159,28 +160,8 @@ ADD ./scripts/build-ffmpeg.sh ./
 # Copy ffmpeg-library image
 COPY --from=ghcr.io/akashisn/ffmpeg-library:windows / /
 
-# HWAccel
-# Build libmfx
-RUN <<EOT
-source ./base.sh
-download_and_unpack_file "https://github.com/lu-zero/mfx_dispatch/archive/master.tar.gz" mfx_dispatch-master.tar.gz
-do_configure
-do_make_and_make_install
-echo -n "`cat ${PREFIX}/ffmpeg_configure_options` --enable-libmfx" > ${PREFIX}/ffmpeg_configure_options
-EOT
-
-# Other hwaccel
-RUN echo -n "`cat ${PREFIX}/ffmpeg_configure_options` --enable-d3d11va --enable-dxva2" > ${PREFIX}/ffmpeg_configure_options
-
 # Build ffmpeg
 RUN bash ./build-ffmpeg.sh
-
-# Copy artifacts
-RUN <<EOT
-mkdir /build
-cp ${PREFIX}/bin/ff* /build/
-cp ${PREFIX}/configure_options /build/
-EOT
 
 
 #
@@ -188,7 +169,7 @@ EOT
 #
 FROM scratch AS ffmpeg-windows
 
-COPY --from=ffmpeg-windows-build /build /
+COPY --from=ffmpeg-windows-build /dist /
 
 
 #

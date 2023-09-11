@@ -15,8 +15,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/') == false
     strategy:
       matrix:
-        # os: [linux, windows]
-        os: [linux]
+        os: [linux, windows]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -47,4 +46,6 @@ jobs:
             TARGET_OS=${{ env.target_os }}
           target: ffmpeg-library
           platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           push: true

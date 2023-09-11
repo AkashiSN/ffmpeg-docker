@@ -7,6 +7,34 @@ echoerr () {
 
 TARGET_OS="${TARGET_OS:-"Linux"}" # Windows,Darwin,Linux
 
+#
+# Environment
+#
+
+WORKDIR="${WORKDIR:-"/tmp"}"
+PREFIX="${PREFIX:-"/usr/local"}"
+
+export PKG_CONFIG="pkg-config"
+export LD_LIBRARY_PATH="${PREFIX}/lib"
+export PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig"
+export MANPATH="${PREFIX}/share/man"
+export INFOPATH="${PREFIX}/share/info"
+export ACLOCAL_PATH="${PREFIX}/share/aclocal"
+export LIBRARY_PATH="${PREFIX}/lib"
+export C_INCLUDE_PATH="${PREFIX}/include"
+export CPLUS_INCLUDE_PATH="${PREFIX}/include"
+export CFLAGS="-static-libgcc -static-libstdc++ -I${PREFIX}/include -O2 -pipe -D_FORTIFY_SOURCE=2 -fstack-protector-strong ${CFLAGS:-""}"
+export CXXFLAGS="${CFLAGS}"
+export LDFLAGS="-static-libgcc -static-libstdc++ -L${PREFIX}/lib -O2 -pipe -fstack-protector-strong ${LDFLAGS:-""}"
+export STAGE_CFLAGS="-fno-semantic-interposition"
+export STAGE_CXXFLAGS="${STAGE_CFLAGS}"
+export PATH="${PREFIX}/bin:$PATH"
+
+mkdir -p ${WORKDIR} ${PREFIX}/{bin,share,lib/pkgconfig,include}
+
+FFMPEG_CONFIGURE_OPTIONS=()
+FFMPEG_EXTRA_LIBS=("-lm" "-lpthread" "-lstdc++")
+
 case ${TARGET_OS} in
 Linux | linux)
   TARGET_OS="Linux"
@@ -14,6 +42,11 @@ Linux | linux)
   HOST_ARCH=$(uname -m)
   BUILD_TARGET=
   CROSS_PREFIX=
+  export CFLAGS="${CFLAGS} -fPIC -DPIC -fstack-clash-protection -pthread"
+  export CXXFLAGS="${CFLAGS}"
+  export LDFLAGS="${LDFLAGS} -fstack-clash-protection -Wl,-z,relro,-z,now -pthread -lm"
+  export STAGE_CFLAGS="-fvisibility=hidden ${STAGE_CFLAGS}"
+  export STAGE_CXXFLAGS="${STAGE_CFLAGS}"
   ;;
 Darwin | darwin)
   if [ ! "$(uname)" = "Darwin" ]; then
@@ -40,35 +73,7 @@ Windows | windows)
 esac
 
 
-#
-# Environment
-#
-
-
-WORKDIR="${WORKDIR:-"/tmp"}"
-PREFIX="${PREFIX:-"/usr/local"}"
-
-export PKG_CONFIG="pkg-config"
-export LD_LIBRARY_PATH="${PREFIX}/lib"
-export PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig"
-export MANPATH="${PREFIX}/share/man"
-export INFOPATH="${PREFIX}/share/info"
-export ACLOCAL_PATH="${PREFIX}/share/aclocal"
-export LIBRARY_PATH="${PREFIX}/lib"
-export C_INCLUDE_PATH="${PREFIX}/include"
-export CPLUS_INCLUDE_PATH="${PREFIX}/include"
-export CFLAGS="-static-libgcc -static-libstdc++ -I${PREFIX}/include -O2 -pipe -fPIC -DPIC -D_FORTIFY_SOURCE=2 -fstack-protector-strong -fstack-clash-protection -pthread ${CFLAGS:-""}"
-export CXXFLAGS="${CFLAGS}"
-export LDFLAGS="-static-libgcc -static-libstdc++ -L${PREFIX}/lib -O2 -pipe -fstack-protector-strong -fstack-clash-protection -Wl,-z,relro,-z,now -pthread -lm ${LDFLAGS:-""}"
-export STAGE_CFLAGS="-fvisibility=hidden -fno-semantic-interposition"
-export STAGE_CXXFLAGS="-fvisibility=hidden -fno-semantic-interposition"
-export PATH="${PREFIX}/bin:$PATH"
-
-mkdir -p ${WORKDIR} ${PREFIX}/{bin,share,lib/pkgconfig,include}
-
-FFMPEG_CONFIGURE_OPTIONS=()
-FFMPEG_EXTRA_LIBS=("-lm" "-lpthread" "-lstdc++")
-
+# Build host
 case "$(uname)" in
 Darwin)
   export CFLAGS="${CFLAGS} -Wno-error=implicit-function-declaration"
@@ -91,26 +96,25 @@ SET(CMAKE_PREFIX_PATH ${PREFIX})
 SET(CMAKE_INSTALL_PREFIX ${PREFIX})
 SET(CMAKE_C_COMPILER ${CROSS_PREFIX}gcc)
 SET(CMAKE_CXX_COMPILER ${CROSS_PREFIX}g++)
+SET(CMAKE_AR ${CROSS_PREFIX}ar)
+SET(CMAKE_RANLIB ${CROSS_PREFIX}ranlib)
 EOS
 
 if [ "${TARGET_OS}" = "Windows" ]; then
   cat << EOS >> ${WORKDIR}/toolchains.cmake
 SET(CMAKE_RC_COMPILER ${CROSS_PREFIX}windres)
 SET(CMAKE_ASM_YASM_COMPILER yasm)
-SET(CMAKE_CXX_FLAGS "-static-libgcc -static-libstdc++ -static -O3 -s")
-SET(CMAKE_C_FLAGS "-static-libgcc -static-libstdc++ -static -O3 -s")
-SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-static-libgcc -static-libstdc++ -static -O3 -s")
-SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-static-libgcc -static-libstdc++ -static -O3 -s")
 EOS
 fi
 
 # meson build toolchain
-cat << EOS > ${WORKDIR}/x86_64-w64-mingw32.txt
+if [ "${TARGET_OS}" = "Windows" ]; then
+  cat << EOS > ${WORKDIR}/${BUILD_TARGET}.txt
 [binaries]
-c = 'x86_64-w64-mingw32-gcc'
-cpp = 'x86_64-w64-mingw32-g++'
-ar = 'x86_64-w64-mingw32-ar'
-strip = 'x86_64-w64-mingw32-strip'
+c = '${CROSS_PREFIX}gcc'
+cpp = '${CROSS_PREFIX}g++'
+ar = '${CROSS_PREFIX}ar'
+strip = '${CROSS_PREFIX}strip'
 exe_wrapper = 'wine64'
 
 [host_machine]
@@ -119,6 +123,7 @@ cpu_family = 'x86_64'
 cpu = 'x86_64'
 endian = 'little'
 EOS
+fi
 
 
 #
