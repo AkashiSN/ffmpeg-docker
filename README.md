@@ -299,15 +299,16 @@ When running in Docker, you need to mount the DRI device.
 
 sample:
 ```bash
-$ docker run --rm -it --device=/dev/dri -v `pwd`:/workdir akashisn/ffmpeg:6.0 -y \
-  -loglevel verbose \
-  -init_hw_device qsv:hw \
-  -hwaccel qsv \
-  -hwaccel_output_format qsv \
-  -i video.mp4 \
-  -c:v h264_qsv \
-  -f mp4 \
-  video-h264_qsv.mp4
+$ sudo docker run --rm -it --device=/dev/dri -v `pwd`:/workdir \
+    akashisn/ffmpeg:6.0 -y \
+      -loglevel verbose \
+      -init_hw_device qsv:hw \
+      -hwaccel qsv \
+      -hwaccel_output_format qsv \
+      -i video.mp4 \
+      -c:v h264_qsv \
+      -f mp4 \
+      video-h264_qsv.mp4
 ```
 
 # Nonfree codecs

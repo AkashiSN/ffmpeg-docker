@@ -188,7 +188,7 @@ COPY --from=ffmpeg-linux-image /usr/local/run.sh /
 #
 FROM scratch AS ffmpeg-windows-export
 
-COPY --from=ffmpeg-windows-image / /
+COPY --from=ffmpeg-windows-image /usr/local /
 
 
 #
