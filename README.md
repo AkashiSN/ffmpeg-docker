@@ -4,41 +4,35 @@
 
 [![](https://dockeri.co/image/akashisn/ffmpeg)](https://hub.docker.com/r/akashisn/ffmpeg)
 
-## Available tags
+## Available release
 
-- Plain ffmpeg (without HWAccel)
+- Linux docker image (`akashisn/ffmpeg`) & binary release
   - `6.0`
-  - `5.1.2`
-  - `4.4.3`
-- With Intel QSV(Media SDK)
-  - `6.0-libmfx`
-  - `5.1.2-libmfx`
-  - `4.4.3-libmfx`
-- With Intel QSV(oneVPL)
-  - `6.0-libvpl`
-  - `5.1.2-libvpl`
-  - `4.4.3-libvpl`
-- Windows ffmpeg
+  - `5.1.3`
+  - `4.4.4`
+- Windows binary release
   - `6.0`
-  - `5.1.2`
-  - `4.4.3`
+  - `5.1.3`
+  - `4.4.4`
 
 ## Supported architecture
 
-- ffmpeg (without QSV)
+- ffmpeg
   - `linux/amd64`
 
     <details>
     <summary>configure options:</summary>
 
     ```bash
-    --enable-zlib --enable-libopenjpeg --enable-libwebp --enable-lzma --enable-gmp --enable-iconv
-    --enable-gnutls --enable-libsrt --enable-libvpx --enable-libx264 --enable-libx265 --enable-libaom
-    --enable-libopus --enable-libvorbis --enable-libopencore-amrnb --enable-libopencore-amrwb
-    --enable-libvo-amrwbenc --enable-libmp3lame --enable-libfreetype --enable-libfribidi --enable-libxml2
-    --enable-libfontconfig --enable-libass --enable-libaribb24 --enable-sdl2 --enable-cuda-llvm
-    --enable-ffnvcodec --enable-cuvid --enable-nvdec --enable-nvenc --disable-autodetect --disable-debug
-    --disable-doc --enable-gpl --enable-version3 --extra-libs="-lm -lpthread -lstdc++" --pkg-config-flags="--static" --prefix=/usr/local
+    --enable-zlib --enable-lzma --enable-gmp --enable-iconv --enable-gnutls --enable-libsrt
+    --enable-libopenjpeg --enable-libwebp --enable-libvpx --enable-libx264 --enable-libx265
+    --enable-libaom --enable-libvmaf --enable-libopus --enable-libvorbis --enable-libopencore-amrnb
+    --enable-libopencore-amrwb --enable-libvo-amrwbenc --enable-libmp3lame --enable-libfreetype
+    --enable-libfribidi --enable-libxml2 --enable-libfontconfig --enable-libass --enable-libaribb24
+    --enable-sdl2 --enable-cuda-llvm --enable-ffnvcodec --enable-cuvid --enable-nvdec --enable-nvenc
+    --enable-libdrm --enable-vaapi --enable-libvpl --disable-autodetect --disable-debug --disable-doc
+    --enable-gpl --enable-version3 --extra-libs='-lm -lpthread -lstdc++' --pkg-config-flags=--static
+    --prefix=/usr/local
     ```
     </details>
 
@@ -47,53 +41,15 @@
 
     ```bash
     $ ldd ffmpeg
-        linux-vdso.so.1 (0x00007ffc7af61000)
-        libm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007f1ef7cca000)
-        libstdc++.so.6 => /lib/x86_64-linux-gnu/libstdc++.so.6 (0x00007f1ef7aa0000)
-        libgcc_s.so.1 => /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x00007f1ef7a80000)
-        libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007f1ef7858000)
-        libmvec.so.1 => /lib/x86_64-linux-gnu/libmvec.so.1 (0x00007f1ef775b000)
-        /lib64/ld-linux-x86-64.so.2 (0x00007f1efc829000)
+        linux-vdso.so.1 (0x00007ffed66ba000)
+        libm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007f38fcc95000)
+        libstdc++.so.6 => /lib/x86_64-linux-gnu/libstdc++.so.6 (0x00007f38fca69000)
+        libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007f38fc841000)
+        /lib64/ld-linux-x86-64.so.2 (0x00007f3901805000)
+        libmvec.so.1 => /lib/x86_64-linux-gnu/libmvec.so.1 (0x00007f38fc744000)
+        libgcc_s.so.1 => /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x00007f38fc724000)
     ```
     </details>
-
-- With Intel QSV
-  - `linux/amd64`
-    <details>
-    <summary>configure options:</summary>
-
-    ```bash
-    --enable-zlib --enable-libopenjpeg --enable-libwebp --enable-lzma --enable-gmp --enable-iconv
-    --enable-gnutls --enable-libsrt --enable-libvpx --enable-libx264 --enable-libx265 --enable-libaom
-    --enable-libopus --enable-libvorbis --enable-libopencore-amrnb --enable-libopencore-amrwb
-    --enable-libvo-amrwbenc --enable-libmp3lame --enable-libfreetype --enable-libfribidi --enable-libxml2
-    --enable-libfontconfig --enable-libass --enable-libaribb24 --enable-sdl2 --enable-cuda-llvm
-    --enable-ffnvcodec --enable-cuvid --enable-nvdec --enable-nvenc --enable-libmfx --enable-vaapi
-    --disable-autodetect --disable-debug --disable-doc --enable-gpl --enable-version3
-    --extra-libs="-lm -lpthread -lstdc++" --pkg-config-flags="--static" --prefix=/usr/local
-      ```
-    </details>
-
-    <details>
-    <summary>Dependent library</summary>
-
-    ```bash
-    $ ldd ffmpeg
-        linux-vdso.so.1 (0x00007ffe367a0000)
-        libm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007efee94db000)
-        libva.so.2 => /usr/local/lib/libva.so.2 (0x00007efee9200000)
-        libmfx.so.1 => /usr/local/lib/libmfx.so.1 (0x00007efee8e00000)
-        libstdc++.so.6 => /lib/x86_64-linux-gnu/libstdc++.so.6 (0x00007efee8bd6000)
-        libgcc_s.so.1 => /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x00007efee94bb000)
-        libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007efee89ae000)
-        libmvec.so.1 => /lib/x86_64-linux-gnu/libmvec.so.1 (0x00007efee9103000)
-        libva-drm.so.2 => /usr/local/lib/libva-drm.so.2 (0x00007efee8600000)
-        /lib64/ld-linux-x86-64.so.2 (0x00007efeee093000)
-        libdl.so.2 => /lib/x86_64-linux-gnu/libdl.so.2 (0x00007efee94b4000)
-        libdrm.so.2 => /lib/x86_64-linux-gnu/libdrm.so.2 (0x00007efee949e000)
-    ```
-    </details>
-
 
 - Windows ffmpeg
   - `windows/x64`
@@ -117,75 +73,66 @@
     <details>
     <summary>Dependent library</summary>
 
-    ```bat
-    > dumpbin /Dependents ffmpeg-5.1.2-windows-x64\ffmpeg.exe
-    Microsoft (R) COFF/PE Dumper Version 14.34.31937.0
-    Copyright (C) Microsoft Corporation.  All rights reserved.
-
-
-    Dump of file ffmpeg-5.1.2-windows-x64\ffmpeg.exe
-
-    File Type: EXECUTABLE IMAGE
-
-      Image has the following dependencies:
-
-        ADVAPI32.dll
-        bcrypt.dll
-        CRYPT32.dll
-        GDI32.dll
-        IMM32.dll
-        KERNEL32.dll
-        msvcrt.dll
-        ole32.dll
-        OLEAUT32.dll
-        PSAPI.DLL
-        SETUPAPI.dll
-        SHELL32.dll
-        SHLWAPI.dll
-        USER32.dll
-        VERSION.dll
-        AVICAP32.dll
-        WINMM.dll
-        WS2_32.dll
-        WSOCK32.dll
-
-      Summary
-
-            1000 .CRT
-          864000 .bss
-          25000 .data
-            B000 .edata
-            7000 .idata
-          E4000 .pdata
-          A19000 .rdata
-          30000 .reloc
-            1000 .rodata
-        399B000 .text
-            1000 .tls
-          128000 .xdata
+    ```bash
+    $ LANG=C objdump -p ffmpeg.exe | grep 'DLL Name:'
+      DLL Name: ADVAPI32.dll
+      DLL Name: bcrypt.dll
+      DLL Name: GDI32.dll
+      DLL Name: KERNEL32.dll
+      DLL Name: msvcrt.dll
+      DLL Name: ole32.dll
+      DLL Name: OLEAUT32.dll
+      DLL Name: PSAPI.DLL
+      DLL Name: SHELL32.dll
+      DLL Name: SHLWAPI.dll
+      DLL Name: USER32.dll
+      DLL Name: AVICAP32.dll
+      DLL Name: WS2_32.dll
     ```
     </details>
 
+## HWaccels
 
-## Supported Codecs
+https://trac.ffmpeg.org/wiki/HWAccelIntro
 
-- `VP8/VP9/webm`: VP8 / VP9 Video Codec for the WebM video file format
-- `x264`: H.264 Video Codec (MPEG-4 AVC)
-- `x265`: H.265 Video Codec (HEVC)
-- `AV1`: AV1 Video Codec
-- `vorbis`: Lossy audio compression format
-- `opus`: Lossy audio coding format
-- `freetype`: Library to render fonts
-- `fribidi`:  Implementation of the Unicode Bidirectional Algorithm
-- `fontconfig`: Library for configuring and customizing font access
-- `libass`: Portable subtitle renderer for the ASS/SSA
-- `aribb24`: A library for ARIB STD-B24, decoding JIS 8 bit characters and parsing MPEG-TS stream
+```bash
+$ ffmpeg -hide_banner -hwaccels
+Hardware acceleration methods:
+cuda
+vaapi
+qsv
+drm
+```
 
-### HWAccel
-
-- `mfx`: Intel QSV (Intel Quick Sync Video)
+- `cuda`: NVIDIA's GPU accelerated video codecs (`nvenc/nvdec`)
+  ```bash
+  $ ffmpeg -hide_banner -encoders | grep nvenc
+    V....D av1_nvenc            NVIDIA NVENC av1 encoder (codec av1)
+    V....D h264_nvenc           NVIDIA NVENC H.264 encoder (codec h264)
+    V....D hevc_nvenc           NVIDIA NVENC hevc encoder (codec hevc)
+  ```
 - `vaapi`: Intel Media Driver for VAAPI
-- `cuda`: NVIDIA's GPU accelerated video codecs
+  ```bash
+  $ ffmpeg -hide_banner -encoders | grep vaapi
+    V....D h264_vaapi           H.264/AVC (VAAPI) (codec h264)
+    V....D hevc_vaapi           H.265/HEVC (VAAPI) (codec hevc)
+    V....D mjpeg_vaapi          MJPEG (VAAPI) (codec mjpeg)
+    V....D mpeg2_vaapi          MPEG-2 (VAAPI) (codec mpeg2video)
+    V....D vp8_vaapi            VP8 (VAAPI) (codec vp8)
+    V....D vp9_vaapi            VP9 (VAAPI) (codec vp9)
+  ```
+
+- `QSV`: Intel QSV (Intel Quick Sync Video)
+  ```bash
+  $ ffmpeg -hide_banner -encoders | grep qsv
+    V..... av1_qsv              AV1 (Intel Quick Sync Video acceleration) (codec av1)
+    V..... h264_qsv             H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10 (Intel Quick Sync Video acceleration) (codec h264)
+    V..... hevc_qsv             HEVC (Intel Quick Sync Video acceleration) (codec hevc)
+    V..... mjpeg_qsv            MJPEG (Intel Quick Sync Video acceleration) (codec mjpeg)
+    V..... mpeg2_qsv            MPEG-2 video (Intel Quick Sync Video acceleration) (codec mpeg2video)
+    V..... vp9_qsv              VP9 video (Intel Quick Sync Video acceleration) (codec vp9)
+  ```
+
 
 ## Intel QSV (Intel Quick Sync Video)
 
@@ -194,15 +141,15 @@ https://trac.ffmpeg.org/wiki/Hardware/QuickSync
 You can use the following command to find out which codecs are supported by your CPU.
 
 ```bash
-$ docker run --rm -it --device=/dev/dri akashisn/vainfo
-error: cant connect to X server!
-libva info: VA-API version 1.13.0
+$ sudo docker run --rm -it --device=/dev/dri akashisn/vainfo
+Trying display: drm
+libva info: VA-API version 1.19.0
 libva info: User environment variable requested driver 'iHD'
-libva info: Trying to open /usr/local/lib/iHD_drv_video.so
-libva info: Found init function __vaDriverInit_1_13
+libva info: Trying to open /usr/local/lib/dri/iHD_drv_video.so
+libva info: Found init function __vaDriverInit_1_19
 libva info: va_openDriver() returns 0
-vainfo: VA-API version: 1.13 (libva 2.12.0)
-vainfo: Driver version: Intel iHD driver for Intel(R) Gen Graphics - 21.3.4 (46458db8)
+vainfo: VA-API version: 1.19 (libva 2.19.0)
+vainfo: Driver version: Intel iHD driver for Intel(R) Gen Graphics - 23.3.3 (1c13afa)
 vainfo: Supported profile and entrypoints
       VAProfileNone                   : VAEntrypointVideoProc
       VAProfileNone                   : VAEntrypointStats
@@ -249,28 +196,76 @@ You can find the pre-built binary files on the [release page](https://github.com
 There are files in the assets with the following naming conventions:
 
 ```
-ffmpeg-${version}-${"qsv" or ""}-${"linux" or "windows"}-${arch}.tar.gz
+ffmpeg-${version}-${"linux" or "windows"}-${arch}.tar.gz
 ```
 
-In `qsv` archive file:
+<details>
+<summary>Contains of archive file:</summary>
 
 ```bash
 $ ls
 bin  configure_options  lib  run.sh
+
 $ ls bin/
 ffmpeg  ffplay  ffprobe
-$ ls lib/*
-lib/libigdgmm.so          lib/libmfx-gen.so.1.2.8  lib/libva-drm.so.2             lib/libva-x11.so
-lib/libigdgmm.so.12       lib/libmfx.so            lib/libva-drm.so.2.1700.0      lib/libva-x11.so.2
-lib/libigdgmm.so.12.3.0   lib/libmfx.so.1          lib/libva-glx.so               lib/libva-x11.so.2.1700.0
-lib/libigfxcmrt.so        lib/libmfx.so.1.35       lib/libva-glx.so.2             lib/libva.so
-lib/libigfxcmrt.so.7      lib/libmfxhw64.so        lib/libva-glx.so.2.1700.0      lib/libva.so.2
-lib/libigfxcmrt.so.7.2.0  lib/libmfxhw64.so.1      lib/libva-wayland.so           lib/libva.so.2.1700.0
-lib/libmfx-gen.so         lib/libmfxhw64.so.1.35   lib/libva-wayland.so.2
-lib/libmfx-gen.so.1.2     lib/libva-drm.so         lib/libva-wayland.so.2.1700.0
 
-lib/dri:
-iHD_drv_video.so
+$ tree lib/
+lib/
+|-- dri
+|   |-- i965_drv_video.so
+|   `-- iHD_drv_video.so
+|-- libdrm.so -> libdrm.so.2
+|-- libdrm.so.2 -> libdrm.so.2.4.0
+|-- libdrm.so.2.4.0
+|-- libdrm_amdgpu.so -> libdrm_amdgpu.so.1
+|-- libdrm_amdgpu.so.1 -> libdrm_amdgpu.so.1.0.0
+|-- libdrm_amdgpu.so.1.0.0
+|-- libdrm_intel.so -> libdrm_intel.so.1
+|-- libdrm_intel.so.1 -> libdrm_intel.so.1.0.0
+|-- libdrm_intel.so.1.0.0
+|-- libdrm_nouveau.so -> libdrm_nouveau.so.2
+|-- libdrm_nouveau.so.2 -> libdrm_nouveau.so.2.0.0
+|-- libdrm_nouveau.so.2.0.0
+|-- libdrm_radeon.so -> libdrm_radeon.so.1
+|-- libdrm_radeon.so.1 -> libdrm_radeon.so.1.0.1
+|-- libdrm_radeon.so.1.0.1
+|-- libigdgmm.so -> libigdgmm.so.12
+|-- libigdgmm.so.12 -> libigdgmm.so.12.3.0
+|-- libigdgmm.so.12.3.0
+|-- libigfxcmrt.so -> libigfxcmrt.so.7
+|-- libigfxcmrt.so.7 -> libigfxcmrt.so.7.2.0
+|-- libigfxcmrt.so.7.2.0
+|-- libmfx-gen
+|   `-- enctools.so
+|-- libmfx-gen.so -> libmfx-gen.so.1.2
+|-- libmfx-gen.so.1.2 -> libmfx-gen.so.1.2.9
+|-- libmfx-gen.so.1.2.9
+|-- libmfx.so -> libmfx.so.1
+|-- libmfx.so.1 -> libmfx.so.1.35
+|-- libmfx.so.1.35
+|-- libmfxhw64.so -> libmfxhw64.so.1
+|-- libmfxhw64.so.1 -> libmfxhw64.so.1.35
+|-- libmfxhw64.so.1.35
+|-- libpciaccess.so -> libpciaccess.so.0.11.1
+|-- libpciaccess.so.0 -> libpciaccess.so.0.11.1
+|-- libpciaccess.so.0.11.1
+|-- libva-drm.so -> libva-drm.so.2.1900.0
+|-- libva-drm.so.2 -> libva-drm.so.2.1900.0
+|-- libva-drm.so.2.1900.0
+|-- libva.so -> libva.so.2.1900.0
+|-- libva.so.2 -> libva.so.2.1900.0
+|-- libva.so.2.1900.0
+`-- mfx
+    |-- libmfx_h264la_hw64.so
+    |-- libmfx_hevc_fei_hw64.so
+    |-- libmfx_hevcd_hw64.so
+    |-- libmfx_hevce_hw64.so
+    |-- libmfx_vp8d_hw64.so
+    |-- libmfx_vp9d_hw64.so
+    `-- libmfx_vp9e_hw64.so
+
+3 directories, 49 files
+
 $ cat run.sh
 #!/bin/sh
 export PATH=$(dirname $0)/bin:$PATH
@@ -279,6 +274,7 @@ export LIBVA_DRIVERS_PATH=$(dirname $0)/lib/dri
 export LIBVA_DRIVER_NAME=iHD
 exec $@
 ```
+</details>
 
 If you use `run.sh`, you can run it after setting the `LD_LIBRARY_PATH` and other settings.
 
@@ -287,12 +283,14 @@ And, if you want to encode with QSV, you need to run it with root privileges.
 sample:
 
 ```bash
-$ sudo ./run.sh ffmpeg \
-          -init_hw_device qsv=qsv:hw -hwaccel qsv \
-          -i https://files.coconut.co.s3.amazonaws.com/test.mp4 \
-          -c:v h264_qsv \
-          -f mp4 \
-          test-h264_qsv.mp4
+$ sudo ./run.sh ffmpeg -y \
+    -init_hw_device qsv:hw \
+    -hwaccel qsv \
+    -hwaccel_output_format qsv \
+    -i https://github.com/bower-media-samples/big-buck-bunny-1080p-60fps-30s/raw/master/video.mp4 \
+    -c:v h264_qsv \
+    -f mp4 \
+    video-h264_qsv.mp4
 ```
 
 ## Docker image release
@@ -301,19 +299,15 @@ When running in Docker, you need to mount the DRI device.
 
 sample:
 ```bash
-$ docker run --rm -it --device=/dev/dri -v `pwd`:/workdir \
-  akashisn/ffmpeg:4.4-qsv -y \
-    -init_hw_device qsv=qsv:hw -hwaccel qsv -filter_hw_device qsv -hwaccel_output_format qsv \
-    -fflags +discardcorrupt \
-    -analyzeduration 10M -probesize 32M \
-    -i AB1.m2ts \
-    -t 30 \
-    -c:v h264_qsv \
-    -global_quality 20 \
-    -vf hwupload=extra_hw_frames=64,vpp_qsv=deinterlace=2,scale_qsv=1920:-1,fps=30000/1001 \
-    -c:a aac -ar 48000 -ab 256k \
-    -f mp4 \
-    AB1_h264_qsv.mp4
+$ docker run --rm -it --device=/dev/dri -v `pwd`:/workdir akashisn/ffmpeg:6.0 -y \
+  -loglevel verbose \
+  -init_hw_device qsv:hw \
+  -hwaccel qsv \
+  -hwaccel_output_format qsv \
+  -i video.mp4 \
+  -c:v h264_qsv \
+  -f mp4 \
+  video-h264_qsv.mp4
 ```
 
 # Nonfree codecs
@@ -338,12 +332,27 @@ $ docker buildx build --output type=local,dest=build -t ffmpeg-nonfree:linux -f 
 
 # Technical information
 
+## Intel Quick Sync Video
+
+QSV (Quick Sync Video) was previously supported by `libmfx.so` provided by MediaSDK, but since the development of MediaSDK has been discontinued, it has been taken over by the successor, oneAPI's oneVPL (`libvpl.so`).
+In FFmpeg, the option `--enable-libvpl` was added from version 6.0. Therefore, in this build, only version `6.0` supports QSV through oneVPL's dispatcher, and previous versions are built using the old MediaSDK dispatcher.
+Note that the MediaSDK may no longer be usable as it lacks support for new hardware.
+Moreover, oneVPL supports older hardware by calling `MediaSDK`.
+Therefore, unless there is a reason to use an older version of FFmpeg, it is recommended to use the version compatible with oneVPL.
+
+```mermaid
+graph TD;
+    VPL[oneVPL Dispatcher]-->oneVPL-intel-gpu;
+    VPL[oneVPL Dispatcher]-->MediaSDK;
+```
+
+https://github.com/oneapi-src/oneVPL/tree/master#onevpl-architecture
+
+### QSV in VM
+
 To execute QSV (Quick Sync Video) on a Virtual Machine, it is necessary to pass through Intel's integrated GPU (iGPU) to the VM.
-
 Pass-through technologies include Intel GVT-g, SR-IOV, etc., and the compatibility varies depending on the generation of the CPU[^1].
-
 For Intel GVT-g, please refer to the ArchWiki[^2].
-
 In Proxmox, if you are using systemd-boot instead of GRUB, kernel parameters can be set using `/etc/kernel/cmdline`. Also, don't forget to apply the changes by running `proxmox-boot-tool refresh`. If necessary, adding `kvm.ignore_msrs=1` is recommended[^3].
 
 [^1]: [Graphics Virtualization Technologies Support for Each Intel® Graphics Family](https://www.intel.com/content/www/us/en/support/articles/000093216/graphics/processor-graphics.html)
@@ -351,3 +360,7 @@ In Proxmox, if you are using systemd-boot instead of GRUB, kernel parameters can
 [^2]:https://wiki.archlinux.org/title/Intel_GVT-g
 
 [^3]:https://kagasu.hatenablog.com/entry/2021/01/29/111659
+
+## Dynamic Library
+
+Using [https://github.com/yugr/Implib.so](https://github.com/yugr/Implib.so), the dynamic library related to QSV is delay-loaded, so when you run `ldd` to check, it appears to have no dependencies. However, please note that it becomes necessary when using QSV. This resolves the inconvenience where FFmpeg wouldn't even start without the dynamic library even when QSV is not needed, achieving a pseudo-static link. Therefore, we have consolidated the tags which were previously separated based on whether QSV was available or not.

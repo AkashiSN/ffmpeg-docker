@@ -1,8 +1,8 @@
 # syntax = docker/dockerfile:1.5
 
 ARG FFMPEG_VERSION="6.0"
-FROM akashisn/ffmpeg:${FFMPEG_VERSION} AS ffmpeg-image
-FROM ghcr.io/akashisn/ffmpeg-windows:${FFMPEG_VERSION} AS ffmpeg-image-windows
+FROM akashisn/ffmpeg:${FFMPEG_VERSION} AS ffmpeg-linux-image
+FROM ghcr.io/akashisn/ffmpeg-windows:${FFMPEG_VERSION} AS ffmpeg-windows-image
 
 #
 # build env base image
@@ -177,10 +177,10 @@ COPY --from=ffmpeg-windows-build /dist /
 #
 FROM scratch AS ffmpeg-linux-export
 
-COPY --from=ffmpeg-image /usr/local/bin /bin
-COPY --from=ffmpeg-image /usr/local/lib /lib
-COPY --from=ffmpeg-image /usr/local/configure_options /
-COPY --from=ffmpeg-image /usr/local/run.sh /
+COPY --from=ffmpeg-linux-image /usr/local/bin /bin
+COPY --from=ffmpeg-linux-image /usr/local/lib /lib
+COPY --from=ffmpeg-linux-image /usr/local/configure_options /
+COPY --from=ffmpeg-linux-image /usr/local/run.sh /
 
 
 #
@@ -188,7 +188,7 @@ COPY --from=ffmpeg-image /usr/local/run.sh /
 #
 FROM scratch AS ffmpeg-windows-export
 
-COPY --from=ffmpeg-image-windows / /
+COPY --from=ffmpeg-windows-image / /
 
 
 #

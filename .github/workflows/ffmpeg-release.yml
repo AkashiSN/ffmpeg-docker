@@ -12,13 +12,8 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v')
     strategy:
       matrix:
-        ffmpeg: ["6.0", "5.1.2", "4.4.3"]
-        flavor: [linux, qsv-linux, windows]
-        hwlib: [libmfx]
-        include:
-          - ffmpeg: "6.0"
-            flavor: qsv-linux
-            hwlib: libvpl
+        ffmpeg: ["6.0", "5.1.3", "4.4.4"]
+        flavor: [linux, windows]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -29,25 +24,19 @@ jobs:
       - name: Set build target (linux)
         if: matrix.flavor == 'linux'
         run: |
-          echo "build_tag=" >> $GITHUB_ENV
-          echo "target_os=linux-amd64" >> $GITHUB_ENV
-
-      - name: Set build target (qsv-linux)
-        if: matrix.flavor == 'qsv-linux'
-        run: |
-          echo "build_tag=-${{ matrix.hwlib }}" >> $GITHUB_ENV
+          echo "build_tag=linux" >> $GITHUB_ENV
           echo "target_os=linux-amd64" >> $GITHUB_ENV
 
       - name: Set build target (windows)
         if: matrix.flavor == 'windows'
         run: |
-          echo "build_tag=-windows" >> $GITHUB_ENV
+          echo "build_tag=windows" >> $GITHUB_ENV
           echo "target_os=x64" >> $GITHUB_ENV
 
       - name: Export - ffmpeg
         run: |
-           docker buildx build --platform linux/amd64 --target export${{ env.build_tag }} --output type=local,dest=/tmp/build \
-                  -t ffmpeg${{ env.build_tag }} --build-arg FFMPEG_VERSION=${{ matrix.ffmpeg }} -f ./Dockerfile .
+          docker buildx build --platform linux/amd64 --target ffmpeg-${{ env.build_tag }}-export --output type=local,dest=/tmp/build \
+            -t ffmpeg-${{ env.build_tag }} --build-arg FFMPEG_VERSION=${{ matrix.ffmpeg }} -f ./Dockerfile .
 
       - name: Archive artifact
         run: |
