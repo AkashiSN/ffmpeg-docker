@@ -46,7 +46,7 @@ jobs:
       - name: Set build target (linux)
         if: matrix.flavor == 'linux'
         run: |
-          echo "target=ffmpeg" >> $GITHUB_ENV
+          echo "target=ffmpeg-linux" >> $GITHUB_ENV
           echo "image_name=akashisn/ffmpeg" >> $GITHUB_ENV
           echo "image_tag=${{ matrix.ffmpeg }}" >> $GITHUB_ENV
 

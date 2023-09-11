@@ -6,6 +6,11 @@ on:
       - 'Dockerfile'
       - '.github/workflows/vainfo.yml'
     branches: [main]
+  workflow_run:
+    workflows: ["ffmpeg-library-build"]
+    branches: [main]
+    types:
+      - completed
 
 jobs:
   build:
