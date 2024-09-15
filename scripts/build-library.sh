@@ -133,7 +133,7 @@ if [ "${TARGET_OS}" = "Linux" ]; then
   do_ninja_and_ninja_install
   gen_implib ${PREFIX}/lib/{libpciaccess.so.0,libpciaccess.a}
   cp_archive ${PREFIX}/lib/libpciaccess.so* ${RUNTIME_LIB_DIR}
-  rm ${PREFIX}/lib/libpciaccess{.so*,.la}
+  rm ${PREFIX}/lib/libpciaccess.so*
 fi
 
 
