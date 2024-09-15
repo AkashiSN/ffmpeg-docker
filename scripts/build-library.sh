@@ -128,8 +128,9 @@ if [ "${TARGET_OS}" = "Linux" ]; then
   LIBPCIACCESS_TAG_PREFIX="libpciaccess-"
   LIBPCIACCESS_VERSION="0.18.1" # get_latest_tag ${LIBPCIACCESS_REPO} ${LIBPCIACCESS_TAG_PREFIX}
   git_clone ${LIBPCIACCESS_REPO} ${LIBPCIACCESS_TAG_PREFIX}${LIBPCIACCESS_VERSION} ${LIBPCIACCESS_VERSION}
-  do_configure "--enable-shared --disable-static --with-pic --with-zlib"
-  do_make_and_make_install
+  mkcd build
+  do_meson "-Dzlib=true" ../
+  do_ninja_and_ninja_install
   gen_implib ${PREFIX}/lib/{libpciaccess.so.0,libpciaccess.a}
   cp_archive ${PREFIX}/lib/libpciaccess.so* ${RUNTIME_LIB_DIR}
   rm ${PREFIX}/lib/libpciaccess{.so*,.la}
