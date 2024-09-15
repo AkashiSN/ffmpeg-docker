@@ -4,10 +4,11 @@ source ./base.sh
 mkdir -p ${ARTIFACT_DIR}
 
 # Build ffmpeg
-FFMPEG_VERSION="${FFMPEG_VERSION:-"6.0"}"
+FFMPEG_VERSION="${FFMPEG_VERSION:-"7.0.2"}"
 git_clone "https://github.com/FFmpeg/FFmpeg.git" n${FFMPEG_VERSION}
 
 FFMPEG_LIBVPL_SUPPORT_VERSION="6.0"
+# Check if the current FFMPEG_VERSION is greater than to the version that supports libvpl.
 if [ "${FFMPEG_VERSION}" != "${FFMPEG_LIBVPL_SUPPORT_VERSION}" ]; then
   if [ "$(echo -e "${FFMPEG_VERSION}\n${FFMPEG_LIBVPL_SUPPORT_VERSION}" | sort -Vr | head -n 1)" == "${FFMPEG_LIBVPL_SUPPORT_VERSION}" ]; then
     sed -i -e "s/libvpl/libmfx/g" ${PREFIX}/ffmpeg_configure_options
@@ -55,6 +56,7 @@ esac
 
 # Build
 do_make_and_make_install
+do_strip ${PREFIX}/bin "ff*"
 
 
 #

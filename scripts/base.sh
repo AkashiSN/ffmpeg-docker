@@ -148,6 +148,26 @@ download_and_unpack_file () {
   cd ${output_dir}
 }
 
+get_latest_version() {
+  local url=$1
+  local prefix=$2
+  local major_version="${3:-""}"
+
+  if [ -n "${major_version}" ]; then
+    local url="${url}/${major_version}"
+  fi
+
+  local version_pattern="${prefix}\K[0-9]+(\.[0-9]+)+"
+
+  local html_content=$(curl -sL "$url")
+
+  local latest_version=$(echo "$html_content" | \
+      grep -oP $version_pattern | \
+      sort -V | tail -n1)
+
+  echo "$latest_version"
+}
+
 git_clone() {
   cd ${WORKDIR}
   local repo_url="$1"
@@ -164,6 +184,19 @@ git_clone() {
   git clone -c advice.detachedHead=false "${repo_url}" -b "${branch}" --depth 1 "${to_dir}"
   echoerr "done."
   cd ${to_dir}
+}
+
+get_latest_tag() {
+  local repo_url=$1
+  local prefix="${2:-""}"
+
+  local version_pattern="^${prefix}\K[0-9]+(\.[0-9]+)+$"
+
+  latest_tag=$(git ls-remote --tags "$repo_url" | awk -F/ '{print $NF}' | \
+      grep -oP "$version_pattern" | \
+      sort -V | tail -n1)
+
+  echo "$latest_tag"
 }
 
 svn_checkout() {
@@ -239,4 +272,11 @@ gen_implib () {
   set +x
 
   popd
+}
+
+do_strip () {
+  local target_dir="$1"
+  local file_pattern="$2"
+
+  find ${target_dir} -type f -name ${file_pattern} -executable -exec strip --strip-debug {} \;
 }

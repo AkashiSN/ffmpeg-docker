@@ -9,22 +9,27 @@ mkdir -p ${RUNTIME_LIB_DIR}
 #
 
 # Build xorg-macros
-XORG_MACROS_VERSION="1.20.0"
-XORG_MACROS_TAG="util-macros-${XORG_MACROS_VERSION}"
-git_clone "https://gitlab.freedesktop.org/xorg/util/macros.git" ${XORG_MACROS_TAG} ${XORG_MACROS_VERSION}
+XORG_MACROS_REPO="https://gitlab.freedesktop.org/xorg/util/macros.git"
+XORG_MACROS_TAG_PREFIX="util-macros-"
+XORG_MACROS_VERSION="1.20.1" # get_latest_tag ${XORG_MACROS_REPO} ${XORG_MACROS_TAG_PREFIX}
+git_clone ${XORG_MACROS_REPO} ${XORG_MACROS_TAG_PREFIX}${XORG_MACROS_VERSION} ${XORG_MACROS_VERSION}
 do_configure
 do_make_and_make_install
 
 # Build zlib
-ZLIB_VERSION="1.3"
-git_clone https://github.com/madler/zlib.git "v${ZLIB_VERSION}"
+ZLIB_REPO="https://github.com/madler/zlib.git"
+ZLIB_TAG_PREFIX="v"
+ZLIB_VERSION="1.3.1" # get_latest_tag ${ZLIB_REPO} ${ZLIB_TAG_PREFIX}
+git_clone ${ZLIB_REPO} ${ZLIB_TAG_PREFIX}${ZLIB_VERSION}
 CC=${CROSS_PREFIX}gcc AR=${CROSS_PREFIX}ar RANLIB=${CROSS_PREFIX}ranlib ./configure --prefix=${PREFIX} --static
 do_make_and_make_install
 FFMPEG_CONFIGURE_OPTIONS+=("--enable-zlib")
 
 # Build bzip2
-BZIP2_VERSION="1.0.8"
-git_clone "https://gitlab.com/bzip2/bzip2.git" "bzip2-${BZIP2_VERSION}" "${BZIP2_VERSION}"
+BZIP2_REPO="https://gitlab.com/bzip2/bzip2.git"
+BZIP2_TAG_PREFIX="bzip2-"
+BZIP2_VERSION="1.0.8" # get_latest_tag ${BZIP2_REPO} ${BZIP2_TAG_PREFIX}
+git_clone ${BZIP2_REPO} ${BZIP2_TAG_PREFIX}${BZIP2_VERSION} ${BZIP2_VERSION}
 make CC=${CROSS_PREFIX}gcc AR=${CROSS_PREFIX}ar RANLIB=${CROSS_PREFIX}ranlib libbz2.a
 install -m 644 bzlib.h ${PREFIX}/include
 install -m 644 libbz2.a ${PREFIX}/lib
@@ -44,8 +49,10 @@ EOS
 ln -s ${PKG_CONFIG_PATH}/bz2.pc ${PKG_CONFIG_PATH}/bzip2.pc
 
 # Build lzma
-LZMA_VERSION="5.4.4"
-git_clone "https://github.com/tukaani-project/xz.git" v${LZMA_VERSION}
+LZMA_REPO="https://github.com/tukaani-project/xz.git"
+LZMA_TAG_PREFIX="v"
+LZMA_VERSION="5.6.2" # get_latest_tag ${LZMA_REPO} ${LZMA_TAG_PREFIX}
+git_clone ${LZMA_REPO} ${LZMA_TAG_PREFIX}${LZMA_VERSION}
 ./autogen.sh --no-po4a --no-doxygen
 do_configure "--enable-static --disable-shared --with-pic --disable-symbol-versions
               --disable-xz --disable-xzdec --disable-lzmadec --disable-lzmainfo --disable-scripts --disable-doc"
@@ -53,48 +60,62 @@ do_make_and_make_install
 FFMPEG_CONFIGURE_OPTIONS+=("--enable-lzma")
 
 # Build Nettle (for gmp,gnutls)
-NETTLE_VERSION="3.9.1"
-download_and_unpack_file "https://ftp.jaist.ac.jp/pub/GNU/nettle/nettle-${NETTLE_VERSION}.tar.gz"
+NETTLE_URL="https://ftp.jaist.ac.jp/pub/GNU/nettle"
+NETTLE_PREFIX="nettle-"
+NETTLE_VERSION="3.10" # get_latest_version ${NETTLE_URL} ${NETTLE_PREFIX}
+download_and_unpack_file ${NETTLE_URL}/${NETTLE_PREFIX}${NETTLE_VERSION}.tar.gz
 do_configure "--enable-static --disable-shared --libdir=${PREFIX}/lib --enable-mini-gmp --disable-openssl --disable-documentation"
 do_make_and_make_install
 
 # Build GMP
-GMP_VERSION="6.3.0"
-download_and_unpack_file "https://ftp.jaist.ac.jp/pub/GNU/gmp/gmp-${GMP_VERSION}.tar.xz"
+GMP_URL="https://ftp.jaist.ac.jp/pub/GNU/gmp"
+GMP_PREFIX="gmp-"
+GMP_VERSION="6.3.0" # get_latest_version ${GMP_URL} ${GMP_PREFIX}
+download_and_unpack_file ${GMP_URL}/${GMP_PREFIX}${GMP_VERSION}.tar.xz
 do_configure "--enable-static --disable-shared --with-pic"
 do_make_and_make_install
 FFMPEG_CONFIGURE_OPTIONS+=("--enable-gmp")
 
 # Build libtasn1 (for gnutls)
-LIBTASN1_VERSION="4.19.0"
-download_and_unpack_file "https://ftp.jaist.ac.jp/pub/GNU/libtasn1/libtasn1-${LIBTASN1_VERSION}.tar.gz"
+LIBTASN1_URL="https://ftp.jaist.ac.jp/pub/GNU/libtasn1"
+LIBTASN1_PREFIX="libtasn1-"
+LIBTASN1_VERSION="4.19.0" # get_latest_version ${LIBTASN1_URL} ${LIBTASN1_PREFIX}
+download_and_unpack_file ${LIBTASN1_URL}/${LIBTASN1_PREFIX}${LIBTASN1_VERSION}.tar.gz
 do_configure "--enable-static --disable-shared"
 do_make_and_make_install
 
 # Build libunistring (for gnutls)
-LIBUNISTRING_VERSION="1.1"
-download_and_unpack_file "https://ftp.jaist.ac.jp/pub/GNU/libunistring/libunistring-${LIBUNISTRING_VERSION}.tar.xz"
+LIBUNISTRING_URL="https://ftp.jaist.ac.jp/pub/GNU/libunistring"
+LIBUNISTRING_PREFIX="libunistring-"
+LIBUNISTRING_VERSION="1.2" # get_latest_version ${LIBUNISTRING_URL} ${LIBUNISTRING_PREFIX}
+download_and_unpack_file ${LIBUNISTRING_URL}/${LIBUNISTRING_PREFIX}${LIBUNISTRING_VERSION}.tar.xz
 do_configure "--enable-static --disable-shared"
 do_make_and_make_install
 
 # Build libiconv
-ICONV_VERSION="1.17"
-download_and_unpack_file "https://ftp.jaist.ac.jp/pub/GNU/libiconv/libiconv-${ICONV_VERSION}.tar.gz"
+ICONV_URL="https://ftp.jaist.ac.jp/pub/GNU/libiconv"
+ICONV_PREFIX="libiconv-"
+ICONV_VERSION="1.17" # get_latest_version ${ICONV_URL} ${ICONV_PREFIX}
+download_and_unpack_file ${ICONV_URL}/${ICONV_PREFIX}${ICONV_VERSION}.tar.gz
 do_configure "--enable-static --disable-shared --with-pic --enable-extra-encodings"
 make install-lib
 FFMPEG_CONFIGURE_OPTIONS+=("--enable-iconv")
 
 # Build GnuTLS
-GNUTLS_MAJAR_VERSION="3.8"
-GNUTLS_VERSION="${GNUTLS_MAJAR_VERSION}.1"
-download_and_unpack_file "https://www.gnupg.org/ftp/gcrypt/gnutls/v${GNUTLS_MAJAR_VERSION}/gnutls-${GNUTLS_VERSION}.tar.xz"
+GNUTLS_URL="https://www.gnupg.org/ftp/gcrypt/gnutls"
+GNUTLS_PREFIX="gnutls-"
+GNUTLS_MAJOR_VERSION="v3.8"
+GNUTLS_VERSION="3.8.7.1" # get_latest_version ${GNUTLS_URL} ${GNUTLS_PREFIX} ${GNUTLS_MAJOR_VERSION}
+download_and_unpack_file ${GNUTLS_URL}/${GNUTLS_MAJOR_VERSION}/${GNUTLS_PREFIX}${GNUTLS_VERSION}.tar.xz
 do_configure "--enable-static --disable-shared --with-pic --disable-tests --disable-doc --disable-tools --without-p11-kit"
 do_make_and_make_install
 FFMPEG_CONFIGURE_OPTIONS+=("--enable-gnutls")
 
 # Build SRT
-SRT_VERSION="1.5.3"
-git_clone "https://github.com/Haivision/srt.git" v${SRT_VERSION}
+SRT_REPO="https://github.com/Haivision/srt.git"
+SRT_TAG_PREFIX="v"
+SRT_VERSION="1.5.3" # get_latest_tag ${SRT_REPO} ${SRT_TAG_PREFIX}
+git_clone ${SRT_REPO} ${SRT_TAG_PREFIX}${SRT_VERSION}
 mkcd build
 do_cmake "-DENABLE_SHARED=0 -DENABLE_APPS=0 -DENABLE_CXX_DEPS=1 -DUSE_STATIC_LIBSTDCXX=1
           -DENABLE_ENCRYPTION=1 -DUSE_ENCLIB=gnutls" ..
@@ -103,9 +124,10 @@ FFMPEG_CONFIGURE_OPTIONS+=("--enable-libsrt")
 
 if [ "${TARGET_OS}" = "Linux" ]; then
   # Build libpciaccess
-  LIBPCIACCESS_VERSION="0.17"
-  LIBPCIACCESS_TAG="libpciaccess-${LIBPCIACCESS_VERSION}"
-  git_clone "https://gitlab.freedesktop.org/xorg/lib/libpciaccess.git" ${LIBPCIACCESS_TAG} ${LIBPCIACCESS_VERSION}
+  LIBPCIACCESS_REPO="https://gitlab.freedesktop.org/xorg/lib/libpciaccess.git"
+  LIBPCIACCESS_TAG_PREFIX="libpciaccess-"
+  LIBPCIACCESS_VERSION="0.18.1" # get_latest_tag ${LIBPCIACCESS_REPO} ${LIBPCIACCESS_TAG_PREFIX}
+  git_clone ${LIBPCIACCESS_REPO} ${LIBPCIACCESS_TAG_PREFIX}${LIBPCIACCESS_VERSION} ${LIBPCIACCESS_VERSION}
   do_configure "--enable-shared --disable-static --with-pic --with-zlib"
   do_make_and_make_install
   gen_implib ${PREFIX}/lib/{libpciaccess.so.0,libpciaccess.a}
@@ -113,33 +135,40 @@ if [ "${TARGET_OS}" = "Linux" ]; then
   rm ${PREFIX}/lib/libpciaccess{.so*,.la}
 fi
 
+
 #
 # Image
 #
 
 # Build libpng (for libwebp)
-LIBPNG_VERSION="1.6.40"
-git_clone "https://github.com/glennrp/libpng.git" "v${LIBPNG_VERSION}"
+LIBPNG_REPO="https://github.com/glennrp/libpng.git"
+LIBPNG_TAG_PREFIX="v"
+LIBPNG_VERSION="1.6.44" # get_latest_tag ${LIBPNG_REPO} ${LIBPNG_TAG_PREFIX}
+git_clone ${LIBPNG_REPO} ${LIBPNG_TAG_PREFIX}${LIBPNG_VERSION}
 do_configure "--enable-static --disable-shared --with-pic"
 do_make_and_make_install
 
 # Build libjpeg (for libwebp)
-LIBJPEG_VERSION="9e"
+LIBJPEG_VERSION="9f"
 download_and_unpack_file "http://www.ijg.org/files/jpegsrc.v${LIBJPEG_VERSION}.tar.gz"
 do_configure "--enable-static --disable-shared --with-pic"
 do_make_and_make_install
 
 # Build openjpeg
-OPENJPEG_VERSION="2.5.0"
-git_clone "https://github.com/uclouvain/openjpeg.git" "v${OPENJPEG_VERSION}"
+OPENJPEG_REPO="https://github.com/uclouvain/openjpeg.git"
+OPENJPEG_TAG_PREFIX="v"
+OPENJPEG_VERSION="2.5.2" # get_latest_tag ${OPENJPEG_REPO} ${OPENJPEG_TAG_PREFIX}
+git_clone ${OPENJPEG_REPO} ${OPENJPEG_TAG_PREFIX}${OPENJPEG_VERSION}
 mkcd build
 do_cmake "-DBUILD_SHARED_LIBS=0 -DDBUILD_PKGCONFIG_FILES=1 -DBUILD_CODEC=0 -DWITH_ASTYLE=0 -DBUILD_TESTING=0" ..
 do_make_and_make_install
 FFMPEG_CONFIGURE_OPTIONS+=("--enable-libopenjpeg")
 
 # Build libwebp
-LIBWEBP_VERSION="1.3.1"
-git_clone "https://chromium.googlesource.com/webm/libwebp.git" "v${LIBWEBP_VERSION}"
+LIBWEBP_REPO="https://chromium.googlesource.com/webm/libwebp.git"
+LIBWEBP_TAG_PREFIX="v"
+LIBWEBP_VERSION="1.4.0" # get_latest_tag ${LIBWEBP_REPO} ${LIBWEBP_TAG_PREFIX}
+git_clone ${LIBWEBP_REPO} ${LIBWEBP_TAG_PREFIX}${LIBWEBP_VERSION}
 do_configure "--enable-static --disable-shared --with-pic --enable-libwebpmux --enable-png --enable-jpeg
               --disable-libwebpextras --disable-libwebpdemux --disable-sdl --disable-gl --disable-tiff --disable-gif"
 do_make_and_make_install
@@ -151,8 +180,10 @@ FFMPEG_CONFIGURE_OPTIONS+=("--enable-libwebp")
 #
 
 # Build libvpx
-LIBVPX_VERSION="1.13.0"
-git_clone "https://chromium.googlesource.com/webm/libvpx" v${LIBVPX_VERSION}
+LIBVPX_REPO="https://chromium.googlesource.com/webm/libvpx.git"
+LIBVPX_TAG_PREFIX="v"
+LIBVPX_VERSION="1.14.1" # get_latest_tag ${LIBVPX_REPO} ${LIBVPX_TAG_PREFIX}
+git_clone ${LIBVPX_REPO} ${LIBVPX_TAG_PREFIX}${LIBVPX_VERSION}
 if [ "${TARGET_OS}" = "Windows" ]; then
   CROSS=${CROSS_PREFIX} ./configure --prefix="${PREFIX}" --target=x86_64-win64-gcc --disable-shared \
                           --enable-static --enable-pic --disable-examples --disable-tools --disable-docs \
@@ -206,16 +237,20 @@ make install
 FFMPEG_CONFIGURE_OPTIONS+=("--enable-libx265")
 
 # Build libaom
-LIBAOM_VERSION="3.7.0"
-git_clone "https://aomedia.googlesource.com/aom" v${LIBAOM_VERSION}
+LIBAOM_REPO="https://aomedia.googlesource.com/aom.git"
+LIBAOM_TAG_PREFIX="v"
+LIBAOM_VERSION="3.10.0" # get_latest_tag ${LIBAOM_REPO} ${LIBAOM_TAG_PREFIX}
+git_clone ${LIBAOM_REPO} ${LIBAOM_TAG_PREFIX}${LIBAOM_VERSION}
 mkcd _build
 do_cmake "-DAOM_TARGET_CPU=x86_64 -DBUILD_SHARED_LIBS=0 -DENABLE_NASM=1 -DENABLE_DOCS=0 -DENABLE_TESTS=0 -DENABLE_EXAMPLES=0" ..
 do_make_and_make_install
 FFMPEG_CONFIGURE_OPTIONS+=("--enable-libaom")
 
 # Build vmaf
-VMAF_VERSION="2.3.1"
-git_clone "https://github.com/Netflix/vmaf.git" v${VMAF_VERSION}
+VMAF_REPO="https://github.com/Netflix/vmaf.git"
+VMAF_TAG_PREFIX="v"
+VMAF_VERSION="2.3.1" # get_latest_tag ${VMAF_REPO} ${VMAF_TAG_PREFIX}
+git_clone ${VMAF_REPO} ${VMAF_TAG_PREFIX}${VMAF_VERSION}
 mkcd build
 if [ "${TARGET_OS}" = "Windows" ]; then
   do_meson "--default-library=static -Denable_tests=false -Denable_docs=false --cross-file=${WORKDIR}/${BUILD_TARGET}.txt" ../libvmaf
@@ -231,8 +266,10 @@ FFMPEG_CONFIGURE_OPTIONS+=("--enable-libvmaf")
 #
 
 # Build opus
-OPUS_VERSION="1.4"
-git_clone "https://github.com/xiph/opus.git" v${OPUS_VERSION}
+OPUS_REPO="https://github.com/xiph/opus.git"
+OPUS_TAG_PREFIX="v"
+OPUS_VERSION="1.5.2" # get_latest_tag ${OPUS_REPO} ${OPUS_TAG_PREFIX}
+git_clone ${OPUS_REPO} ${OPUS_TAG_PREFIX}${OPUS_VERSION}
 mkcd build
 if [ "${TARGET_OS}" = "Windows" ]; then
   do_cmake "-DBUILD_SHARED_LIBS=0 -DBUILD_TESTING=0 -DOPUS_STACK_PROTECTOR=0 -DOPUS_FORTIFY_SOURCE=0" ..
@@ -243,15 +280,19 @@ do_make_and_make_install
 FFMPEG_CONFIGURE_OPTIONS+=("--enable-libopus")
 
 # Build libogg, for vorbis
-OGG_VERSION="1.3.5"
-git_clone "https://github.com/xiph/ogg.git" v${OGG_VERSION}
+OGG_REPO="https://github.com/xiph/ogg.git"
+OGG_TAG_PREFIX="v"
+OGG_VERSION="1.3.5" # get_latest_tag ${OGG_REPO} ${OGG_TAG_PREFIX}
+git_clone ${OGG_REPO} ${OGG_TAG_PREFIX}${OGG_VERSION}
 mkcd build
 do_cmake "-DBUILD_SHARED_LIBS=0 -DINSTALL_CMAKE_PACKAGE_MODULE=0 -DINSTALL_DOCS=0 -DBUILD_TESTING=0" ..
 do_make_and_make_install
 
 # Build vorbis
-VORBIS_VERSION="1.3.7"
-git_clone "https://github.com/xiph/vorbis.git" v${VORBIS_VERSION}
+VORBIS_REPO="https://github.com/xiph/vorbis.git"
+VORBIS_TAG_PREFIX="v"
+VORBIS_VERSION="1.3.7" # get_latest_tag ${VORBIS_REPO} ${VORBIS_TAG_PREFIX}
+git_clone ${VORBIS_REPO} ${VORBIS_TAG_PREFIX}${VORBIS_VERSION}
 mkcd build
 do_cmake "-DBUILD_SHARED_LIBS=0 -DINSTALL_CMAKE_PACKAGE_MODULE=0" ..
 do_make_and_make_install
@@ -350,8 +391,10 @@ FFMPEG_CONFIGURE_OPTIONS+=("--enable-libaribb24")
 #
 
 # Build SDL
-SDL_VERSION="2.28.3"
-download_and_unpack_file "https://www.libsdl.org/release/SDL2-${SDL_VERSION}.tar.gz"
+SDL_URL="https://www.libsdl.org/release"
+SDL_PREFIX="SDL2-"
+SDL_VERSION="2.28.3" # get_latest_version ${SDL_URL} ${SDL_PREFIX}
+download_and_unpack_file ${SDL_URL}/${SDL_PREFIX}${SDL_VERSION}.tar.gz
 do_configure "--disable-shared --enable-static"
 do_make_and_make_install
 FFMPEG_CONFIGURE_OPTIONS+=("--enable-sdl2")
@@ -362,16 +405,19 @@ FFMPEG_CONFIGURE_OPTIONS+=("--enable-sdl2")
 #
 
 # Build NVcodec
-NVCODEC_VERSION="n12.0.16.0"
-git_clone "https://github.com/FFmpeg/nv-codec-headers" ${NVCODEC_VERSION}
+NVCODEC_REPO="https://github.com/FFmpeg/nv-codec-headers.git"
+NVCODEC_TAG_PREFIX="n"
+NVCODEC_VERSION="12.2.72.0" # get_latest_tag ${NVCODEC_REPO} ${NVCODEC_TAG_PREFIX}
+git_clone ${NVCODEC_REPO} ${NVCODEC_TAG_PREFIX}${NVCODEC_VERSION}
 make install "PREFIX=${PREFIX}"
 FFMPEG_CONFIGURE_OPTIONS+=("--enable-cuda-llvm" "--enable-ffnvcodec" "--enable-cuvid" "--enable-nvdec" "--enable-nvenc")
 
 if [ "${TARGET_OS}" = "Linux" ]; then
   # Build libdrm
-  LIBDRM_VERSION="2.4.116"
-  LIBDRM_TAG="libdrm-${LIBDRM_VERSION}"
-  git_clone "https://gitlab.freedesktop.org/mesa/drm.git" ${LIBDRM_TAG} ${LIBDRM_VERSION}
+  LIBDRM_REPO="https://gitlab.freedesktop.org/mesa/drm.git"
+  LIBDRM_TAG_PREFIX="libdrm-"
+  LIBDRM_VERSION="2.4.123" # get_latest_tag ${LIBDRM_REPO} ${LIBDRM_TAG_PREFIX}
+  git_clone ${LIBDRM_REPO} ${LIBDRM_TAG_PREFIX}${LIBDRM_VERSION} ${LIBDRM_VERSION}
   mkcd build
   do_meson "-Ddefault_library=shared -Dudev=false -Dcairo-tests=disabled -Dvalgrind=disabled -Dexynos=disabled
             -Dfreedreno=disabled -Domap=disabled -Detnaviv=disabled -Dintel=enabled -Dnouveau=enabled
@@ -390,8 +436,9 @@ if [ "${TARGET_OS}" = "Linux" ]; then
   FFMPEG_CONFIGURE_OPTIONS+=("--enable-libdrm")
 
   # Build libva
-  LIBVA_VERSION="2.19.0"
-  git_clone "https://github.com/intel/libva.git" ${LIBVA_VERSION}
+  LIBVA_REPO="https://github.com/intel/libva.git"
+  LIBVA_VERSION="2.22.0" # get_latest_tag ${LIBVA_REPO}
+  git_clone ${LIBVA_REPO} ${LIBVA_VERSION}
   do_configure "--enable-shared --disable-static --with-pic --disable-docs --enable-drm
                 --disable-x11 --disable-glx --disable-wayland --sysconfdir=/etc"
   do_make_and_make_install
@@ -402,25 +449,28 @@ if [ "${TARGET_OS}" = "Linux" ]; then
   FFMPEG_CONFIGURE_OPTIONS+=("--enable-vaapi")
 
   # Build libva-utils
-  LIBVA_UTILS_VERSION="2.19.0"
-  git_clone "https://github.com/intel/libva-utils.git" ${LIBVA_UTILS_VERSION}
+  LIBVA_UTILS_REPO="https://github.com/intel/libva-utils.git"
+  LIBVA_UTILS_VERSION="2.22.0" # get_latest_tag ${LIBVA_UTILS_REPO}
+  git_clone ${LIBVA_UTILS_REPO} ${LIBVA_UTILS_VERSION}
   do_configure "--with-pic --enable-drm --disable-x11"
   do_make_and_make_install
   cp_archive ${PREFIX}/bin/vainfo ${ARTIFACT_DIR}
 
   # Build gmmlib
-  GMMLIB_VERSION="22.3.11"
-  GMMLIB_TAG="intel-gmmlib-${GMMLIB_VERSION}"
-  git_clone "https://github.com/intel/gmmlib.git" ${GMMLIB_TAG} ${GMMLIB_VERSION}
+  GMMLIB_REPO="https://github.com/intel/gmmlib.git"
+  GMMLIB_TAG_PREFIX="intel-gmmlib-"
+  GMMLIB_VERSION="22.5.2" # get_latest_tag ${GMMLIB_REPO} ${GMMLIB_TAG_PREFIX}
+  git_clone ${GMMLIB_REPO} ${GMMLIB_TAG_PREFIX}${GMMLIB_VERSION} ${GMMLIB_VERSION}
   mkcd build
   do_cmake ..
   do_make_and_make_install
   cp_archive ${PREFIX}/lib/libigdgmm.so* ${RUNTIME_LIB_DIR}
 
   # Build media-driver
-  MEDIA_DRIVER_VERSION="23.3.3"
-  MEDIA_DRIVER_TAG="intel-media-${MEDIA_DRIVER_VERSION}"
-  git_clone "https://github.com/intel/media-driver.git" ${MEDIA_DRIVER_TAG} ${MEDIA_DRIVER_VERSION}
+  MEDIA_DRIVER_REPO="https://github.com/intel/media-driver.git"
+  MEDIA_DRIVER_TAG_PREFIX="intel-media-"
+  MEDIA_DRIVER_VERSION="24.3.3" # get_latest_tag ${MEDIA_DRIVER_REPO} ${MEDIA_DRIVER_TAG_PREFIX}2
+  git_clone ${MEDIA_DRIVER_REPO} ${MEDIA_DRIVER_TAG_PREFIX}${MEDIA_DRIVER_VERSION} ${MEDIA_DRIVER_VERSION}
   mkcd build
   do_cmake "-DENABLE_KERNELS=1 -DENABLE_NONFREE_KERNELS=1 -DENABLE_PRODUCTION_KMD=1" ..
   do_make_and_make_install
@@ -428,17 +478,20 @@ if [ "${TARGET_OS}" = "Linux" ]; then
   cp_archive ${PREFIX}/lib/libigfxcmrt.so* ${RUNTIME_LIB_DIR}
 
   # Build intel-vaapi-driver
-  INTEL_VAAPI_DRIVER_VERSION="2.4.1"
-  git_clone "https://github.com/intel/intel-vaapi-driver" ${INTEL_VAAPI_DRIVER_VERSION}
+  INTEL_VAAPI_DRIVER_REPO="https://github.com/intel/intel-vaapi-driver.git"
+  INTEL_VAAPI_DRIVER_VERSION="2.4.1" # get_latest_tag ${INTEL_VAAPI_DRIVER_REPO}
+  git_clone ${INTEL_VAAPI_DRIVER_REPO} ${INTEL_VAAPI_DRIVER_VERSION}
   mkcd build
   do_meson "-Ddriverdir=${PREFIX}/lib/dri" ..
   do_ninja_and_ninja_install
+  do_strip ${PREFIX}/lib/dri "*.so"
   cp_archive ${PREFIX}/lib/dri ${RUNTIME_LIB_DIR}
 
   # Build oneVPL gpu runtime
-  ONEVPL_INTEL_GPU_VERSION="23.3.3"
-  ONEVPL_INTEL_GPU_TAG="intel-onevpl-${ONEVPL_INTEL_GPU_VERSION}"
-  git_clone "https://github.com/oneapi-src/oneVPL-intel-gpu.git" ${ONEVPL_INTEL_GPU_TAG} ${ONEVPL_INTEL_GPU_VERSION}
+  ONEVPL_INTEL_GPU_REPO="https://github.com/oneapi-src/oneVPL-intel-gpu.git"
+  ONEVPL_INTEL_GPU_TAG_PREFIX="intel-onevpl-"
+  ONEVPL_INTEL_GPU_VERSION="24.3.3" # get_latest_tag ${ONEVPL_INTEL_GPU_REPO} ${ONEVPL_INTEL_GPU_TAG_PREFIX}
+  git_clone ${ONEVPL_INTEL_GPU_REPO} ${ONEVPL_INTEL_GPU_TAG_PREFIX}${ONEVPL_INTEL_GPU_VERSION} ${ONEVPL_INTEL_GPU_VERSION}
   mkcd build
   do_cmake "-DBUILD_RUNTIME=1 -DBUILD_TESTS=0" ..
   do_make_and_make_install
@@ -459,9 +512,11 @@ if [ "${TARGET_OS}" = "Linux" ]; then
   rm ${PREFIX}/lib/libmfx.so*
 fi
 
-# Build oneVPL
-ONEVPL_VERSION="2023.3.1"
-git_clone "https://github.com/oneapi-src/oneVPL.git" v${ONEVPL_VERSION}
+# Build libvpl
+VPL_REPO="https://github.com/intel/libvpl.git"
+VPL_TAG_PREFIX="v"
+VPL_VERSION="2023.4.0" # get_latest_tag ${VPL_REPO} ${VPL_TAG_PREFIX}
+git_clone ${VPL_REPO} ${VPL_TAG_PREFIX}${VPL_VERSION}
 mkcd build
 do_cmake "-DBUILD_DISPATCHER=1 -DBUILD_DEV=1 -DBUILD_PREVIEW=0 -DBUILD_TOOLS=0
           -DBUILD_TOOLS_ONEVPL_EXPERIMENTAL=0 -DINSTALL_EXAMPLE_CODE=0 -DBUILD_SHARED_LIBS=0 -DBUILD_TESTS=0" ..
