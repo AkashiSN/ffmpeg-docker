@@ -14,12 +14,15 @@ jobs:
       matrix:
         ffmpeg: ["7.0.2", "6.1.2", "5.1.6", "4.4.5"]
         flavor: [linux, windows]
+    env:
+      target_os:
+      build_tag:
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
       - name: Set build target (linux)
         if: matrix.flavor == 'linux'
@@ -45,7 +48,7 @@ jobs:
           tar acvf /tmp/ffmpeg-${{ matrix.ffmpeg }}-${{ env.target_os }}.tar.xz -C /tmp ffmpeg-${{ matrix.ffmpeg }}-${{ env.target_os }}
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ffmpeg-${{ matrix.ffmpeg }}-${{ env.target_os }}
           path: /tmp/ffmpeg-${{ matrix.ffmpeg }}-${{ env.target_os }}.tar.xz
@@ -56,11 +59,11 @@ jobs:
     needs: [export]
     steps:
       - name: Download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: /tmp/artifact
 
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: /tmp/artifact/**/*.tar.xz

@@ -7,13 +7,15 @@
 ## Available release
 
 - Linux docker image (`akashisn/ffmpeg`) & binary release
-  - `6.0`
-  - `5.1.3`
-  - `4.4.4`
+  - `7.0.2`
+  - `6.1.2`
+  - `5.1.6`
+  - `4.4.5`
 - Windows binary release
-  - `6.0`
-  - `5.1.3`
-  - `4.4.4`
+  - `7.0.2`
+  - `6.1.2`
+  - `5.1.6`
+  - `4.4.5`
 
 ## Supported architecture
 

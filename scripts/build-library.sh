@@ -407,8 +407,9 @@ FFMPEG_CONFIGURE_OPTIONS+=("--enable-sdl2")
 
 # Build NVcodec
 NVCODEC_REPO="https://github.com/FFmpeg/nv-codec-headers.git"
-NVCODEC_TAG_PREFIX="n"
-NVCODEC_VERSION="12.2.72.0" # get_latest_tag ${NVCODEC_REPO} ${NVCODEC_TAG_PREFIX}
+NVCODEC_TAG_PREFIX="n11."
+# https://github.com/m-ab-s/media-autobuild_suite/issues/2522#issuecomment-1891625706
+NVCODEC_VERSION="1.5.3" # get_latest_tag ${NVCODEC_REPO} ${NVCODEC_TAG_PREFIX}
 git_clone ${NVCODEC_REPO} ${NVCODEC_TAG_PREFIX}${NVCODEC_VERSION}
 make install "PREFIX=${PREFIX}"
 FFMPEG_CONFIGURE_OPTIONS+=("--enable-cuda-llvm" "--enable-ffnvcodec" "--enable-cuvid" "--enable-nvdec" "--enable-nvenc")
