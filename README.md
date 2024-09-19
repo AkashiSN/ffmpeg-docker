@@ -212,59 +212,59 @@ $ ls bin/
 ffmpeg  ffplay  ffprobe
 
 $ tree lib/
-lib/
-|-- dri
-|   |-- i965_drv_video.so
-|   `-- iHD_drv_video.so
-|-- libdrm.so -> libdrm.so.2
-|-- libdrm.so.2 -> libdrm.so.2.4.0
-|-- libdrm.so.2.4.0
-|-- libdrm_amdgpu.so -> libdrm_amdgpu.so.1
-|-- libdrm_amdgpu.so.1 -> libdrm_amdgpu.so.1.0.0
-|-- libdrm_amdgpu.so.1.0.0
-|-- libdrm_intel.so -> libdrm_intel.so.1
-|-- libdrm_intel.so.1 -> libdrm_intel.so.1.0.0
-|-- libdrm_intel.so.1.0.0
-|-- libdrm_nouveau.so -> libdrm_nouveau.so.2
-|-- libdrm_nouveau.so.2 -> libdrm_nouveau.so.2.0.0
-|-- libdrm_nouveau.so.2.0.0
-|-- libdrm_radeon.so -> libdrm_radeon.so.1
-|-- libdrm_radeon.so.1 -> libdrm_radeon.so.1.0.1
-|-- libdrm_radeon.so.1.0.1
-|-- libigdgmm.so -> libigdgmm.so.12
-|-- libigdgmm.so.12 -> libigdgmm.so.12.3.0
-|-- libigdgmm.so.12.3.0
-|-- libigfxcmrt.so -> libigfxcmrt.so.7
-|-- libigfxcmrt.so.7 -> libigfxcmrt.so.7.2.0
-|-- libigfxcmrt.so.7.2.0
-|-- libmfx-gen
-|   `-- enctools.so
-|-- libmfx-gen.so -> libmfx-gen.so.1.2
-|-- libmfx-gen.so.1.2 -> libmfx-gen.so.1.2.9
-|-- libmfx-gen.so.1.2.9
-|-- libmfx.so -> libmfx.so.1
-|-- libmfx.so.1 -> libmfx.so.1.35
-|-- libmfx.so.1.35
-|-- libmfxhw64.so -> libmfxhw64.so.1
-|-- libmfxhw64.so.1 -> libmfxhw64.so.1.35
-|-- libmfxhw64.so.1.35
-|-- libpciaccess.so -> libpciaccess.so.0.11.1
-|-- libpciaccess.so.0 -> libpciaccess.so.0.11.1
-|-- libpciaccess.so.0.11.1
-|-- libva-drm.so -> libva-drm.so.2.1900.0
-|-- libva-drm.so.2 -> libva-drm.so.2.1900.0
-|-- libva-drm.so.2.1900.0
-|-- libva.so -> libva.so.2.1900.0
-|-- libva.so.2 -> libva.so.2.1900.0
-|-- libva.so.2.1900.0
-`-- mfx
-    |-- libmfx_h264la_hw64.so
-    |-- libmfx_hevc_fei_hw64.so
-    |-- libmfx_hevcd_hw64.so
-    |-- libmfx_hevce_hw64.so
-    |-- libmfx_vp8d_hw64.so
-    |-- libmfx_vp9d_hw64.so
-    `-- libmfx_vp9e_hw64.so
+lib
+├── dri
+│   ├── i965_drv_video.so
+│   └── iHD_drv_video.so
+├── libdrm.so -> libdrm.so.2
+├── libdrm.so.2 -> libdrm.so.2.123.0
+├── libdrm.so.2.123.0
+├── libdrm_amdgpu.so -> libdrm_amdgpu.so.1
+├── libdrm_amdgpu.so.1 -> libdrm_amdgpu.so.1.123.0
+├── libdrm_amdgpu.so.1.123.0
+├── libdrm_intel.so -> libdrm_intel.so.1
+├── libdrm_intel.so.1 -> libdrm_intel.so.1.123.0
+├── libdrm_intel.so.1.123.0
+├── libdrm_nouveau.so -> libdrm_nouveau.so.2
+├── libdrm_nouveau.so.2 -> libdrm_nouveau.so.2.123.0
+├── libdrm_nouveau.so.2.123.0
+├── libdrm_radeon.so -> libdrm_radeon.so.1
+├── libdrm_radeon.so.1 -> libdrm_radeon.so.1.123.0
+├── libdrm_radeon.so.1.123.0
+├── libigdgmm.so -> libigdgmm.so.12
+├── libigdgmm.so.12 -> libigdgmm.so.12.5.0
+├── libigdgmm.so.12.5.0
+├── libigfxcmrt.so -> libigfxcmrt.so.7
+├── libigfxcmrt.so.7 -> libigfxcmrt.so.7.2.0
+├── libigfxcmrt.so.7.2.0
+├── libmfx-gen
+│   └── enctools.so
+├── libmfx-gen.so -> libmfx-gen.so.1.2
+├── libmfx-gen.so.1.2 -> libmfx-gen.so.1.2.12
+├── libmfx-gen.so.1.2.12
+├── libmfx.so -> libmfx.so.1
+├── libmfx.so.1 -> libmfx.so.1.35
+├── libmfx.so.1.35
+├── libmfxhw64.so -> libmfxhw64.so.1
+├── libmfxhw64.so.1 -> libmfxhw64.so.1.35
+├── libmfxhw64.so.1.35
+├── libpciaccess.so -> libpciaccess.so.0
+├── libpciaccess.so.0 -> libpciaccess.so.0.11.1
+├── libpciaccess.so.0.11.1
+├── libva-drm.so -> libva-drm.so.2.2200.0
+├── libva-drm.so.2 -> libva-drm.so.2.2200.0
+├── libva-drm.so.2.2200.0
+├── libva.so -> libva.so.2.2200.0
+├── libva.so.2 -> libva.so.2.2200.0
+├── libva.so.2.2200.0
+└── mfx
+    ├── libmfx_h264la_hw64.so
+    ├── libmfx_hevc_fei_hw64.so
+    ├── libmfx_hevcd_hw64.so
+    ├── libmfx_hevce_hw64.so
+    ├── libmfx_vp8d_hw64.so
+    ├── libmfx_vp9d_hw64.so
+    └── libmfx_vp9e_hw64.so
 
 3 directories, 49 files
 
@@ -289,6 +289,7 @@ $ sudo ./run.sh ffmpeg -y \
     -init_hw_device qsv:hw \
     -hwaccel qsv \
     -hwaccel_output_format qsv \
+    -extra_hw_frames 32 \
     -i https://github.com/bower-media-samples/big-buck-bunny-1080p-60fps-30s/raw/master/video.mp4 \
     -c:v h264_qsv \
     -f mp4 \
@@ -302,11 +303,12 @@ When running in Docker, you need to mount the DRI device.
 sample:
 ```bash
 $ sudo docker run --rm -it --device=/dev/dri -v `pwd`:/workdir \
-    akashisn/ffmpeg:6.0 -y \
+    akashisn/ffmpeg:7.0.2 -y \
       -loglevel verbose \
       -init_hw_device qsv:hw \
       -hwaccel qsv \
       -hwaccel_output_format qsv \
+      -extra_hw_frames 32 \
       -i video.mp4 \
       -c:v h264_qsv \
       -f mp4 \
