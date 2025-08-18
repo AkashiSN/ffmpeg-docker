@@ -59,7 +59,7 @@ jobs:
     needs: [export]
     steps:
       - name: Download artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           path: /tmp/artifact
 
