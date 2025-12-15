@@ -4,10 +4,12 @@ on:
   push:
     paths:
       - 'Dockerfile'
-      - 'scripts/base.sh'
-      - 'scripts/build-library.sh'
+      - 'scripts/common/**.sh'
+      - 'scripts/linux/**.sh'
+      - 'scripts/windows/**.sh'
       - '.github/workflows/ffmpeg-library-build.yml'
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   build:

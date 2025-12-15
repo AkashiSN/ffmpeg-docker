@@ -4,8 +4,9 @@ on:
   push:
     paths:
       - 'Dockerfile'
-      - 'scripts/base.sh'
-      - 'scripts/build-ffmpeg.sh'
+      - 'scripts/common/**.sh'
+      - 'scripts/linux/**.sh'
+      - 'scripts/windows/**.sh'
       - '.github/workflows/ffmpeg.yml'
     branches: [main]
   workflow_run:
@@ -13,6 +14,7 @@ on:
     branches: [main]
     types:
       - completed
+  workflow_dispatch:
 
 jobs:
   build:

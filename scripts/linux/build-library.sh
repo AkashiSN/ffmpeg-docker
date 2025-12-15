@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source ./base.sh
+source ./linux/base.sh
 mkdir -p ${RUNTIME_LIB_DIR}
 
 
@@ -122,19 +122,17 @@ do_cmake "-DENABLE_SHARED=0 -DENABLE_APPS=0 -DENABLE_CXX_DEPS=1 -DUSE_STATIC_LIB
 do_make_and_make_install
 FFMPEG_CONFIGURE_OPTIONS+=("--enable-libsrt")
 
-if [ "${TARGET_OS}" = "Linux" ]; then
-  # Build libpciaccess
-  LIBPCIACCESS_REPO="https://gitlab.freedesktop.org/xorg/lib/libpciaccess.git"
-  LIBPCIACCESS_TAG_PREFIX="libpciaccess-"
-  LIBPCIACCESS_VERSION="0.18.1" # get_latest_tag ${LIBPCIACCESS_REPO} ${LIBPCIACCESS_TAG_PREFIX}
-  git_clone ${LIBPCIACCESS_REPO} ${LIBPCIACCESS_TAG_PREFIX}${LIBPCIACCESS_VERSION} ${LIBPCIACCESS_VERSION}
-  mkcd build
-  do_meson "-Dzlib=enabled" ../
-  do_ninja_and_ninja_install
-  gen_implib ${PREFIX}/lib/{libpciaccess.so.0,libpciaccess.a}
-  cp_archive ${PREFIX}/lib/libpciaccess.so* ${RUNTIME_LIB_DIR}
-  rm ${PREFIX}/lib/libpciaccess.so*
-fi
+# Build libpciaccess (Linux only)
+LIBPCIACCESS_REPO="https://gitlab.freedesktop.org/xorg/lib/libpciaccess.git"
+LIBPCIACCESS_TAG_PREFIX="libpciaccess-"
+LIBPCIACCESS_VERSION="0.18.1" # get_latest_tag ${LIBPCIACCESS_REPO} ${LIBPCIACCESS_TAG_PREFIX}
+git_clone ${LIBPCIACCESS_REPO} ${LIBPCIACCESS_TAG_PREFIX}${LIBPCIACCESS_VERSION} ${LIBPCIACCESS_VERSION}
+mkcd build
+do_meson "-Dzlib=enabled" ../
+do_ninja_and_ninja_install
+gen_implib ${PREFIX}/lib/{libpciaccess.so.0,libpciaccess.a}
+cp_archive ${PREFIX}/lib/libpciaccess.so* ${RUNTIME_LIB_DIR}
+rm ${PREFIX}/lib/libpciaccess.so*
 
 
 #
@@ -185,14 +183,8 @@ LIBVPX_REPO="https://chromium.googlesource.com/webm/libvpx.git"
 LIBVPX_TAG_PREFIX="v"
 LIBVPX_VERSION="1.14.1" # get_latest_tag ${LIBVPX_REPO} ${LIBVPX_TAG_PREFIX}
 git_clone ${LIBVPX_REPO} ${LIBVPX_TAG_PREFIX}${LIBVPX_VERSION}
-if [ "${TARGET_OS}" = "Windows" ]; then
-  CROSS=${CROSS_PREFIX} ./configure --prefix="${PREFIX}" --target=x86_64-win64-gcc --disable-shared \
-                          --enable-static --enable-pic --disable-examples --disable-tools --disable-docs \
-                          --disable-unit-tests --enable-vp9-highbitdepth --as=yasm
-else
-  ./configure --prefix="${PREFIX}" --disable-shared --enable-static --enable-pic --disable-examples \
-    --disable-tools --disable-docs --disable-unit-tests --enable-vp9-highbitdepth --as=yasm
-fi
+./configure --prefix="${PREFIX}" --disable-shared --enable-static --enable-pic --disable-examples \
+  --disable-tools --disable-docs --disable-unit-tests --enable-vp9-highbitdepth --as=yasm
 do_make_and_make_install
 FFMPEG_CONFIGURE_OPTIONS+=("--enable-libvpx")
 
@@ -253,11 +245,7 @@ VMAF_TAG_PREFIX="v"
 VMAF_VERSION="2.3.1" # get_latest_tag ${VMAF_REPO} ${VMAF_TAG_PREFIX}
 git_clone ${VMAF_REPO} ${VMAF_TAG_PREFIX}${VMAF_VERSION}
 mkcd build
-if [ "${TARGET_OS}" = "Windows" ]; then
-  do_meson "--default-library=static -Denable_tests=false -Denable_docs=false --cross-file=${WORKDIR}/${BUILD_TARGET}.txt" ../libvmaf
-else
-  do_meson "--default-library=static -Denable_tests=false -Denable_docs=false" ../libvmaf
-fi
+do_meson "--default-library=static -Denable_tests=false -Denable_docs=false" ../libvmaf
 do_ninja_and_ninja_install
 FFMPEG_CONFIGURE_OPTIONS+=("--enable-libvmaf")
 
@@ -272,11 +260,7 @@ OPUS_TAG_PREFIX="v"
 OPUS_VERSION="1.5.2" # get_latest_tag ${OPUS_REPO} ${OPUS_TAG_PREFIX}
 git_clone ${OPUS_REPO} ${OPUS_TAG_PREFIX}${OPUS_VERSION}
 mkcd build
-if [ "${TARGET_OS}" = "Windows" ]; then
-  do_cmake "-DBUILD_SHARED_LIBS=0 -DBUILD_TESTING=0 -DOPUS_STACK_PROTECTOR=0 -DOPUS_FORTIFY_SOURCE=0" ..
-else
-  do_cmake "-DBUILD_SHARED_LIBS=0 -DBUILD_TESTING=0" ..
-fi
+do_cmake "-DBUILD_SHARED_LIBS=0 -DBUILD_TESTING=0" ..
 do_make_and_make_install
 FFMPEG_CONFIGURE_OPTIONS+=("--enable-libopus")
 
@@ -330,9 +314,6 @@ git_clone "https://gitlab.freedesktop.org/freetype/freetype.git" ${FREETYPE_VERS
 mkcd build
 do_cmake "-DBUILD_SHARED_LIBS=0 -DFT_REQUIRE_ZLIB=1 -DFT_REQUIRE_BZIP2=1 -DFT_REQUIRE_PNG=1 -DFT_DISABLE_HARFBUZZ=1" ..
 do_make_and_make_install
-if [ "${TARGET_OS}" = "Windows" ]; then
-  sed -i -e "s%Libs: \(.*\)%Libs: \1 -lpthread%g" ${PKG_CONFIG_PATH}/freetype2.pc
-fi
 FFMPEG_CONFIGURE_OPTIONS+=("--enable-libfreetype")
 
 # Build fribidi
@@ -363,11 +344,7 @@ FFMPEG_CONFIGURE_OPTIONS+=("--enable-libfontconfig")
 HARFBUZZ_VERSION="8.1.1"
 git_clone "https://github.com/harfbuzz/harfbuzz.git" ${HARFBUZZ_VERSION}
 mkcd build
-if [ "${TARGET_OS}" = "Windows" ]; then
-  do_meson "--default-library=static -Dfreetype=enabled -Dicu=disabled -Dtests=disabled --cross-file=${WORKDIR}/${BUILD_TARGET}.txt" ..
-else
-  do_meson "--default-library=static -Dfreetype=enabled -Dicu=disabled -Dtests=disabled" ..
-fi
+do_meson "--default-library=static -Dfreetype=enabled -Dicu=disabled -Dtests=disabled" ..
 do_ninja_and_ninja_install
 
 # Build libass
@@ -375,9 +352,6 @@ LIBASS_VERSION="0.17.1"
 git_clone "https://github.com/libass/libass.git" ${LIBASS_VERSION}
 do_configure "--disable-shared --enable-static"
 do_make_and_make_install
-if [ "${TARGET_OS}" = "Windows" ]; then
-  sed -i -e "s%Libs.private: \(.*\)%Libs.private: \1 -lgdi32 -ldwrite%g" ${PKG_CONFIG_PATH}/libass.pc
-fi
 FFMPEG_CONFIGURE_OPTIONS+=("--enable-libass")
 
 # Build libaribb24
@@ -414,107 +388,105 @@ git_clone ${NVCODEC_REPO} ${NVCODEC_TAG_PREFIX}${NVCODEC_VERSION}
 make install "PREFIX=${PREFIX}"
 FFMPEG_CONFIGURE_OPTIONS+=("--enable-cuda-llvm" "--enable-ffnvcodec" "--enable-cuvid" "--enable-nvdec" "--enable-nvenc")
 
-if [ "${TARGET_OS}" = "Linux" ]; then
-  # Build libdrm
-  LIBDRM_REPO="https://gitlab.freedesktop.org/mesa/drm.git"
-  LIBDRM_TAG_PREFIX="libdrm-"
-  LIBDRM_VERSION="2.4.123" # get_latest_tag ${LIBDRM_REPO} ${LIBDRM_TAG_PREFIX}
-  git_clone ${LIBDRM_REPO} ${LIBDRM_TAG_PREFIX}${LIBDRM_VERSION} ${LIBDRM_VERSION}
-  mkcd build
-  do_meson "-Ddefault_library=shared -Dudev=false -Dcairo-tests=disabled -Dvalgrind=disabled -Dexynos=disabled
-            -Dfreedreno=disabled -Domap=disabled -Detnaviv=disabled -Dintel=enabled -Dnouveau=enabled
-            -Dradeon=enabled -Damdgpu=enabled" ..
-  do_ninja_and_ninja_install
-  for pc in ${PKG_CONFIG_PATH}/libdrm*.pc; do
-    sed -i -e "s%Libs: \(.*\)%Libs: \1 -ldl%g" ${pc}
-  done
-  gen_implib ${PREFIX}/lib/{libdrm.so.2,libdrm.a}
-  gen_implib ${PREFIX}/lib/{libdrm_intel.so.1,libdrm_intel.a}
-  gen_implib ${PREFIX}/lib/{libdrm_amdgpu.so.1,libdrm_amdgpu.a}
-  gen_implib ${PREFIX}/lib/{libdrm_nouveau.so.2,libdrm_nouveau.a}
-  gen_implib ${PREFIX}/lib/{libdrm_radeon.so.1,libdrm_radeon.a}
-  cp_archive ${PREFIX}/lib/libdrm*.so* ${RUNTIME_LIB_DIR}
-  rm ${PREFIX}/lib/libdrm*.so*
-  FFMPEG_CONFIGURE_OPTIONS+=("--enable-libdrm")
+# Build libdrm (Linux only)
+LIBDRM_REPO="https://gitlab.freedesktop.org/mesa/drm.git"
+LIBDRM_TAG_PREFIX="libdrm-"
+LIBDRM_VERSION="2.4.123" # get_latest_tag ${LIBDRM_REPO} ${LIBDRM_TAG_PREFIX}
+git_clone ${LIBDRM_REPO} ${LIBDRM_TAG_PREFIX}${LIBDRM_VERSION} ${LIBDRM_VERSION}
+mkcd build
+do_meson "-Ddefault_library=shared -Dudev=false -Dcairo-tests=disabled -Dvalgrind=disabled -Dexynos=disabled
+          -Dfreedreno=disabled -Domap=disabled -Detnaviv=disabled -Dintel=enabled -Dnouveau=enabled
+          -Dradeon=enabled -Damdgpu=enabled" ..
+do_ninja_and_ninja_install
+for pc in ${PKG_CONFIG_PATH}/libdrm*.pc; do
+  sed -i -e "s%Libs: \(.*\)%Libs: \1 -ldl%g" ${pc}
+done
+gen_implib ${PREFIX}/lib/{libdrm.so.2,libdrm.a}
+gen_implib ${PREFIX}/lib/{libdrm_intel.so.1,libdrm_intel.a}
+gen_implib ${PREFIX}/lib/{libdrm_amdgpu.so.1,libdrm_amdgpu.a}
+gen_implib ${PREFIX}/lib/{libdrm_nouveau.so.2,libdrm_nouveau.a}
+gen_implib ${PREFIX}/lib/{libdrm_radeon.so.1,libdrm_radeon.a}
+cp_archive ${PREFIX}/lib/libdrm*.so* ${RUNTIME_LIB_DIR}
+rm ${PREFIX}/lib/libdrm*.so*
+FFMPEG_CONFIGURE_OPTIONS+=("--enable-libdrm")
 
-  # Build libva
-  LIBVA_REPO="https://github.com/intel/libva.git"
-  LIBVA_VERSION="2.22.0" # get_latest_tag ${LIBVA_REPO}
-  git_clone ${LIBVA_REPO} ${LIBVA_VERSION}
-  do_configure "--enable-shared --disable-static --with-pic --disable-docs --enable-drm
-                --disable-x11 --disable-glx --disable-wayland --sysconfdir=/etc"
-  do_make_and_make_install
-  gen_implib ${PREFIX}/lib/{libva.so.2,libva.a}
-  gen_implib ${PREFIX}/lib/{libva-drm.so.2,libva-drm.a}
-  cp_archive ${PREFIX}/lib/libva{,-drm}.so* ${RUNTIME_LIB_DIR}
-  rm ${PREFIX}/lib/libva{,-drm}{.so*,.la}
-  FFMPEG_CONFIGURE_OPTIONS+=("--enable-vaapi")
+# Build libva (Linux only)
+LIBVA_REPO="https://github.com/intel/libva.git"
+LIBVA_VERSION="2.22.0" # get_latest_tag ${LIBVA_REPO}
+git_clone ${LIBVA_REPO} ${LIBVA_VERSION}
+do_configure "--enable-shared --disable-static --with-pic --disable-docs --enable-drm
+              --disable-x11 --disable-glx --disable-wayland --sysconfdir=/etc"
+do_make_and_make_install
+gen_implib ${PREFIX}/lib/{libva.so.2,libva.a}
+gen_implib ${PREFIX}/lib/{libva-drm.so.2,libva-drm.a}
+cp_archive ${PREFIX}/lib/libva{,-drm}.so* ${RUNTIME_LIB_DIR}
+rm ${PREFIX}/lib/libva{,-drm}{.so*,.la}
+FFMPEG_CONFIGURE_OPTIONS+=("--enable-vaapi")
 
-  # Build libva-utils
-  LIBVA_UTILS_REPO="https://github.com/intel/libva-utils.git"
-  LIBVA_UTILS_VERSION="2.22.0" # get_latest_tag ${LIBVA_UTILS_REPO}
-  git_clone ${LIBVA_UTILS_REPO} ${LIBVA_UTILS_VERSION}
-  do_configure "--with-pic --enable-drm --disable-x11"
-  do_make_and_make_install
-  cp_archive ${PREFIX}/bin/vainfo ${ARTIFACT_DIR}
+# Build libva-utils (Linux only)
+LIBVA_UTILS_REPO="https://github.com/intel/libva-utils.git"
+LIBVA_UTILS_VERSION="2.22.0" # get_latest_tag ${LIBVA_UTILS_REPO}
+git_clone ${LIBVA_UTILS_REPO} ${LIBVA_UTILS_VERSION}
+do_configure "--with-pic --enable-drm --disable-x11"
+do_make_and_make_install
+cp_archive ${PREFIX}/bin/vainfo ${ARTIFACT_DIR}
 
-  # Build gmmlib
-  GMMLIB_REPO="https://github.com/intel/gmmlib.git"
-  GMMLIB_TAG_PREFIX="intel-gmmlib-"
-  GMMLIB_VERSION="22.5.2" # get_latest_tag ${GMMLIB_REPO} ${GMMLIB_TAG_PREFIX}
-  git_clone ${GMMLIB_REPO} ${GMMLIB_TAG_PREFIX}${GMMLIB_VERSION} ${GMMLIB_VERSION}
-  mkcd build
-  do_cmake ..
-  do_make_and_make_install
-  cp_archive ${PREFIX}/lib/libigdgmm.so* ${RUNTIME_LIB_DIR}
+# Build gmmlib (Linux only)
+GMMLIB_REPO="https://github.com/intel/gmmlib.git"
+GMMLIB_TAG_PREFIX="intel-gmmlib-"
+GMMLIB_VERSION="22.5.2" # get_latest_tag ${GMMLIB_REPO} ${GMMLIB_TAG_PREFIX}
+git_clone ${GMMLIB_REPO} ${GMMLIB_TAG_PREFIX}${GMMLIB_VERSION} ${GMMLIB_VERSION}
+mkcd build
+do_cmake ..
+do_make_and_make_install
+cp_archive ${PREFIX}/lib/libigdgmm.so* ${RUNTIME_LIB_DIR}
 
-  # Build media-driver
-  MEDIA_DRIVER_REPO="https://github.com/intel/media-driver.git"
-  MEDIA_DRIVER_TAG_PREFIX="intel-media-"
-  MEDIA_DRIVER_VERSION="24.3.3" # get_latest_tag ${MEDIA_DRIVER_REPO} ${MEDIA_DRIVER_TAG_PREFIX}2
-  git_clone ${MEDIA_DRIVER_REPO} ${MEDIA_DRIVER_TAG_PREFIX}${MEDIA_DRIVER_VERSION} ${MEDIA_DRIVER_VERSION}
-  mkcd build
-  do_cmake "-DENABLE_KERNELS=1 -DENABLE_NONFREE_KERNELS=1 -DENABLE_PRODUCTION_KMD=1" ..
-  do_make_and_make_install
-  cp_archive ${PREFIX}/lib/dri ${RUNTIME_LIB_DIR}
-  cp_archive ${PREFIX}/lib/libigfxcmrt.so* ${RUNTIME_LIB_DIR}
+# Build media-driver (Linux only)
+MEDIA_DRIVER_REPO="https://github.com/intel/media-driver.git"
+MEDIA_DRIVER_TAG_PREFIX="intel-media-"
+MEDIA_DRIVER_VERSION="24.3.3" # get_latest_tag ${MEDIA_DRIVER_REPO} ${MEDIA_DRIVER_TAG_PREFIX}2
+git_clone ${MEDIA_DRIVER_REPO} ${MEDIA_DRIVER_TAG_PREFIX}${MEDIA_DRIVER_VERSION} ${MEDIA_DRIVER_VERSION}
+mkcd build
+do_cmake "-DENABLE_KERNELS=1 -DENABLE_NONFREE_KERNELS=1 -DENABLE_PRODUCTION_KMD=1" ..
+do_make_and_make_install
+cp_archive ${PREFIX}/lib/dri ${RUNTIME_LIB_DIR}
+cp_archive ${PREFIX}/lib/libigfxcmrt.so* ${RUNTIME_LIB_DIR}
 
-  # Build intel-vaapi-driver
-  INTEL_VAAPI_DRIVER_REPO="https://github.com/intel/intel-vaapi-driver.git"
-  INTEL_VAAPI_DRIVER_VERSION="2.4.1" # get_latest_tag ${INTEL_VAAPI_DRIVER_REPO}
-  git_clone ${INTEL_VAAPI_DRIVER_REPO} ${INTEL_VAAPI_DRIVER_VERSION}
-  mkcd build
-  do_meson "-Ddriverdir=${PREFIX}/lib/dri" ..
-  do_ninja_and_ninja_install
-  do_strip ${PREFIX}/lib/dri "*.so"
-  cp_archive ${PREFIX}/lib/dri ${RUNTIME_LIB_DIR}
+# Build intel-vaapi-driver (Linux only)
+INTEL_VAAPI_DRIVER_REPO="https://github.com/intel/intel-vaapi-driver.git"
+INTEL_VAAPI_DRIVER_VERSION="2.4.1" # get_latest_tag ${INTEL_VAAPI_DRIVER_REPO}
+git_clone ${INTEL_VAAPI_DRIVER_REPO} ${INTEL_VAAPI_DRIVER_VERSION}
+mkcd build
+do_meson "-Ddriverdir=${PREFIX}/lib/dri" ..
+do_ninja_and_ninja_install
+do_strip ${PREFIX}/lib/dri "*.so"
+cp_archive ${PREFIX}/lib/dri ${RUNTIME_LIB_DIR}
 
-  # Build oneVPL gpu runtime
-  ONEVPL_INTEL_GPU_REPO="https://github.com/oneapi-src/oneVPL-intel-gpu.git"
-  ONEVPL_INTEL_GPU_TAG_PREFIX="intel-onevpl-"
-  ONEVPL_INTEL_GPU_VERSION="24.3.3" # get_latest_tag ${ONEVPL_INTEL_GPU_REPO} ${ONEVPL_INTEL_GPU_TAG_PREFIX}
-  git_clone ${ONEVPL_INTEL_GPU_REPO} ${ONEVPL_INTEL_GPU_TAG_PREFIX}${ONEVPL_INTEL_GPU_VERSION} ${ONEVPL_INTEL_GPU_VERSION}
-  mkcd build
-  do_cmake "-DBUILD_RUNTIME=1 -DBUILD_TESTS=0" ..
-  do_make_and_make_install
-  cp_archive ${PREFIX}/lib/libmfx-gen ${RUNTIME_LIB_DIR}
-  cp_archive ${PREFIX}/lib/libmfx-gen.so* ${RUNTIME_LIB_DIR}
+# Build oneVPL gpu runtime (Linux only)
+ONEVPL_INTEL_GPU_REPO="https://github.com/oneapi-src/oneVPL-intel-gpu.git"
+ONEVPL_INTEL_GPU_TAG_PREFIX="intel-onevpl-"
+ONEVPL_INTEL_GPU_VERSION="24.3.3" # get_latest_tag ${ONEVPL_INTEL_GPU_REPO} ${ONEVPL_INTEL_GPU_TAG_PREFIX}
+git_clone ${ONEVPL_INTEL_GPU_REPO} ${ONEVPL_INTEL_GPU_TAG_PREFIX}${ONEVPL_INTEL_GPU_VERSION} ${ONEVPL_INTEL_GPU_VERSION}
+mkcd build
+do_cmake "-DBUILD_RUNTIME=1 -DBUILD_TESTS=0" ..
+do_make_and_make_install
+cp_archive ${PREFIX}/lib/libmfx-gen ${RUNTIME_LIB_DIR}
+cp_archive ${PREFIX}/lib/libmfx-gen.so* ${RUNTIME_LIB_DIR}
 
-  # Build MediaSDK
-  MEDIASDK_VERSION="23.2.2"
-  MEDIASDK_TAG="intel-mediasdk-${MEDIASDK_VERSION}"
-  git_clone "https://github.com/Intel-Media-SDK/MediaSDK.git" ${MEDIASDK_TAG} ${MEDIASDK_VERSION}
-  mkcd build
-  do_cmake ..
-  do_make_and_make_install
-  gen_implib ${PREFIX}/lib/{libmfx.so.1,libmfx.a}
-  cp_archive ${PREFIX}/lib/mfx ${RUNTIME_LIB_DIR}
-  cp_archive ${PREFIX}/lib/libmfx.so* ${RUNTIME_LIB_DIR}
-  cp_archive ${PREFIX}/lib/libmfxhw64.so* ${RUNTIME_LIB_DIR}
-  rm ${PREFIX}/lib/libmfx.so*
-fi
+# Build MediaSDK (Linux only)
+MEDIASDK_VERSION="23.2.2"
+MEDIASDK_TAG="intel-mediasdk-${MEDIASDK_VERSION}"
+git_clone "https://github.com/Intel-Media-SDK/MediaSDK.git" ${MEDIASDK_TAG} ${MEDIASDK_VERSION}
+mkcd build
+do_cmake ..
+do_make_and_make_install
+gen_implib ${PREFIX}/lib/{libmfx.so.1,libmfx.a}
+cp_archive ${PREFIX}/lib/mfx ${RUNTIME_LIB_DIR}
+cp_archive ${PREFIX}/lib/libmfx.so* ${RUNTIME_LIB_DIR}
+cp_archive ${PREFIX}/lib/libmfxhw64.so* ${RUNTIME_LIB_DIR}
+rm ${PREFIX}/lib/libmfx.so*
 
-# Build libvpl
+# Build libvpl (Common)
 VPL_REPO="https://github.com/intel/libvpl.git"
 VPL_TAG_PREFIX="v"
 VPL_VERSION="2023.4.0" # get_latest_tag ${VPL_REPO} ${VPL_TAG_PREFIX}
@@ -524,16 +496,6 @@ do_cmake "-DBUILD_DISPATCHER=1 -DBUILD_DEV=1 -DBUILD_PREVIEW=0 -DBUILD_TOOLS=0
           -DBUILD_TOOLS_ONEVPL_EXPERIMENTAL=0 -DINSTALL_EXAMPLE_CODE=0 -DBUILD_SHARED_LIBS=0 -DBUILD_TESTS=0" ..
 do_make_and_make_install
 FFMPEG_CONFIGURE_OPTIONS+=("--enable-libvpl")
-
-if [ "${TARGET_OS}" = "Windows" ]; then
-  # Build MFX_dispatch
-  git_clone "https://github.com/lu-zero/mfx_dispatch.git"
-  do_configure "--disable-shared --enable-static"
-  do_make_and_make_install
-
-  # Other hwaccel
-  FFMPEG_CONFIGURE_OPTIONS+=("--enable-d3d11va" "--enable-dxva2")
-fi
 
 
 #

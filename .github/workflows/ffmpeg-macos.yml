@@ -1,0 +1,53 @@
+name: ffmpeg-macos
+
+on:
+  push:
+    paths:
+      - './scripts/common/**.sh'
+      - './scripts/macos/**.sh'
+      - '.github/workflows/ffmpeg-macos.yml'
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-macos:
+    runs-on: macos-26-arm64
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set executable permission
+        run: chmod +x scripts/macos/build-plane-arm64.sh
+
+      - name: Build FFmpeg
+        run: ./scripts/macos/build-plane-arm64.sh
+
+      - name: Verify build
+        run: |
+          /tmp/ffmpeg-build/local/bin/ffmpeg -version
+          /tmp/ffmpeg-build/local/bin/ffprobe -version
+
+      - name: Upload FFmpeg binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: ffmpeg-macos-arm64
+          path: |
+            /tmp/ffmpeg-build/local/bin/ffmpeg
+            /tmp/ffmpeg-build/local/bin/ffprobe
+          retention-days: 30
+
+      - name: Create build info
+        run: |
+          echo "Build Date: $(date)" > /tmp/ffmpeg-build/local/bin/build-info.txt
+          echo "Runner: ${{ runner.os }}-${{ runner.arch }}" >> /tmp/ffmpeg-build/local/bin/build-info.txt
+          echo "Commit: ${{ github.sha }}" >> /tmp/ffmpeg-build/local/bin/build-info.txt
+          /tmp/ffmpeg-build/local/bin/ffmpeg -version >> /tmp/ffmpeg-build/local/bin/build-info.txt
+
+      - name: Upload build info
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-info
+          path: /tmp/ffmpeg-build/local/bin/build-info.txt
+          retention-days: 30
