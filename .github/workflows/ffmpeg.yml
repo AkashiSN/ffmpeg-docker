@@ -4,8 +4,9 @@ on:
   push:
     paths:
       - 'Dockerfile'
-      - 'scripts/base.sh'
-      - 'scripts/build-ffmpeg.sh'
+      - 'scripts/common/**.sh'
+      - 'scripts/linux/**.sh'
+      - 'scripts/windows/**.sh'
       - '.github/workflows/ffmpeg.yml'
     branches: [main]
   workflow_run:
@@ -23,9 +24,9 @@ jobs:
         ffmpeg: ["7.0.2", "6.1.2", "5.1.6", "4.4.5"]
         flavor: [linux, windows]
     env:
-      target:
-      image_name:
-      image_tag:
+      target: ""
+      image_name: ""
+      image_tag: ""
     steps:
       - name: Checkout
         uses: actions/checkout@v6

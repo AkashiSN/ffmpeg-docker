@@ -15,8 +15,8 @@ jobs:
         ffmpeg: ["7.0.2", "6.1.2", "5.1.6", "4.4.5"]
         flavor: [linux, windows]
     env:
-      target_os:
-      build_tag:
+      target_os: ""
+      build_tag: ""
     steps:
       - name: Checkout
         uses: actions/checkout@v6

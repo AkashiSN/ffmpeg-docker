@@ -4,6 +4,8 @@ on:
   push:
     paths:
       - 'Dockerfile'
+      - 'scripts/common/**.sh'
+      - 'scripts/linux/**.sh'
       - '.github/workflows/vainfo.yml'
     branches: [main]
   workflow_run:

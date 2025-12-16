@@ -4,8 +4,9 @@ on:
   push:
     paths:
       - 'Dockerfile'
-      - 'scripts/base.sh'
-      - 'scripts/build-library.sh'
+      - 'scripts/common/**.sh'
+      - 'scripts/linux/**.sh'
+      - 'scripts/windows/**.sh'
       - '.github/workflows/ffmpeg-library-build.yml'
     branches: [main]
 
@@ -17,7 +18,7 @@ jobs:
       matrix:
         os: [linux, windows]
     env:
-      target_os:
+      target_os: ""
     steps:
       - name: Checkout
         uses: actions/checkout@v6
