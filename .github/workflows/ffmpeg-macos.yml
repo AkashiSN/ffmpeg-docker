@@ -7,7 +7,6 @@ on:
       - './scripts/macos/**.sh'
       - '.github/workflows/ffmpeg-macos.yml'
     branches: [main]
-  workflow_dispatch:
 
 jobs:
   build-macos:
