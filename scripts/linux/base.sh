@@ -22,7 +22,7 @@ CROSS_PREFIX=
 #
 
 WORKDIR="${WORKDIR:-$(mktemp -d)}"
-PREFIX="${PREFIX:-"$WORKDIR/local"}"
+PREFIX="${PREFIX:-"/usr/local"}"
 ARTIFACT_DIR="${ARTIFACT_DIR:-"/tmp/dist"}"
 RUNTIME_LIB_DIR="${RUNTIME_LIB_DIR:-"$ARTIFACT_DIR/runtime"}"
 

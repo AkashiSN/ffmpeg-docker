@@ -29,8 +29,9 @@ echo "This structure allows for future library additions."
 #------------------------------------------------------------------------------
 
 # Write library options to files for FFmpeg configure
-echo -n "${FFMPEG_EXTRA_LIBS[@]}" > ${PREFIX}/ffmpeg_extra_libs
+# echo -n "${FFMPEG_EXTRA_LIBS[@]}" > ${PREFIX}/ffmpeg_extra_libs
 # echo -n "${FFMPEG_CONFIGURE_OPTIONS[@]}" > ${PREFIX}/ffmpeg_configure_options
+touch ${PREFIX}/ffmpeg_extra_libs
 touch ${PREFIX}/ffmpeg_configure_options
 
 
@@ -45,7 +46,6 @@ git_clone "https://github.com/FFmpeg/FFmpeg.git" n${FFMPEG_VERSION}
 # Configure for macOS
 ./configure `cat ${PREFIX}/ffmpeg_configure_options` \
             --arch=${HOST_ARCH} \
-            --cc=/usr/bin/clang \
             --disable-autodetect \
             --disable-debug \
             --disable-doc \
@@ -67,9 +67,9 @@ do_strip ${PREFIX}/bin "ff*"
 #==============================================================================
 
 # Copy library files
-cp_archive ${PREFIX}/lib/*{.a,.la} ${ARTIFACT_DIR}
-cp_archive ${PREFIX}/lib/pkgconfig ${ARTIFACT_DIR}
-cp_archive ${PREFIX}/include ${ARTIFACT_DIR}
+# cp_archive ${PREFIX}/lib/*{.a,.la} ${ARTIFACT_DIR}
+# cp_archive ${PREFIX}/lib/pkgconfig ${ARTIFACT_DIR}
+# cp_archive ${PREFIX}/include ${ARTIFACT_DIR}
 
 # Copy FFmpeg build options (for reference)
 cp_archive ${PREFIX}/ffmpeg_extra_libs ${ARTIFACT_DIR}
