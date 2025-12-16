@@ -48,7 +48,7 @@ jobs:
           tar acvf /tmp/ffmpeg-${{ matrix.ffmpeg }}-${{ env.target_os }}.tar.xz -C /tmp ffmpeg-${{ matrix.ffmpeg }}-${{ env.target_os }}
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ffmpeg-${{ matrix.ffmpeg }}-${{ env.target_os }}
           path: /tmp/ffmpeg-${{ matrix.ffmpeg }}-${{ env.target_os }}.tar.xz
