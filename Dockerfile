@@ -70,48 +70,20 @@ ADD ./scripts/common/ ./common/
 
 
 #
-# ffmpeg library build stage
-#
-FROM build-env AS ffmpeg-library-build
-
-# Environment
-ARG TARGET_OS="Linux"
-ENV TARGET_OS=${TARGET_OS} \
-    RUNTIME_LIB_DIR=${ARTIFACT_DIR}${RUNTIME_LIB_DIR}
-
-# Copy build scripts
-ADD ./scripts/linux/ ./linux/
-ADD ./scripts/windows/ ./windows/
-
-# Run build
-RUN bash ./${TARGET_OS,,}/build-library.sh
-
-
-#
-# final ffmpeg-library image
-#
-FROM scratch AS ffmpeg-library
-
-COPY --from=ffmpeg-library-build /dist /
-
-
-#
 # ffmpeg linux binary build stage
 #
 FROM build-env AS ffmpeg-linux-build
 
 # Environment
-ENV TARGET_OS="Linux"
+ENV TARGET_OS="Linux" \
+    RUNTIME_LIB_DIR=${ARTIFACT_DIR}${RUNTIME_LIB_DIR}
 
 # Copy build scripts
 ADD ./scripts/common/ ./common/
 ADD ./scripts/linux/ ./linux/
 
-# Copy ffmpeg-library image
-COPY --from=ghcr.io/akashisn/ffmpeg-library:linux / /
-
-# Build ffmpeg
-RUN bash ./${TARGET_OS,,}/build-ffmpeg.sh
+# Build libraries and ffmpeg
+RUN bash ./linux/build.sh
 
 # Copy run.sh
 COPY --chmod=755 <<'EOT' ${ARTIFACT_DIR}/${PREFIX}/run.sh
@@ -154,17 +126,15 @@ CMD [ "--help" ]
 FROM build-env AS ffmpeg-windows-build
 
 # Environment
-ENV TARGET_OS="Windows"
+ENV TARGET_OS="Windows" \
+    RUNTIME_LIB_DIR=${ARTIFACT_DIR}${RUNTIME_LIB_DIR}
 
 # Copy build scripts
 ADD ./scripts/common/ ./common/
 ADD ./scripts/windows/ ./windows/
 
-# Copy ffmpeg-library image
-COPY --from=ghcr.io/akashisn/ffmpeg-library:windows / /
-
-# Build ffmpeg
-RUN bash ./${TARGET_OS,,}/build-ffmpeg.sh
+# Build libraries and ffmpeg
+RUN bash ./windows/build.sh
 
 
 #

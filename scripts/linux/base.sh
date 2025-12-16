@@ -21,7 +21,7 @@ CROSS_PREFIX=
 # Environment Variables
 #
 
-WORKDIR="${WORKDIR:-$(mktemp)}"
+WORKDIR="${WORKDIR:-$(mktemp -d)}"
 PREFIX="${PREFIX:-"$WORKDIR/local"}"
 ARTIFACT_DIR="${ARTIFACT_DIR:-"/tmp/dist"}"
 RUNTIME_LIB_DIR="${RUNTIME_LIB_DIR:-"$ARTIFACT_DIR/runtime"}"

@@ -13,11 +13,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build FFmpeg library
-        run: ./scripts/macos/build-library.sh
-
-      - name: Build FFmpeg
-        run: ./scripts/macos/build-ffmpeg.sh
+      - name: Build FFmpeg with libraries
+        run: ./scripts/macos/build.sh
 
       - name: Verify build
         run: |
