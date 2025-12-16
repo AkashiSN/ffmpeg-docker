@@ -10,43 +10,43 @@ on:
 
 jobs:
   build-macos:
-    runs-on: macos-26-arm64
+    runs-on: macos-26
     timeout-minutes: 120
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set executable permission
-        run: chmod +x scripts/macos/build-plane-arm64.sh
+      - name: Build FFmpeg library
+        run: ./scripts/macos/build-library.sh
 
       - name: Build FFmpeg
-        run: ./scripts/macos/build-plane-arm64.sh
+        run: ./scripts/macos/build-ffmpeg.sh
 
       - name: Verify build
         run: |
-          /tmp/ffmpeg-build/local/bin/ffmpeg -version
-          /tmp/ffmpeg-build/local/bin/ffprobe -version
+          /tmp/dist/bin/ffmpeg -version
+          /tmp/dist/bin/ffprobe -version
 
       - name: Upload FFmpeg binaries
         uses: actions/upload-artifact@v4
         with:
           name: ffmpeg-macos-arm64
           path: |
-            /tmp/ffmpeg-build/local/bin/ffmpeg
-            /tmp/ffmpeg-build/local/bin/ffprobe
+            /tmp/dist/bin/ffmpeg
+            /tmp/dist/bin/ffprobe
           retention-days: 30
 
       - name: Create build info
         run: |
-          echo "Build Date: $(date)" > /tmp/ffmpeg-build/local/bin/build-info.txt
-          echo "Runner: ${{ runner.os }}-${{ runner.arch }}" >> /tmp/ffmpeg-build/local/bin/build-info.txt
-          echo "Commit: ${{ github.sha }}" >> /tmp/ffmpeg-build/local/bin/build-info.txt
-          /tmp/ffmpeg-build/local/bin/ffmpeg -version >> /tmp/ffmpeg-build/local/bin/build-info.txt
+          echo "Build Date: $(date)" > /tmp/dist/bin/build-info.txt
+          echo "Runner: ${{ runner.os }}-${{ runner.arch }}" >> /tmp/dist/bin/build-info.txt
+          echo "Commit: ${{ github.sha }}" >> /tmp/dist/bin/build-info.txt
+          /tmp/dist/bin/ffmpeg -version >> /tmp/dist/bin/build-info.txt
 
       - name: Upload build info
         uses: actions/upload-artifact@v4
         with:
           name: build-info
-          path: /tmp/ffmpeg-build/local/bin/build-info.txt
+          path: /tmp/dist/bin/build-info.txt
           retention-days: 30

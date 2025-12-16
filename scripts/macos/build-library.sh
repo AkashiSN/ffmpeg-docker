@@ -1,15 +1,7 @@
 #!/bin/bash
-set -euo pipefail
 
-#
-# macOS Library Build Script
-# 現在は空ですが、将来的にライブラリビルドを追加できる構造
-#
-
-# 環境変数の読み込み
-WORKDIR="${WORKDIR:-"/tmp/ffmpeg-build"}"
-LOCAL="${LOCAL:-"$WORKDIR/local"}"
-PREFIX="${PREFIX:-"${LOCAL}"}"
+source ./macos/base.sh
+mkdir -p ${RUNTIME_LIB_DIR}
 
 echo "macOS library build script"
 echo "Currently no additional libraries are built."
@@ -22,13 +14,14 @@ echo "This structure allows for future library additions."
 # - libvpx
 # など
 
-# FFMPEG_CONFIGURE_OPTIONS配列を初期化
-FFMPEG_CONFIGURE_OPTIONS=()
-FFMPEG_EXTRA_LIBS=()
+#
+# Finalize
+#
 
-# 設定を保存（将来的に使用）
-mkdir -p ${PREFIX}
-echo -n "${FFMPEG_EXTRA_LIBS[@]}" > ${PREFIX}/ffmpeg_extra_libs
-echo -n "${FFMPEG_CONFIGURE_OPTIONS[@]}" > ${PREFIX}/ffmpeg_configure_options
+cp_archive ${PREFIX}/lib/*{.a,.la} ${ARTIFACT_DIR}
+cp_archive ${PREFIX}/lib/pkgconfig ${ARTIFACT_DIR}
+cp_archive ${PREFIX}/include ${ARTIFACT_DIR}
+echo -n "${FFMPEG_EXTRA_LIBS[@]}" > ${ARTIFACT_DIR}/${PREFIX}/ffmpeg_extra_libs
+echo -n "${FFMPEG_CONFIGURE_OPTIONS[@]}" > ${ARTIFACT_DIR}/${PREFIX}/ffmpeg_configure_options
 
 echo "Library preparation completed."

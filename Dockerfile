@@ -105,7 +105,7 @@ ENV TARGET_OS="Linux"
 
 # Copy build scripts
 ADD ./scripts/common/ ./common/
-ADD ./scripts/${TARGET_OS,,}/ ./${TARGET_OS,,}/
+ADD ./scripts/linux/ ./linux/
 
 # Copy ffmpeg-library image
 COPY --from=ghcr.io/akashisn/ffmpeg-library:linux / /
@@ -158,7 +158,7 @@ ENV TARGET_OS="Windows"
 
 # Copy build scripts
 ADD ./scripts/common/ ./common/
-ADD ./scripts/${TARGET_OS,,}/ ./${TARGET_OS,,}/
+ADD ./scripts/windows/ ./windows/
 
 # Copy ffmpeg-library image
 COPY --from=ghcr.io/akashisn/ffmpeg-library:windows / /

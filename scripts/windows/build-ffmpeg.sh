@@ -1,10 +1,12 @@
 #!/bin/bash
 
 source ./windows/base.sh
+
+rm -r ${ARTIFACT_DIR}
 mkdir -p ${ARTIFACT_DIR}
 
 # Build ffmpeg
-FFMPEG_VERSION="${FFMPEG_VERSION:-"7.0.2"}"
+FFMPEG_VERSION="${FFMPEG_VERSION:-"8.0"}"
 git_clone "https://github.com/FFmpeg/FFmpeg.git" n${FFMPEG_VERSION}
 
 FFMPEG_LIBVPL_SUPPORT_VERSION="6.0"
