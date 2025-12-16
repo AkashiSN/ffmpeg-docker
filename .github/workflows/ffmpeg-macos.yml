@@ -13,6 +13,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Create /opt/ffmpeg
+        run: |
+          sudo mkdir -p /opt/ffmpeg
+          sudo chown runner /opt/ffmpeg
+
       - name: Build FFmpeg with libraries
         run: ./scripts/macos/build.sh
 
