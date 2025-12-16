@@ -8,9 +8,9 @@ mkdir -p ${RUNTIME_LIB_DIR}
 mkdir -p ${ARTIFACT_DIR}
 
 
-#
+#==============================================================================
 # Build Libraries
-#
+#==============================================================================
 
 echo "macOS library build script"
 echo "Currently no additional libraries are built."
@@ -24,9 +24,19 @@ echo "This structure allows for future library additions."
 # など
 
 
-#
+#------------------------------------------------------------------------------
+# Prepare FFmpeg Build Options
+#------------------------------------------------------------------------------
+
+# Write library options to files for FFmpeg configure
+echo -n "${FFMPEG_EXTRA_LIBS[@]}" > ${PREFIX}/ffmpeg_extra_libs
+# echo -n "${FFMPEG_CONFIGURE_OPTIONS[@]}" > ${PREFIX}/ffmpeg_configure_options
+touch ${PREFIX}/ffmpeg_configure_options
+
+
+#==============================================================================
 # Build FFmpeg
-#
+#==============================================================================
 
 # Build ffmpeg
 FFMPEG_VERSION="${FFMPEG_VERSION:-"8.0"}"
@@ -52,14 +62,19 @@ do_make_and_make_install
 do_strip ${PREFIX}/bin "ff*"
 
 
-#
-# Finalize
-#
+#==============================================================================
+# Finalize - Copy build artifacts to output directory
+#==============================================================================
 
+# Copy library files
 cp_archive ${PREFIX}/lib/*{.a,.la} ${ARTIFACT_DIR}
 cp_archive ${PREFIX}/lib/pkgconfig ${ARTIFACT_DIR}
 cp_archive ${PREFIX}/include ${ARTIFACT_DIR}
-echo -n "${FFMPEG_EXTRA_LIBS[@]}" > ${ARTIFACT_DIR}/${PREFIX}/ffmpeg_extra_libs
-echo -n "${FFMPEG_CONFIGURE_OPTIONS[@]}" > ${ARTIFACT_DIR}/${PREFIX}/ffmpeg_configure_options
+
+# Copy FFmpeg build options (for reference)
+cp_archive ${PREFIX}/ffmpeg_extra_libs ${ARTIFACT_DIR}
+cp_archive ${PREFIX}/ffmpeg_configure_options ${ARTIFACT_DIR}
+
+# Copy FFmpeg binaries and configuration
 cp_archive ${PREFIX}/configure_options ${ARTIFACT_DIR}
 cp_archive ${PREFIX}/bin/ff* ${ARTIFACT_DIR}
