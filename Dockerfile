@@ -1,4 +1,4 @@
-# syntax = docker/dockerfile:1.5
+# syntax = docker/dockerfile:1.20
 
 ARG FFMPEG_VERSION="7.0.2"
 FROM akashisn/ffmpeg:${FFMPEG_VERSION} AS ffmpeg-linux-image
@@ -105,13 +105,13 @@ ENV TARGET_OS="Linux"
 
 # Copy build scripts
 ADD ./scripts/common/ ./common/
-ADD ./scripts/linux/ ./linux/
+ADD ./scripts/${TARGET_OS,,}/ ./${TARGET_OS,,}/
 
 # Copy ffmpeg-library image
 COPY --from=ghcr.io/akashisn/ffmpeg-library:linux / /
 
 # Build ffmpeg
-RUN bash ./linux/build-ffmpeg.sh
+RUN bash ./${TARGET_OS,,}/build-ffmpeg.sh
 
 # Copy run.sh
 COPY --chmod=755 <<'EOT' ${ARTIFACT_DIR}/${PREFIX}/run.sh
@@ -158,13 +158,13 @@ ENV TARGET_OS="Windows"
 
 # Copy build scripts
 ADD ./scripts/common/ ./common/
-ADD ./scripts/windows/ ./windows/
+ADD ./scripts/${TARGET_OS,,}/ ./${TARGET_OS,,}/
 
 # Copy ffmpeg-library image
 COPY --from=ghcr.io/akashisn/ffmpeg-library:windows / /
 
 # Build ffmpeg
-RUN bash ./windows/build-ffmpeg.sh
+RUN bash ./${TARGET_OS,,}/build-ffmpeg.sh
 
 
 #

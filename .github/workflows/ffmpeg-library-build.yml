@@ -9,7 +9,6 @@ on:
       - 'scripts/windows/**.sh'
       - '.github/workflows/ffmpeg-library-build.yml'
     branches: [main]
-  workflow_dispatch:
 
 jobs:
   build:
@@ -19,7 +18,7 @@ jobs:
       matrix:
         os: [linux, windows]
     env:
-      target_os:
+      target_os: ""
     steps:
       - name: Checkout
         uses: actions/checkout@v4
