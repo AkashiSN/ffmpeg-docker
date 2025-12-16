@@ -21,10 +21,10 @@ CROSS_PREFIX="${BUILD_TARGET}-"
 # Environment Variables
 #
 
-WORKDIR="${WORKDIR:-"/tmp"}"
-PREFIX="${PREFIX:-"/usr/local"}"
-ARTIFACT_DIR="${ARTIFACT_DIR:-"/dist"}"
-RUNTIME_LIB_DIR="${RUNTIME_LIB_DIR:-"/runtime"}"
+WORKDIR="${WORKDIR:-$(mktemp)}"
+PREFIX="${PREFIX:-"$WORKDIR/local"}"
+ARTIFACT_DIR="${ARTIFACT_DIR:-"/tmp/dist"}"
+RUNTIME_LIB_DIR="${RUNTIME_LIB_DIR:-"$ARTIFACT_DIR/runtime"}"
 
 export PKG_CONFIG="pkg-config"
 export LD_LIBRARY_PATH="${PREFIX}/lib"
