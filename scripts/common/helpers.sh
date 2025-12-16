@@ -120,7 +120,9 @@ do_strip () {
   local file_pattern="$2"
 
   if [[ $HOST_OS == "macos" ]]; then
-    find ${target_dir} -type f -name "${file_pattern}" -executable -exec strip -S {} \;
+    # BSD find doesn't support -executable, use -perm instead
+    # -perm +111 matches files with execute permission for user, group, or other
+    /usr/bin/find ${target_dir} -type f -name "${file_pattern}" -perm +111 -exec strip -S {} \;
   else
     find ${target_dir} -type f -name "${file_pattern}" -executable -exec strip --strip-debug {} \;
   fi
