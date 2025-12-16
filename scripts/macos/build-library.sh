@@ -1,6 +1,8 @@
 #!/bin/bash
 
-source ./macos/base.sh
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source ${SCRIPT_DIR}/base.sh
+
 mkdir -p ${RUNTIME_LIB_DIR}
 
 echo "macOS library build script"

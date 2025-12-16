@@ -1,6 +1,7 @@
 #!/bin/bash
 
-source ./macos/base.sh
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source ${SCRIPT_DIR}/base.sh
 
 rm -r ${ARTIFACT_DIR}
 mkdir -p ${ARTIFACT_DIR}
