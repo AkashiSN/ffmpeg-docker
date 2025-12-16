@@ -1,16 +1,12 @@
 name: ffmpeg-macos
 
 on:
-  push:
-    paths:
-      - './scripts/common/**.sh'
-      - './scripts/macos/**.sh'
-      - '.github/workflows/ffmpeg-macos.yml'
-    branches: [main]
+  workflow_dispatch:
 
 jobs:
   build-macos:
     runs-on: macos-26
+    if: github.ref == 'refs/heads/main' && startsWith(github.ref, 'refs/tags/') == false
     timeout-minutes: 120
 
     steps:

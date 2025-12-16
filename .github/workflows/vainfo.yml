@@ -1,23 +1,11 @@
 name: vainfo
 
 on:
-  push:
-    paths:
-      - 'Dockerfile'
-      - 'scripts/common/**.sh'
-      - 'scripts/linux/**.sh'
-      - '.github/workflows/vainfo.yml'
-    branches: [main]
-  workflow_run:
-    workflows: ["ffmpeg-library-build"]
-    branches: [main]
-    types:
-      - completed
-
+  workflow_dispatch:
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/') == false
+    if: github.ref == 'refs/heads/main' && startsWith(github.ref, 'refs/tags/') == false
     steps:
       - name: Checkout
         uses: actions/checkout@v6
