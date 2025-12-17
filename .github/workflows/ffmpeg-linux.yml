@@ -1,0 +1,59 @@
+name: ffmpeg-linux
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - v*
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    strategy:
+      matrix:
+        ffmpeg: ["8.0", "7.0.2", "6.1.2"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: akashisn
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push - ffmpeg-linux
+        uses: docker/build-push-action@v6
+        with:
+          context: ./
+          file: ./Dockerfile
+          tags: |
+            akashisn/ffmpeg:${{ matrix.ffmpeg }}
+          build-args: |
+            FFMPEG_VERSION=${{ matrix.ffmpeg }}
+          platforms: linux/amd64
+          target: ffmpeg-linux
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          push: true
+
+      - name: Export - ffmpeg-linux
+        run: |
+          docker buildx build --platform linux/amd64 --target ffmpeg-linux-export --output type=local,dest=/tmp/build \
+            -t ffmpeg-linux-export --build-arg FFMPEG_VERSION=${{ matrix.ffmpeg }} -f ./Dockerfile .
+
+      - name: Archive artifact
+        run: |
+          mkdir /tmp/ffmpeg-${{ matrix.ffmpeg }}-linux-amd64
+          mv /tmp/build/* /tmp/ffmpeg-${{ matrix.ffmpeg }}-linux-amd64/
+          tar acvf /tmp/ffmpeg-${{ matrix.ffmpeg }}-linux-amd64.tar.xz -C /tmp ffmpeg-${{ matrix.ffmpeg }}-linux-amd64
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: ffmpeg-${{ matrix.ffmpeg }}-linux-amd64
+          path: /tmp/ffmpeg-${{ matrix.ffmpeg }}-linux-amd64.tar.xz

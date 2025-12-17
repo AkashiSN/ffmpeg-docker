@@ -1,69 +1,101 @@
 name: ffmpeg-release
 
 on:
-  push:
-    tags:
-      - v*
-    branches: [main]
+  workflow_dispatch:
 
 jobs:
-  export:
+  release:
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
-    strategy:
-      matrix:
-        ffmpeg: ["8.0", "7.0.2", "6.1.2", "5.1.6"]
-        flavor: [linux, windows]
-    env:
-      target_os: ""
-      build_tag: ""
     steps:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Set build target (linux)
-        if: matrix.flavor == 'linux'
+      - name: Check if current commit is tagged
+        id: check_tag
         run: |
-          echo "build_tag=ffmpeg-linux-export" >> $GITHUB_ENV
-          echo "target_os=linux-amd64" >> $GITHUB_ENV
+          TAG=$(git describe --exact-match --tags HEAD 2>/dev/null || echo "")
+          if [ -z "$TAG" ]; then
+            echo "Error: Current commit is not tagged with a version tag"
+            exit 1
+          fi
+          if [[ ! "$TAG" =~ ^v ]]; then
+            echo "Error: Tag must start with 'v' (found: $TAG)"
+            exit 1
+          fi
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "Found version tag: $TAG"
 
-      - name: Set build target (windows)
-        if: matrix.flavor == 'windows'
+      - name: Verify all platform builds succeeded
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          echo "build_tag=ffmpeg-windows-export" >> $GITHUB_ENV
-          echo "target_os=windows-x64" >> $GITHUB_ENV
+          TAG="${{ steps.check_tag.outputs.tag }}"
+          echo "Verifying platform builds for tag $TAG (commit ${{ github.sha }})..."
 
-      - name: Export - ffmpeg
+          # Check Linux workflow - filter by both head_sha and head_branch (tag name)
+          LINUX_STATUS=$(gh api repos/${{ github.repository }}/actions/workflows/ffmpeg-linux.yml/runs \
+            --jq ".workflow_runs[] | select(.head_sha == \"${{ github.sha }}\" and .head_branch == \"$TAG\") | select(.conclusion != null) | .conclusion" | head -1)
+
+          # Check Windows workflow - filter by both head_sha and head_branch (tag name)
+          WINDOWS_STATUS=$(gh api repos/${{ github.repository }}/actions/workflows/ffmpeg-windows.yml/runs \
+            --jq ".workflow_runs[] | select(.head_sha == \"${{ github.sha }}\" and .head_branch == \"$TAG\") | select(.conclusion != null) | .conclusion" | head -1)
+
+          # Check macOS workflow - filter by both head_sha and head_branch (tag name)
+          MACOS_STATUS=$(gh api repos/${{ github.repository }}/actions/workflows/ffmpeg-macos.yml/runs \
+            --jq ".workflow_runs[] | select(.head_sha == \"${{ github.sha }}\" and .head_branch == \"$TAG\") | select(.conclusion != null) | .conclusion" | head -1)
+
+          echo "Linux build status: ${LINUX_STATUS:-not found}"
+          echo "Windows build status: ${WINDOWS_STATUS:-not found}"
+          echo "macOS build status: ${MACOS_STATUS:-not found}"
+
+          # Verify all builds succeeded
+          if [ "$LINUX_STATUS" != "success" ] || [ "$WINDOWS_STATUS" != "success" ] || [ "$MACOS_STATUS" != "success" ]; then
+            echo "Error: Not all platform builds have succeeded for tag $TAG"
+            echo "Please ensure all three platform workflows (ffmpeg-linux, ffmpeg-windows, ffmpeg-macos) triggered by tag $TAG have completed successfully"
+            exit 1
+          fi
+
+          echo "All platform builds succeeded for tag $TAG!"
+
+      - name: Download Linux artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          docker buildx build --platform linux/amd64 --target ${{ env.build_tag }} --output type=local,dest=/tmp/build \
-            -t ${{ env.build_tag }} --build-arg FFMPEG_VERSION=${{ matrix.ffmpeg }} -f ./Dockerfile .
+          TAG="${{ steps.check_tag.outputs.tag }}"
+          mkdir -p /tmp/artifacts
+          RUN_ID=$(gh api repos/${{ github.repository }}/actions/workflows/ffmpeg-linux.yml/runs \
+            --jq ".workflow_runs[] | select(.head_sha == \"${{ github.sha }}\" and .head_branch == \"$TAG\" and .conclusion == \"success\") | .id" | head -1)
+          echo "Downloading Linux artifacts from run ID: $RUN_ID (tag: $TAG)"
+          gh run download $RUN_ID -D /tmp/artifacts
 
-      - name: Archive artifact
+      - name: Download Windows artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          mkdir /tmp/ffmpeg-${{ matrix.ffmpeg }}-${{ env.target_os }}
-          mv /tmp/build/* /tmp/ffmpeg-${{ matrix.ffmpeg }}-${{ env.target_os }}/
-          tar acvf /tmp/ffmpeg-${{ matrix.ffmpeg }}-${{ env.target_os }}.tar.xz -C /tmp ffmpeg-${{ matrix.ffmpeg }}-${{ env.target_os }}
+          TAG="${{ steps.check_tag.outputs.tag }}"
+          RUN_ID=$(gh api repos/${{ github.repository }}/actions/workflows/ffmpeg-windows.yml/runs \
+            --jq ".workflow_runs[] | select(.head_sha == \"${{ github.sha }}\" and .head_branch == \"$TAG\" and .conclusion == \"success\") | .id" | head -1)
+          echo "Downloading Windows artifacts from run ID: $RUN_ID (tag: $TAG)"
+          gh run download $RUN_ID -D /tmp/artifacts
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v6
-        with:
-          name: ffmpeg-${{ matrix.ffmpeg }}-${{ env.target_os }}
-          path: /tmp/ffmpeg-${{ matrix.ffmpeg }}-${{ env.target_os }}.tar.xz
+      - name: Download macOS artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${{ steps.check_tag.outputs.tag }}"
+          RUN_ID=$(gh api repos/${{ github.repository }}/actions/workflows/ffmpeg-macos.yml/runs \
+            --jq ".workflow_runs[] | select(.head_sha == \"${{ github.sha }}\" and .head_branch == \"$TAG\" and .conclusion == \"success\") | .id" | head -1)
+          echo "Downloading macOS artifacts from run ID: $RUN_ID (tag: $TAG)"
+          gh run download $RUN_ID -D /tmp/artifacts
 
-  release:
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
-    needs: [export]
-    steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v7
-        with:
-          path: /tmp/artifact
+      - name: List downloaded artifacts
+        run: |
+          echo "Downloaded artifacts:"
+          find /tmp/artifacts -type f -name "*.tar.xz"
 
-      - name: Release
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: /tmp/artifact/**/*.tar.xz
+          tag_name: ${{ steps.check_tag.outputs.tag }}
+          files: /tmp/artifacts/**/*.tar.xz
+          fail_on_unmatched_files: true

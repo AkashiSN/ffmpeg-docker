@@ -1,0 +1,60 @@
+name: ffmpeg-windows
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - v*
+
+jobs:
+  build-windows:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    strategy:
+      matrix:
+        ffmpeg: ["8.0", "7.0.2", "6.1.2", "5.1.6"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: akashisn
+          password: ${{ github.token }}
+
+      - name: Build and push - ffmpeg-windows
+        uses: docker/build-push-action@v6
+        with:
+          context: ./
+          file: ./Dockerfile
+          tags: |
+            ghcr.io/akashisn/ffmpeg-windows:${{ matrix.ffmpeg }}
+          build-args: |
+            FFMPEG_VERSION=${{ matrix.ffmpeg }}
+          platforms: linux/amd64
+          target: ffmpeg-windows
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          push: true
+
+      - name: Export - ffmpeg-windows
+        run: |
+          docker buildx build --platform linux/amd64 --target ffmpeg-windows-export --output type=local,dest=/tmp/build \
+            -t ffmpeg-windows-export --build-arg FFMPEG_VERSION=${{ matrix.ffmpeg }} -f ./Dockerfile .
+
+      - name: Archive artifact
+        run: |
+          mkdir /tmp/ffmpeg-${{ matrix.ffmpeg }}-windows-x64
+          mv /tmp/build/* /tmp/ffmpeg-${{ matrix.ffmpeg }}-windows-x64/
+          tar acvf /tmp/ffmpeg-${{ matrix.ffmpeg }}-windows-x64.tar.xz -C /tmp ffmpeg-${{ matrix.ffmpeg }}-windows-x64
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: ffmpeg-${{ matrix.ffmpeg }}-windows-x64
+          path: /tmp/ffmpeg-${{ matrix.ffmpeg }}-windows-x64.tar.xz
