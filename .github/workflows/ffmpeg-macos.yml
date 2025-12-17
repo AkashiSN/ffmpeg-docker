@@ -27,7 +27,7 @@ jobs:
           /tmp/dist/opt/ffmpeg/bin/ffprobe -version
 
       - name: Upload FFmpeg binaries
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ffmpeg-macos-arm64
           path: |
@@ -37,14 +37,14 @@ jobs:
 
       - name: Create build info
         run: |
-          echo "Build Date: $(date)" > /tmp/dist/opt/ffmpeg/bin/build-info.txt
-          echo "Runner: ${{ runner.os }}-${{ runner.arch }}" >> /tmp/dist/opt/ffmpeg/bin/build-info.txt
-          echo "Commit: ${{ github.sha }}" >> /tmp/dist/opt/ffmpeg/bin/build-info.txt
-          /tmp/dist/opt/ffmpeg/bin/ffmpeg -version >> /tmp/dist/opt/ffmpeg/bin/build-info.txt
+          echo "Build Date: $(date)" > /tmp/dist/opt/ffmpeg/build-info.txt
+          echo "Runner: ${{ runner.os }}-${{ runner.arch }}" >> /tmp/dist/opt/ffmpeg/build-info.txt
+          echo "Commit: ${{ github.sha }}" >> /tmp/dist/opt/ffmpeg/build-info.txt
+          /tmp/dist/opt/ffmpeg/bin/ffmpeg -version >> /tmp/dist/opt/ffmpeg/build-info.txt
 
       - name: Upload build info
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: build-info
-          path: /tmp/dist/opt/ffmpeg/bin/build-info.txt
+          path: /tmp/dist/opt/ffmpeg/build-info.txt
           retention-days: 30

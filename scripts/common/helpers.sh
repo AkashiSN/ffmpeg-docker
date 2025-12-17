@@ -95,7 +95,13 @@ mkcd () {
 }
 
 cp_archive () {
-  cp --archive --parents --no-dereference $@
+  if [[ $HOST_OS == "macos" ]]; then
+    # BSD cp doesn't support --archive, --parents, --no-dereference
+    # Use rsync as alternative for --parents functionality
+    /usr/bin/rsync -a --relative "$@"
+  else
+    cp --archive --parents --no-dereference $@
+  fi
 }
 
 gen_implib () {
