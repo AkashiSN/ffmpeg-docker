@@ -36,11 +36,6 @@ export ACLOCAL_PATH="${PREFIX}/share/aclocal"
 export LIBRARY_PATH="${PREFIX}/lib"
 export C_INCLUDE_PATH="${PREFIX}/include"
 export CPLUS_INCLUDE_PATH="${PREFIX}/include"
-# export CFLAGS="-static-libgcc -static-libstdc++ -I${PREFIX}/include -O2 -pipe -D_FORTIFY_SOURCE=2 -fstack-protector-strong -Wno-error=implicit-function-declaration ${CFLAGS:-""}"
-# export CXXFLAGS="${CFLAGS}"
-# export LDFLAGS="-static-libgcc -static-libstdc++ -L${PREFIX}/lib -O2 -pipe -fstack-protector-strong ${LDFLAGS:-""}"
-# export STAGE_CFLAGS="-fno-semantic-interposition"
-# export STAGE_CXXFLAGS="${STAGE_CFLAGS}"
 export PATH="${PREFIX}/bin:$PATH"
 
 # Detect architecture
@@ -50,7 +45,14 @@ else
   HOST_ARCH="x86_64"
 fi
 
-mkdir -p ${WORKDIR} ${PREFIX}/{bin,share,lib/pkgconfig,include}
+rm -rf ${ARTIFACT_DIR}
+rm -rf ${PREFIX}/{bin,include,lib,share}
+rm -rf ${PREFIX}/{configure_options,ffmpeg_configure_options,ffmpeg_extra_libs}
+
+mkdir -p ${ARTIFACT_DIR}
+mkdir -p ${WORKDIR}
+mkdir -p ${RUNTIME_LIB_DIR}
+mkdir -p ${PREFIX}/{bin,share,lib/pkgconfig,include}
 
 FFMPEG_CONFIGURE_OPTIONS=()
 FFMPEG_EXTRA_LIBS=()
@@ -67,6 +69,7 @@ CPU_NUM=$(expr $(getconf _NPROCESSORS_ONLN) / 2)
 
 # Cmake build toolchain
 cat << EOS > ${WORKDIR}/toolchains.cmake
+SET(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 SET(CMAKE_SYSTEM_NAME ${TARGET_OS})
 SET(CMAKE_PREFIX_PATH ${PREFIX})
 SET(CMAKE_INSTALL_PREFIX ${PREFIX})

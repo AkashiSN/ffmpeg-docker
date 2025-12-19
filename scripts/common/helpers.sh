@@ -58,11 +58,24 @@ git_clone() {
   else
     local to_dir="${package}-$(echo ${branch} | sed s/^v//)"
   fi
-  echoerr -n "downloading (via git clone) ${to_dir} from $repo_url ..."
-  rm -rf "${to_dir}"
-  git clone -c advice.detachedHead=false "${repo_url}" -b "${branch}" --depth 1 "${to_dir}"
-  echoerr "done."
-  cd ${to_dir}
+
+  if [ -d "${to_dir}/.git" ]; then
+    # Repository already exists - clean and reset it
+    echoerr -n "cleaning existing repository ${to_dir} ..."
+    cd ${to_dir}
+    git fetch origin "${branch}" --depth 1 2>/dev/null || true
+    git checkout -f "${branch}" 2>/dev/null || git checkout -f -B "${branch}" "origin/${branch}"
+    git reset --hard "origin/${branch}" 2>/dev/null || git reset --hard "${branch}"
+    git clean -fdx
+    echoerr "done."
+  else
+    # Clone fresh repository
+    echoerr -n "downloading (via git clone) ${to_dir} from $repo_url ..."
+    rm -rf "${to_dir}"
+    git clone -c advice.detachedHead=false "${repo_url}" -b "${branch}" --depth 1 "${to_dir}"
+    echoerr "done."
+    cd ${to_dir}
+  fi
 }
 
 get_latest_tag() {
