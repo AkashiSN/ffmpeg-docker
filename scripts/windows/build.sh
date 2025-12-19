@@ -426,14 +426,6 @@ echo -n "${FFMPEG_CONFIGURE_OPTIONS[@]}" > ${PREFIX}/ffmpeg_configure_options
 FFMPEG_VERSION="${FFMPEG_VERSION:-"8.0"}"
 git_clone "https://github.com/FFmpeg/FFmpeg.git" n${FFMPEG_VERSION}
 
-FFMPEG_LIBVPL_SUPPORT_VERSION="6.0"
-# Check if the current FFMPEG_VERSION is greater than to the version that supports libvpl.
-if [ "${FFMPEG_VERSION}" != "${FFMPEG_LIBVPL_SUPPORT_VERSION}" ]; then
-  if [ "$(echo -e "${FFMPEG_VERSION}\n${FFMPEG_LIBVPL_SUPPORT_VERSION}" | sort -Vr | head -n 1)" == "${FFMPEG_LIBVPL_SUPPORT_VERSION}" ]; then
-    sed -i -e "s/libvpl/libmfx/g" ${PREFIX}/ffmpeg_configure_options
-  fi
-fi
-
 # Configure for Windows
 ./configure `cat ${PREFIX}/ffmpeg_configure_options` \
             --arch="x86_64" \

@@ -13,7 +13,7 @@ jobs:
     timeout-minutes: 120
     strategy:
       matrix:
-        ffmpeg: ["8.0", "7.0.2", "6.1.2"]
+        ffmpeg: ["8.0"]
 
     steps:
       - name: Checkout

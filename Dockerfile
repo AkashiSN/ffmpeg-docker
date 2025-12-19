@@ -1,6 +1,6 @@
 # syntax = docker/dockerfile:1.20
 
-ARG FFMPEG_VERSION="7.0.2"
+ARG FFMPEG_VERSION="8.0"
 FROM akashisn/ffmpeg:${FFMPEG_VERSION} AS ffmpeg-linux-image
 FROM ghcr.io/akashisn/ffmpeg-windows:${FFMPEG_VERSION} AS ffmpeg-windows-image
 

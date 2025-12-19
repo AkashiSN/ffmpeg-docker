@@ -12,7 +12,7 @@ jobs:
     if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
     strategy:
       matrix:
-        ffmpeg: ["8.0", "7.0.2", "6.1.2", "5.1.6"]
+        ffmpeg: ["8.0"]
     steps:
       - name: Checkout
         uses: actions/checkout@v6
