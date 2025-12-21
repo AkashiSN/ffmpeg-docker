@@ -19,6 +19,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install svn
+        run: |
+          brew install svn
+
       - name: Create /opt/ffmpeg
         run: |
           sudo mkdir -p /opt/ffmpeg
@@ -41,5 +45,5 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v6
         with:
-          name: ffmpeg-${{ matrix.ffmpeg }}-macos-arm64
+          name: ffmpeg-${{ matrix.ffmpeg }}-macos-arm64.tar.xz
           path: /tmp/ffmpeg-${{ matrix.ffmpeg }}-macos-arm64.tar.xz

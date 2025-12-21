@@ -56,5 +56,5 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v6
         with:
-          name: ffmpeg-${{ matrix.ffmpeg }}-windows-x64
+          name: ffmpeg-${{ matrix.ffmpeg }}-windows-x64.tar.xz
           path: /tmp/ffmpeg-${{ matrix.ffmpeg }}-windows-x64.tar.xz
