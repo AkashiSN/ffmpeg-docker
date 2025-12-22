@@ -66,7 +66,7 @@ jobs:
           RUN_ID=$(gh api repos/${{ github.repository }}/actions/workflows/ffmpeg-linux.yml/runs \
             --jq ".workflow_runs[] | select(.head_sha == \"${{ github.sha }}\" and .head_branch == \"$TAG\" and .conclusion == \"success\") | .id" | head -1)
           echo "Downloading Linux artifacts from run ID: $RUN_ID (tag: $TAG)"
-          gh run download $RUN_ID -D /tmp/artifacts
+          gh run download --pattern "!*.dockerbuild" $RUN_ID -D /tmp/artifacts
 
       - name: Download Windows artifacts
         env:
@@ -76,7 +76,7 @@ jobs:
           RUN_ID=$(gh api repos/${{ github.repository }}/actions/workflows/ffmpeg-windows.yml/runs \
             --jq ".workflow_runs[] | select(.head_sha == \"${{ github.sha }}\" and .head_branch == \"$TAG\" and .conclusion == \"success\") | .id" | head -1)
           echo "Downloading Windows artifacts from run ID: $RUN_ID (tag: $TAG)"
-          gh run download $RUN_ID -D /tmp/artifacts
+          gh run download --pattern "!*.dockerbuild" $RUN_ID -D /tmp/artifacts
 
       - name: Download macOS artifacts
         env:
@@ -86,7 +86,7 @@ jobs:
           RUN_ID=$(gh api repos/${{ github.repository }}/actions/workflows/ffmpeg-macos.yml/runs \
             --jq ".workflow_runs[] | select(.head_sha == \"${{ github.sha }}\" and .head_branch == \"$TAG\" and .conclusion == \"success\") | .id" | head -1)
           echo "Downloading macOS artifacts from run ID: $RUN_ID (tag: $TAG)"
-          gh run download $RUN_ID -D /tmp/artifacts
+          gh run download --pattern "!*.dockerbuild" $RUN_ID -D /tmp/artifacts
 
       - name: List downloaded artifacts
         run: |
